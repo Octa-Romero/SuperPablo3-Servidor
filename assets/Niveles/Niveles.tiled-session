@@ -1,0 +1,145 @@
+{
+    "activeFile": "Niveles/Level1.tmx",
+    "expandedProjectPaths": [
+        "Niveles",
+        ".",
+        "Tilesets"
+    ],
+    "file.lastUsedOpenFilter": "Todos los archivos (*)",
+    "fileStates": {
+        "1.tsx": {
+            "scaleInDock": 1
+        },
+        "Bridges.tsx": {
+            "scaleInDock": 1
+        },
+        "Level1.tmx": {
+            "scale": 0.5,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 1475,
+                "y": 578
+            }
+        },
+        "Niveles/1.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1
+        },
+        "Niveles/Bridges.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "Niveles/Level1.tmx": {
+            "expandedGroupLayers": [
+                8,
+                11,
+                16,
+                17
+            ],
+            "scale": 0.5,
+            "selectedLayer": 6,
+            "viewCenter": {
+                "x": 734,
+                "y": 644
+            }
+        },
+        "Niveles/Level2.tmx": {
+            "expandedGroupLayers": [
+                9
+            ],
+            "scale": 0.125,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 5120,
+                "y": 476
+            }
+        },
+        "Niveles/Nivel 2.tmx": {
+            "expandedGroupLayers": [
+                16,
+                9
+            ],
+            "scale": 0.33,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 463.63636363636374,
+                "y": 1703.030303030303
+            }
+        },
+        "Niveles/Nivel2.tmx": {
+            "expandedGroupLayers": [
+                8,
+                16,
+                9
+            ],
+            "scale": 0.5,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1516,
+                "y": 1709
+            }
+        },
+        "Niveles/forestTileset.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1
+        },
+        "Niveles/hubTilset.tsx": {
+            "scaleInDock": 0.5,
+            "scaleInEditor": 0.75
+        },
+        "Niveles/morning_adventures_tileset_16x16.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1
+        },
+        "Niveles/tileSetHub.tsx": {
+            "scaleInDock": 0.33,
+            "scaleInEditor": 0.33
+        },
+        "Niveles/tileset.tsx": {
+            "scaleInDock": 1
+        },
+        "Pruebas/propsFores.tsx": {
+            "scaleInDock": 1
+        },
+        "Tilesets/TileSetForest2.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Tilesets/foresTileset.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Tilesets/propsFores.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1
+        },
+        "morning_adventures_tileset_16x16.tsx": {
+            "scaleInDock": 1
+        }
+    },
+    "last.imagePath": "C:/Users/santi/Desktop/SuperPablo3/assets/Niveless/Tilesets",
+    "map.height": 17,
+    "map.lastUsedFormat": "tmx",
+    "map.width": 32,
+    "openFiles": [
+        "Niveles/Nivel2.tmx",
+        "Niveles/Level2.tmx",
+        "Niveles/Level1.tmx",
+        "Tilesets/TileSetForest2.tsx"
+    ],
+    "project": "Niveles.tiled-project",
+    "recentFiles": [
+        "Niveles/Nivel2.tmx",
+        "Niveles/Level2.tmx",
+        "Tilesets/TileSetForest2.tsx",
+        "Niveles/Level1.tmx",
+        "Niveles/hubTilset.tsx",
+        "Niveles/tileSetHub.tsx",
+        "Niveles/Nivel 2.tmx",
+        "Tilesets/foresTileset.tsx",
+        "Level1.tmx"
+    ],
+    "resizeMap.removeObjects": false,
+    "tileset.lastUsedFormat": "tsx"
+}
