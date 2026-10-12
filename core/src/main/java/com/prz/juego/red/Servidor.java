@@ -4,11 +4,19 @@ import com.prz.juego.hilos.HiloServidor;
 
 public class Servidor {
 
-    private HiloServidor hs;
+    private HiloServidor hilo;
 
-    public Servidor()
-    {
-        hs = new HiloServidor();
-        hs.start();
+    public void iniciar() {
+        if (hilo == null) {
+            hilo = new HiloServidor();
+            hilo.start();
+        }
+    }
+
+    public void cerrar() {
+        if (hilo != null) {
+            hilo.cerrar();
+            hilo = null;
+        }
     }
 }

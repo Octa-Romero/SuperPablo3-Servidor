@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.prz.juego.hilos.HiloServidor;
 import com.prz.juego.principal.Navegable;
 import com.prz.juego.recursos.Imagen;
 import com.prz.juego.utilidades.Config;

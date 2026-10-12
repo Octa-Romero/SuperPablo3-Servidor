@@ -9,6 +9,7 @@ import com.prz.juego.entidades.Personajes;
 import com.prz.juego.principal.Navegable;
 import com.prz.juego.niveles.Nivel;
 import com.prz.juego.utilidades.Entrada;
+import com.prz.juego.utilidades.Global;
 import com.prz.juego.utilidades.Musica;
 import com.prz.juego.utilidades.Render;
 import com.prz.juego.sistemas.Hud;
@@ -50,6 +51,7 @@ public class PantallaJuego implements Screen {
 
     @Override
     public void render(float delta) {
+        if(!Global.empieza) {return;}
         Render.limpiarPantalla();
 
         if (entrada.aprietaEscape()) {
