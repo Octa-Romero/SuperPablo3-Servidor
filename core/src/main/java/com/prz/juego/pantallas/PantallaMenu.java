@@ -94,7 +94,7 @@ public class PantallaMenu implements Screen {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     Sonido.CLICK.sonar();
-                    nav.cambiarPantalla(new SeleccionPersonaje(nav));
+                    nav.iniciarJuego();
                 }
             }
         );

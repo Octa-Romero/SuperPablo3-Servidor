@@ -6,8 +6,10 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.prz.juego.entidades.Jugador;
 import com.prz.juego.entidades.Personajes;
+import com.prz.juego.hilos.JugadorRed;
 import com.prz.juego.principal.Navegable;
 import com.prz.juego.niveles.Nivel;
+import com.prz.juego.red.Servidor;
 import com.prz.juego.utilidades.Entrada;
 import com.prz.juego.utilidades.Global;
 import com.prz.juego.utilidades.Musica;
@@ -16,6 +18,7 @@ import com.prz.juego.sistemas.Hud;
 
 public class PantallaJuego implements Screen {
 
+    private Servidor servidor;
     private final Navegable nav;
     private Jugador jugador;
     private final Nivel nivel;
@@ -24,15 +27,19 @@ public class PantallaJuego implements Screen {
     private boolean pausado = false;
     private final Hud hud;
 
-    public PantallaJuego(Navegable nav, Personajes personajeElegido) {
+    public PantallaJuego(Navegable nav, Personajes personajeElegido, Servidor servidor) {
         this.nav = nav;
         this.entrada = new Entrada();
         this.nivel = new Nivel();
         this.menuPausa = new MenuPausa(nav, this);
+        this.servidor = servidor;
 
         jugador = personajeElegido.crear(50, 150);
 
+        JugadorRed jugadorRed = servidor.getJugadoresRed()[0];
+
         jugador.setEntrada(entrada);
+        jugador.setEstadoRed(jugadorRed);
 
         nivel.cargar("Niveles/Niveles/Level1.tmx", jugador);
 
@@ -65,6 +72,7 @@ public class PantallaJuego implements Screen {
 
         if (!pausado) {
             nivel.update(delta, entrada);
+            servidor.enviarPosicion(jugador);
         }
 
         if (pausado) {

@@ -3,7 +3,10 @@ package com.prz.juego.principal;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.prz.juego.entidades.Personajes;
+import com.prz.juego.pantallas.PantallaJuego;
 import com.prz.juego.pantallas.PantallaMenu;
+import com.prz.juego.pantallas.SeleccionPersonaje;
 import com.prz.juego.recursos.GestorRecursos;
 import com.prz.juego.red.Servidor;
 import com.prz.juego.utilidades.Musica;
@@ -18,6 +21,7 @@ public class Principal extends Game implements Navegable{
     public void create() {
         Render.batch = new SpriteBatch();
         servidor = new Servidor();
+        servidor.iniciar();
         this.setScreen(new PantallaMenu(this));
     }
 
@@ -48,5 +52,10 @@ public class Principal extends Game implements Navegable{
     @Override
     public void cambiarPantalla(Screen screen) {
         setScreen(screen);
+    }
+
+    @Override
+    public void iniciarJuego() {
+        setScreen(new SeleccionPersonaje(this, servidor));
     }
 }

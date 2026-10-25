@@ -9,13 +9,17 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.prz.juego.hilos.JugadorRed;
 import com.prz.juego.principal.Navegable;
+import com.prz.juego.red.Servidor;
 import com.prz.juego.utilidades.Config;
+import com.prz.juego.utilidades.Global;
 import com.prz.juego.utilidades.Render;
 import com.prz.juego.entidades.Personajes;
 
 public class SeleccionPersonaje implements Screen {
 
+    private Servidor servidor;
     private final Navegable nav;
     private Stage stage;
     private BitmapFont font;
@@ -23,8 +27,9 @@ public class SeleccionPersonaje implements Screen {
     private Personajes personajeSeleccionado;
     private TextButton btnComenzar;
 
-    public SeleccionPersonaje(Navegable nav) {
+    public SeleccionPersonaje(Navegable nav, Servidor servidor) {
         this.nav = nav;
+        this.servidor = servidor;
     }
 
     @Override
@@ -83,7 +88,7 @@ public class SeleccionPersonaje implements Screen {
 
                 if (personajeSeleccionado == null) return;
 
-                nav.cambiarPantalla(new PantallaJuego(nav, personajeSeleccionado));
+                //nav.iniciarJuego(personajeSeleccionado);
             }
         });
 
@@ -103,6 +108,12 @@ public class SeleccionPersonaje implements Screen {
 
         stage.act(delta);
         stage.draw();
+
+        if(Global.empieza)
+        {
+            personajeSeleccionado = Personajes.valueOf(servidor.getJugadoresRed()[0].getPersonaje());
+            nav.cambiarPantalla(new PantallaJuego(nav, personajeSeleccionado, servidor));
+        }
     }
 
     @Override

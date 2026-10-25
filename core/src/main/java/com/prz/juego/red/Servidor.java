@@ -1,6 +1,8 @@
 package com.prz.juego.red;
 
+import com.prz.juego.entidades.Jugador;
 import com.prz.juego.hilos.HiloServidor;
+import com.prz.juego.hilos.JugadorRed;
 
 public class Servidor {
 
@@ -11,6 +13,19 @@ public class Servidor {
             hilo = new HiloServidor();
             hilo.start();
         }
+    }
+
+    public JugadorRed[] getJugadoresRed()
+    {
+        return hilo.getJugadores();
+    }
+
+    public void enviarPosicion(Jugador jugador)
+    {
+        JugadorRed jugadorRed = hilo.getJugadores()[0];
+        String msj = "POS;" + jugador.getX() + ";" + jugador.getY();
+
+        hilo.enviarMensaje(msj, jugadorRed.getIp(), jugadorRed.getPuerto());
     }
 
     public void cerrar() {

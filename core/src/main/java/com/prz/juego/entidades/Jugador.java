@@ -1,6 +1,7 @@
 package com.prz.juego.entidades;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.prz.juego.hilos.JugadorRed;
 import com.prz.juego.sistemas.Hud;
 import com.prz.juego.utilidades.Entrada;
 import com.prz.juego.utilidades.Render;
@@ -8,6 +9,7 @@ import com.prz.juego.utilidades.Render;
 public abstract class Jugador extends Entidad {
 
 	protected Entrada entrada;
+    private JugadorRed estadoRed;
 	private final Texture TEXTURA_HUD;
 	protected Hud hud;
 	protected boolean atacando;
@@ -39,11 +41,11 @@ public abstract class Jugador extends Entidad {
 			velocidadY = 0;
 		}
 
-		if (entrada.mueveIzquierda()) {
+		if (estadoRed.mueveIzquierda()) {
 			x -= velocidadX * delta;
 		}
 
-		if (entrada.mueveDerecha()) {
+		if (estadoRed.mueveDerecha()) {
 			x += velocidadX * delta;
 		}
 
@@ -79,4 +81,9 @@ public abstract class Jugador extends Entidad {
 	public boolean estaAtacando() {
 		return atacando;
 	}
+
+    public void setEstadoRed(JugadorRed estado)
+    {
+        this.estadoRed = estado;
+    }
 }

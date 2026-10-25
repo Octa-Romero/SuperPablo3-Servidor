@@ -6,6 +6,8 @@ public class JugadorRed {
 
     private InetAddress ip;
     private int puerto;
+    private boolean mueveIzquierda = false, mueveDerecha = false;
+    private String personaje;
 
     public JugadorRed(InetAddress ip, int puerto) {
         this.ip = ip;
@@ -20,4 +22,29 @@ public class JugadorRed {
         return puerto;
     }
 
+    public void setMovimiento(boolean valorIzquierda, boolean valorDerecha)
+    {
+        this.mueveIzquierda = valorIzquierda;
+        this.mueveDerecha = valorDerecha;
+    }
+
+    public boolean mueveIzquierda()
+    {
+        return this.mueveIzquierda;
+    }
+
+    public boolean mueveDerecha()
+    {
+        return this.mueveDerecha;
+    }
+
+    public void setPersonaje(String personaje)
+    {
+        this.personaje = personaje;
+    }
+
+    public String getPersonaje()
+    {
+        return this.personaje;
+    }
 }
