@@ -71,18 +71,20 @@ public class HiloServidor extends Thread {
 
                 if(mensajeParametrizado[0].equals("INPUT"))
                 {
-                    if(mensajeParametrizado[1].equals("IZQUIERDA"))
+                    if (mensajeParametrizado[1].equals("IZQUIERDA")) {
+                        jugadores[indice].setMovimiento(true, jugadores[indice].mueveDerecha());
+                    } else if (mensajeParametrizado[1].equals("NOIZQUIERDA")) {
+                        jugadores[indice].setMovimiento(false, jugadores[indice].mueveDerecha());
+                    } else if (mensajeParametrizado[1].equals("DERECHA")) {
+                        jugadores[indice].setMovimiento(jugadores[indice].mueveIzquierda(), true);
+                    } else if (mensajeParametrizado[1].equals("NODERECHA")) {
+                        jugadores[indice].setMovimiento(jugadores[indice].mueveIzquierda(), false);
+                    } else if (mensajeParametrizado[1].equals("ARRIBA"))
                     {
-                        jugadores[indice].setMovimiento(true, false);
-                    }else if(mensajeParametrizado[1].equals("NOIZQUIERDA"))
+                        jugadores[indice].setSalto(true);
+                    } else if (mensajeParametrizado[1].equals("NOARRIBA"))
                     {
-                        jugadores[indice].setMovimiento(false, false);
-                    }else if(mensajeParametrizado[1].equals("DERECHA"))
-                    {
-                        jugadores[indice].setMovimiento(false, true);
-                    }else if(mensajeParametrizado[1].equals("NODERECHA"))
-                    {
-                        jugadores[indice].setMovimiento(false, false);
+                        jugadores[indice].setSalto(false);
                     }
                 }
             }

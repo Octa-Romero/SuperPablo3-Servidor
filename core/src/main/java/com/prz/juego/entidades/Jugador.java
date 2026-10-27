@@ -28,7 +28,7 @@ public abstract class Jugador extends Entidad {
 	public void update(float delta) {
 		guardarPosicionAnterior();
 
-		if (entrada.mueveArriba() && enSuelo) {
+		if (estadoRed.solicitaSaltar() && enSuelo) {
 			saltar();
 		}
 
@@ -85,5 +85,10 @@ public abstract class Jugador extends Entidad {
     public void setEstadoRed(JugadorRed estado)
     {
         this.estadoRed = estado;
+    }
+
+    public JugadorRed getEstadoRed()
+    {
+        return this.estadoRed;
     }
 }

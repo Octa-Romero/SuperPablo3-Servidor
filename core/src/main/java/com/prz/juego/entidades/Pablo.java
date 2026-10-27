@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.prz.juego.hilos.JugadorRed;
 import com.prz.juego.recursos.GestorRecursos;
 import com.prz.juego.utilidades.Sonido;
 
@@ -37,11 +38,12 @@ public class Pablo extends Jugador {
 
 	@Override
 	public void update(float delta) {
+        JugadorRed estadoRed = getEstadoRed();
 		if (entrada != null) {
-			if (entrada.mueveDerecha()) {
+			if (estadoRed.mueveDerecha()) {
 				direccion = 1;
 			}
-			if (entrada.mueveIzquierda()) {
+			if (estadoRed.mueveIzquierda()) {
 				direccion = -1;
 			}
 		}

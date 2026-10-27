@@ -6,7 +6,7 @@ public class JugadorRed {
 
     private InetAddress ip;
     private int puerto;
-    private boolean mueveIzquierda = false, mueveDerecha = false;
+    private boolean mueveIzquierda = false, mueveDerecha = false, valorSalto = false;
     private String personaje;
 
     public JugadorRed(InetAddress ip, int puerto) {
@@ -28,6 +28,11 @@ public class JugadorRed {
         this.mueveDerecha = valorDerecha;
     }
 
+    public void setSalto(boolean valorSalto)
+    {
+        this.valorSalto = valorSalto;
+    }
+
     public boolean mueveIzquierda()
     {
         return this.mueveIzquierda;
@@ -36,6 +41,11 @@ public class JugadorRed {
     public boolean mueveDerecha()
     {
         return this.mueveDerecha;
+    }
+
+    public boolean solicitaSaltar()
+    {
+        return this.valorSalto;
     }
 
     public void setPersonaje(String personaje)
