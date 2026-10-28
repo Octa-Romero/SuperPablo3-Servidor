@@ -85,6 +85,12 @@ public class HiloServidor extends Thread {
                     } else if (mensajeParametrizado[1].equals("NOARRIBA"))
                     {
                         jugadores[indice].setSalto(false);
+                    } else if (mensajeParametrizado[1].equals("ATACA"))
+                    {
+                        jugadores[indice].setAtaca(true);
+                    } else if (mensajeParametrizado[1].equals("NOATACA"))
+                    {
+                        jugadores[indice].setAtaca(false);
                     }
                 }
             }

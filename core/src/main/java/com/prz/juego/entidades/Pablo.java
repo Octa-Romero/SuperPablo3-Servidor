@@ -14,8 +14,7 @@ public class Pablo extends Jugador {
 
     private float anchoAtaque = 100;
 	private float altoAtaque = 10;
-	private float direccion = 1; // 1 derecha, -1 izquierda
-	private float tiempoAtaque = 0;
+    private float tiempoAtaque = 0;
 	private float duracionAtaque = 0.3f;
 	private float tiempoCooldown = 0.5f;
 	private boolean cooldownAtaque = false;

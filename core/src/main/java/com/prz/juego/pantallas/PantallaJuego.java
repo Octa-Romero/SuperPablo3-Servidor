@@ -73,6 +73,7 @@ public class PantallaJuego implements Screen {
         if (!pausado) {
             nivel.update(delta, entrada);
             servidor.enviarPosicion(jugador);
+            servidor.enviarEstadoAtaque(jugador);
         }
 
         if (pausado) {

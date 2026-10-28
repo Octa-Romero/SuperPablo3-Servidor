@@ -13,6 +13,7 @@ public abstract class Jugador extends Entidad {
 	private final Texture TEXTURA_HUD;
 	protected Hud hud;
 	protected boolean atacando;
+    protected float direccion = 1;
     protected float respawnY = 1000;
 
 	protected Jugador(float x, float y, float ancho, float alto, int velocidadX, double vida, double danio, Texture textura, Texture TEXTURA_HUD) {
@@ -49,7 +50,7 @@ public abstract class Jugador extends Entidad {
 			x += velocidadX * delta;
 		}
 
-		if (entrada.ataca()) {
+		if (estadoRed.ataca()) {
 			atacar();
 		}
 
@@ -63,6 +64,10 @@ public abstract class Jugador extends Entidad {
 
 	public abstract void atacar();
 
+    public float getDireccion()
+    {
+        return this.direccion;
+    }
 
 	public void dibujar() {
 		if (spriteVisible && sprite != null) {

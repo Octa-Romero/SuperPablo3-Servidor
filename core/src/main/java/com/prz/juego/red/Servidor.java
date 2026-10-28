@@ -23,7 +23,15 @@ public class Servidor {
     public void enviarPosicion(Jugador jugador)
     {
         JugadorRed jugadorRed = hilo.getJugadores()[0];
-        String msj = "POS;" + jugador.getX() + ";" + jugador.getY();
+        String msj = "POS;" + jugador.getX() + ";" + jugador.getY() + ";" + jugador.getDireccion();
+
+        hilo.enviarMensaje(msj, jugadorRed.getIp(), jugadorRed.getPuerto());
+    }
+
+    public void enviarEstadoAtaque(Jugador jugador)
+    {
+        JugadorRed jugadorRed = hilo.getJugadores()[0];
+        String msj = "ATAQUE;" + jugador.estaAtacando();
 
         hilo.enviarMensaje(msj, jugadorRed.getIp(), jugadorRed.getPuerto());
     }
