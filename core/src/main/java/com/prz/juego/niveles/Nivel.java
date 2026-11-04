@@ -1,6 +1,7 @@
 package com.prz.juego.niveles;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -12,7 +13,6 @@ import com.prz.juego.entidades.*;
 import com.prz.juego.sistemas.Camara;
 import com.prz.juego.sistemas.Colisiones;
 import com.prz.juego.utilidades.Debug;
-import com.prz.juego.utilidades.Entrada;
 import com.prz.juego.utilidades.Musica;
 import com.prz.juego.utilidades.Render;
 
@@ -24,8 +24,11 @@ public class Nivel {
     private Jugador jugador;
     private Colisiones colision;
     private final ArrayList<Entidad> entidades = new ArrayList<>();
+    private final ArrayList<Enemigo> enemigosNuevos = new ArrayList<>();
+    private ArrayList<Integer> idEnemigosEliminados = new ArrayList<>();
     private ShapeRenderer shapeRenderer;
     private boolean gameOver = false;
+    private int idEnemigo = 1;
 
     public void cargar(String ruta, Jugador jugador) {
         camara = new Camara();
@@ -33,8 +36,8 @@ public class Nivel {
         this.jugador = jugador;
 
         entidades.add(jugador);
-        entidades.add(new Bicho1(2000, 300, jugador));
-        entidades.add(new Bicho1(2200, 300, jugador));
+        agregarEnemigo(new Bicho1(idEnemigo++, 2000, 300, jugador));
+        agregarEnemigo(new Bicho1(idEnemigo++,2200, 300, jugador));
 
         shapeRenderer = new ShapeRenderer();
 
@@ -112,7 +115,7 @@ public class Nivel {
         shapeRenderer.end();
     }
 
-    public void update(float delta, Entrada entrada) {
+    public void update(float delta) {
 
         // Actualizar entidades
         for (Entidad entidad : entidades) {
@@ -128,6 +131,8 @@ public class Nivel {
                 Enemigo enemigo = (Enemigo) entidad;
 
                 if (enemigo.estaMuerto()) {
+                    idEnemigosEliminados.add(enemigo.getId());
+
                     enemigo.dispose();
                     entidades.remove(i);
                 }
@@ -142,9 +147,9 @@ public class Nivel {
         );
 
         // Alternar hitboxes
-        if (entrada.aprietaF1()) {
-            Debug.cambiarHitboxes();
-        }
+        //if (entrada.aprietaF1()) {
+        //    Debug.cambiarHitboxes();
+        //}
 
         if (jugador.estaMuerto()) {
             gameOver = true;
@@ -189,4 +194,35 @@ public class Nivel {
     }
 
     public boolean isGameOver(){return this.gameOver;}
+
+    private void agregarEnemigo(Enemigo enemigo)
+    {
+        entidades.add(enemigo);
+        enemigosNuevos.add(enemigo);
+    }
+
+    public ArrayList<Enemigo> getEnemigosNuevos() {
+        ArrayList<Enemigo> nuevos = new ArrayList<>(enemigosNuevos);
+        enemigosNuevos.clear();
+        return nuevos;
+    }
+
+    public List<Enemigo> getEnemigosActivos()
+    {
+        ArrayList<Enemigo> enemigos = new ArrayList<>();
+        for(Entidad e : entidades)
+        {
+            if(e instanceof Enemigo)
+            {
+                enemigos.add((Enemigo) e);
+            }
+        }
+        return enemigos;
+    }
+
+    public ArrayList<Integer> getEnemigosEliminados() {
+        ArrayList<Integer> copia = new ArrayList<>(idEnemigosEliminados);
+        idEnemigosEliminados.clear();
+        return copia;
+    }
 }

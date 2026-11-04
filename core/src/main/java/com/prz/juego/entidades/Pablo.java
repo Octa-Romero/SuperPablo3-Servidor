@@ -37,15 +37,12 @@ public class Pablo extends Jugador {
 
 	@Override
 	public void update(float delta) {
-        JugadorRed estadoRed = getEstadoRed();
-		if (entrada != null) {
 			if (estadoRed.mueveDerecha()) {
 				direccion = 1;
 			}
 			if (estadoRed.mueveIzquierda()) {
 				direccion = -1;
 			}
-		}
 
 		super.update(delta);
 		actualizarOrientacionSprites();

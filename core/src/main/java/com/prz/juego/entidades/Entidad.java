@@ -18,8 +18,10 @@ public abstract class Entidad {
     protected float offsetSpriteXDerecha, offsetSpriteXIzquierda, offsetSpriteY;
     protected float xAnterior, yAnterior;
     protected int velocidadX;
+    protected int direccion = 1;
     protected float velocidadY = 0;
     protected final float GRAVEDAD = 400;
+    protected boolean atacando = false;
     protected boolean enSuelo = true;
     protected boolean chocoPared = false;
     protected Rectangle bounds;
@@ -478,6 +480,17 @@ public abstract class Entidad {
 
     public double getDanio() {
         return danio;
+    }
+
+
+    public int getDireccion()
+    {
+        return this.direccion;
+    }
+
+    public boolean estaAtacando()
+    {
+        return this.atacando;
     }
 
 

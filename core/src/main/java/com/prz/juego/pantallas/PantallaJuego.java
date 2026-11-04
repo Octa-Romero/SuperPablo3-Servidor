@@ -4,17 +4,19 @@ package com.prz.juego.pantallas;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
+import com.prz.juego.entidades.Enemigo;
 import com.prz.juego.entidades.Jugador;
 import com.prz.juego.entidades.Personajes;
 import com.prz.juego.hilos.JugadorRed;
 import com.prz.juego.principal.Navegable;
 import com.prz.juego.niveles.Nivel;
 import com.prz.juego.red.Servidor;
-import com.prz.juego.utilidades.Entrada;
 import com.prz.juego.utilidades.Global;
 import com.prz.juego.utilidades.Musica;
 import com.prz.juego.utilidades.Render;
 import com.prz.juego.sistemas.Hud;
+
+import java.util.ArrayList;
 
 public class PantallaJuego implements Screen {
 
@@ -22,14 +24,12 @@ public class PantallaJuego implements Screen {
     private final Navegable nav;
     private Jugador jugador;
     private final Nivel nivel;
-    private final Entrada entrada;
     private final MenuPausa menuPausa;
     private boolean pausado = false;
     private final Hud hud;
 
     public PantallaJuego(Navegable nav, Personajes personajeElegido, Servidor servidor) {
         this.nav = nav;
-        this.entrada = new Entrada();
         this.nivel = new Nivel();
         this.menuPausa = new MenuPausa(nav, this);
         this.servidor = servidor;
@@ -38,7 +38,6 @@ public class PantallaJuego implements Screen {
 
         JugadorRed jugadorRed = servidor.getJugadoresRed()[0];
 
-        jugador.setEntrada(entrada);
         jugador.setEstadoRed(jugadorRed);
 
         nivel.cargar("Niveles/Niveles/Level1.tmx", jugador);
@@ -51,7 +50,7 @@ public class PantallaJuego implements Screen {
         InputMultiplexer mux = new InputMultiplexer();
 
         mux.addProcessor(menuPausa.getStage());
-        mux.addProcessor(entrada);
+        //mux.addProcessor(entrada);
 
         Gdx.input.setInputProcessor(mux);
     }
@@ -61,25 +60,42 @@ public class PantallaJuego implements Screen {
         if(!Global.empieza) {return;}
         Render.limpiarPantalla();
 
-        if (entrada.aprietaEscape()) {
-            pausado = !pausado;
-            if (pausado) {
-                menuPausa.activar();
-            } else {
-                menuPausa.desactivar();
-            }
-        }
+        //if (entrada.aprietaEscape()) {
+        //    pausado = !pausado;
+        //    if (pausado) {
+        //        menuPausa.activar();
+        //    } else {
+        //        menuPausa.desactivar();
+        //    }
+        //}
 
         if (!pausado) {
-            nivel.update(delta, entrada);
+            nivel.update(delta);
             servidor.enviarPosicion(jugador);
             servidor.enviarEstadoAtaque(jugador);
+            servidor.enviarEstadoVida(jugador);
+
+            for(Enemigo e : nivel.getEnemigosNuevos())
+            {
+                servidor.enviarCreacionEnemigos(e.getId(), e.getTipo(), e.getX(), e.getY(), e.getVida());
+            }
+
+            for(Enemigo e : nivel.getEnemigosActivos())
+            {
+                servidor.enviarEstadoEnemigo(e.getId(), e.getX(), e.getY(), e.getDireccion(), e.estaAtacando(), e.getVida());
+            }
+
+            for(Integer id : nivel.getEnemigosEliminados())
+            {
+                servidor.enviarEliminacionEnemigo(id);
+            }
+
         }
 
         if (pausado) {
             Gdx.input.setInputProcessor(menuPausa.getStage());
         } else {
-            Gdx.input.setInputProcessor(entrada);
+            //Gdx.input.setInputProcessor(entrada);
         }
 
         nivel.renderMapa();

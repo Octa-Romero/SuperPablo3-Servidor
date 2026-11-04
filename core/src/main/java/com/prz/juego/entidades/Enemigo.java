@@ -11,27 +11,27 @@ import com.prz.juego.utilidades.Sonido;
 
 public abstract class Enemigo extends Entidad {
 
+    protected int id;
+    protected TipoEnemigo tipo;
 	protected float anchoAtaque = 100;
 	protected float altoAtaque = 10;
 	protected float velocidad;
 	protected float distanciaDeteccion = 500;
 	protected float distanciaAtaque = 15;
-	protected float direccion = 1; // 1 derecha, -1 izquierda
 	protected float tiempoPatrulla = 0;
 	protected boolean caminandoPatrulla = false;
 	protected float tiempoEstado = 0;
 	protected float tiempoAntesDeAtacar = 0.3f;
 	protected float tiempoEntreAtaques = 2f;
 	protected boolean esperandoAtaque = false;
-	protected boolean atacando = false;
 	protected boolean cooldownAtaque = false;
 	protected boolean yaDanio = false;
-	protected boolean muerto = false;
 	protected Jugador jugador;
 	protected Sprite spriteAtaque;
 
-	protected Enemigo( float x, float y, float ancho, float alto, int velocidadX, double vida, double danio, Jugador jugador, Texture textura, Texture texturaAtaque) {
+	protected Enemigo(int id, float x, float y, float ancho, float alto, int velocidadX, double vida, double danio, Jugador jugador, Texture textura, Texture texturaAtaque) {
 		super(x, y, ancho, alto, velocidadX, vida, danio, textura);
+        this.id = id;
 		this.jugador = jugador;
 		velocidad = velocidadX;
 		duracionInvencibilidad = 1f;
@@ -223,9 +223,6 @@ public abstract class Enemigo extends Entidad {
 		orientarSprite(spriteAtaque, direccion);
 	}
 
-	public boolean estaAtacando() {
-		return atacando;
-	}
 
 	@Override
 	public void dibujar() {
@@ -257,13 +254,19 @@ public abstract class Enemigo extends Entidad {
         }
     }
 
-	public float getDireccion() {
-		return direccion;
-	}
-
 	public Rectangle getBoundsAtaquePublico() {
 		return getBoundsAtaque();
 	}
+
+    public int getId()
+    {
+        return this.id;
+    }
+
+    public TipoEnemigo getTipo()
+    {
+        return this.tipo;
+    }
 
 	@Override
 	public void dispose() {

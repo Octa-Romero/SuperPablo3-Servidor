@@ -152,6 +152,7 @@ public class HiloServidor extends Thread {
         try {
             DatagramPacket dp = new DatagramPacket(data, data.length, ipDestino, puerto);
             socket.send(dp);
+            System.out.println("PAQUETE ENVIADO: " + msj);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
