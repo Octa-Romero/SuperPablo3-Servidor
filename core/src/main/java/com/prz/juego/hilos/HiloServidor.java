@@ -18,8 +18,7 @@ public class HiloServidor extends Thread {
     private JugadorRed[] jugadores = new JugadorRed[2];
     private String[] mensajeParametrizado;
 
-    public HiloServidor()
-    {
+    public HiloServidor() {
         try {
             socket = new DatagramSocket(9990);
         } catch (SocketException e) {
@@ -28,10 +27,8 @@ public class HiloServidor extends Thread {
     }
 
     @Override
-    public void run()
-    {
-        while(!fin)
-        {
+    public void run() {
+        while (!fin) {
             byte[] datos = new byte[1024];
             DatagramPacket dp = new DatagramPacket(datos, datos.length);
             try {
@@ -43,97 +40,128 @@ public class HiloServidor extends Thread {
         }
     }
 
-    private void procesarMensaje(DatagramPacket dp)
-    {
+    private void procesarMensaje(DatagramPacket dp) {
         String msj = new String(dp.getData()).trim();
-        //System.out.println("Mensaje recibido: " + msj);
 
-        if(cantClientes < jugadores.length) {
-            if(msj.equals("Conectar"))
-            {
-                jugadores[cantClientes] = new JugadorRed(dp.getAddress(), dp.getPort());
-                enviarMensaje("Conexion recibida", jugadores[cantClientes].getIp(), jugadores[cantClientes].getPuerto());
-                cantClientes++;
-                if(cantClientes == 2)
-                {
-                    for(int i = 0 ; i < cantClientes ; i++)
-                    {
-                        enviarMensaje("Conexion establecida", jugadores[i].getIp(), jugadores[i].getPuerto());
-                    }
-                }
-            }
-        } else {
-            int indice = buscarJugador(dp.getAddress(), dp.getPort());
-            if(indice != -1)
-            {
-                mensajeParametrizado = msj.split(";");
+        int indice = buscarJugador(dp.getAddress(), dp.getPort());
 
-                if(mensajeParametrizado[0].equals("INPUT"))
-                {
-                    if (mensajeParametrizado[1].equals("IZQUIERDA")) {
-                        jugadores[indice].setMovimiento(true, jugadores[indice].mueveDerecha());
-                    } else if (mensajeParametrizado[1].equals("NOIZQUIERDA")) {
-                        jugadores[indice].setMovimiento(false, jugadores[indice].mueveDerecha());
-                    } else if (mensajeParametrizado[1].equals("DERECHA")) {
-                        jugadores[indice].setMovimiento(jugadores[indice].mueveIzquierda(), true);
-                    } else if (mensajeParametrizado[1].equals("NODERECHA")) {
-                        jugadores[indice].setMovimiento(jugadores[indice].mueveIzquierda(), false);
-                    } else if (mensajeParametrizado[1].equals("ARRIBA"))
-                    {
-                        jugadores[indice].setSalto(true);
-                    } else if (mensajeParametrizado[1].equals("NOARRIBA"))
-                    {
-                        jugadores[indice].setSalto(false);
-                    } else if (mensajeParametrizado[1].equals("ATACA"))
-                    {
-                        jugadores[indice].setAtaca(true);
-                    } else if (mensajeParametrizado[1].equals("NOATACA"))
-                    {
-                        jugadores[indice].setAtaca(false);
-                    }
-                }
-            }
+        if (msj.equals("Conectar")) {
+            procesarConexion(dp, indice);
+            return;
         }
 
-        if (cantClientes == 2) {
-            if (msj.equals("PABLO") || msj.equals("WALTER")) {
+        if (indice == -1) {
+            return;
+        }
 
-                int indice = buscarJugador(dp.getAddress(), dp.getPort());
+        if (msj.startsWith("INPUT;")) {
+            procesarInput(msj, indice);
+            return;
+        }
 
-                if (indice != -1) {
-                    jugadores[indice].setPersonaje(msj);
+        if (msj.equals("PABLO") || msj.equals("WALTER")) {
+            procesarSeleccionPersonaje(msj, indice);
+        }
+    }
 
-                    System.out.println(
-                        "Jugador " + indice + " eligió " + msj
-                    );
-                }
+    private void procesarConexion(DatagramPacket dp, int indice) {
 
-                if (jugadores[0].getPersonaje() != null && jugadores[1].getPersonaje() != null) {
-                    System.out.println("Ambos eligieron. Enviando inicio.");
+        if (indice != -1) {
+            enviarMensaje("Conexion recibida", dp.getAddress(), dp.getPort());
+            return;
+        }
 
-                    for (int i = 0; i < cantClientes; i++) {
-                        enviarMensaje(
-                            "Empieza juego",
-                            jugadores[i].getIp(),
-                            jugadores[i].getPuerto()
-                        );
-                    }
+        if (cantClientes >= jugadores.length) {
+            return;
+        }
 
-                    for (int i = 0; i < cantClientes; i++) {
-                        int indiceRemoto = 1 - i;
-                        enviarMensaje(
-                            jugadores[indiceRemoto].getPersonaje(),
-                            jugadores[i].getIp(),
-                            jugadores[i].getPuerto()
-                        );
-                    }
-                    Global.empieza = true;
-                }
+        jugadores[cantClientes] = new JugadorRed(dp.getAddress(), dp.getPort());
+
+        enviarMensaje("Conexion recibida",
+            dp.getAddress(), dp.getPort());
+
+        cantClientes++;
+
+        if (cantClientes == jugadores.length) {
+            for (int i = 0; i < cantClientes; i++) {
+                enviarMensaje("Conexion establecida",
+                    jugadores[i].getIp(),
+                    jugadores[i].getPuerto());
             }
         }
     }
 
-    private int buscarJugador(InetAddress ip, int puerto) {
+    private void procesarInput(String msj, int indice) {
+        mensajeParametrizado = msj.split(";");
+
+        if (mensajeParametrizado[0].equals("INPUT")) {
+            if (mensajeParametrizado[1].equals("IZQUIERDA")) {
+                jugadores[indice].setMovimiento(true, jugadores[indice].mueveDerecha());
+            } else if (mensajeParametrizado[1].equals("NOIZQUIERDA")) {
+                jugadores[indice].setMovimiento(false, jugadores[indice].mueveDerecha());
+            } else if (mensajeParametrizado[1].equals("DERECHA")) {
+                jugadores[indice].setMovimiento(jugadores[indice].mueveIzquierda(), true);
+            } else if (mensajeParametrizado[1].equals("NODERECHA")) {
+                jugadores[indice].setMovimiento(jugadores[indice].mueveIzquierda(), false);
+            } else if (mensajeParametrizado[1].equals("ARRIBA")) {
+                jugadores[indice].setSalto(true);
+            } else if (mensajeParametrizado[1].equals("NOARRIBA")) {
+                jugadores[indice].setSalto(false);
+            } else if (mensajeParametrizado[1].equals("ATACA")) {
+                jugadores[indice].setAtaca(true);
+            } else if (mensajeParametrizado[1].equals("NOATACA")) {
+                jugadores[indice].setAtaca(false);
+            }
+        }
+    }
+
+    private void procesarSeleccionPersonaje(String msj, int indice) {
+
+        if (cantClientes != jugadores.length || Global.empieza) {
+            return;
+        }
+
+        int indiceRemoto = 1 - indice;
+
+        String personajeRemoto = jugadores[indiceRemoto].getPersonaje();
+
+        if (msj.equals(personajeRemoto)) {
+            return;
+        }
+
+        jugadores[indice].setPersonaje(msj);
+
+        System.out.println("Jugador " + indice + " eligió " + msj);
+
+        if (jugadores[0].getPersonaje() == null ||
+            jugadores[1].getPersonaje() == null) {
+            return;
+        }
+
+        System.out.println("Ambos eligieron. Enviando inicio.");
+
+        for (int i = 0; i < cantClientes; i++) {
+            enviarMensaje(
+                "Empieza juego",
+                jugadores[i].getIp(),
+                jugadores[i].getPuerto()
+            );
+        }
+
+        for (int i = 0; i < cantClientes; i++) {
+            int remoto = 1 - i;
+
+            enviarMensaje(
+                jugadores[remoto].getPersonaje(),
+                jugadores[i].getIp(),
+                jugadores[i].getPuerto()
+            );
+        }
+
+        Global.empieza = true;
+    }
+
+    private int buscarJugador (InetAddress ip,int puerto){
         for (int i = 0; i < cantClientes; i++) {
             if (jugadores[i].getIp().equals(ip) &&
                 jugadores[i].getPuerto() == puerto) {
@@ -145,7 +173,7 @@ public class HiloServidor extends Thread {
     }
 
 
-    public void enviarMensaje(String msj, InetAddress ipDestino, int puerto)
+    public void enviarMensaje (String msj, InetAddress ipDestino,int puerto)
     {
         byte[] data = msj.getBytes();
         try {
@@ -157,11 +185,21 @@ public class HiloServidor extends Thread {
         }
     }
 
-    public JugadorRed[] getJugadores() {
+    public void enviarMensajeATodos(String mensaje) {
+        for (int i = 0; i < cantClientes; i++) {
+            enviarMensaje(
+                mensaje,
+                jugadores[i].getIp(),
+                jugadores[i].getPuerto()
+            );
+        }
+    }
+
+    public JugadorRed[] getJugadores () {
         return jugadores;
     }
 
-    public void cerrar() {
+    public void cerrar () {
         fin = true;
 
         if (socket != null && !socket.isClosed()) {
@@ -169,3 +207,4 @@ public class HiloServidor extends Thread {
         }
     }
 }
+
