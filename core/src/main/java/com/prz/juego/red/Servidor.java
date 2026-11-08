@@ -67,6 +67,30 @@ public class Servidor {
         hilo.enviarMensaje(msj, jugadorRed.getIp(), jugadorRed.getPuerto());
     }
 
+    public void enviarCreacionOrbes(int id, float x, float y, int direccion)
+    {
+        JugadorRed jugadorRed = hilo.getJugadores()[0];
+        String msj = "CREAR_ORBE;" + id + ";" + x + ";" + y + ";" + direccion;
+
+        hilo.enviarMensaje(msj, jugadorRed.getIp(), jugadorRed.getPuerto());
+    }
+
+    public void enviarEstadoOrbes(int id, float x, float y)
+    {
+        JugadorRed jugadorRed = hilo.getJugadores()[0];
+        String msj = "ESTADO_ORBE;" + id + ";" + x + ";" + y ;
+
+        hilo.enviarMensaje(msj, jugadorRed.getIp(), jugadorRed.getPuerto());
+    }
+
+    public void enviarEliminacionOrbes(int id)
+    {
+        JugadorRed jugadorRed = hilo.getJugadores()[0];
+        String msj = "ELIMINAR_ORBE;" + id;
+
+        hilo.enviarMensaje(msj, jugadorRed.getIp(), jugadorRed.getPuerto());
+    }
+
     public void cerrar() {
         if (hilo != null) {
             hilo.cerrar();

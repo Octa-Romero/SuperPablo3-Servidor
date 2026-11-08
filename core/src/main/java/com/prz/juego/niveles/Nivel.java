@@ -207,7 +207,7 @@ public class Nivel {
         return nuevos;
     }
 
-    public List<Enemigo> getEnemigosActivos()
+    public ArrayList<Enemigo> getEnemigosActivos()
     {
         ArrayList<Enemigo> enemigos = new ArrayList<>();
         for(Entidad e : entidades)
@@ -224,5 +224,32 @@ public class Nivel {
         ArrayList<Integer> copia = new ArrayList<>(idEnemigosEliminados);
         idEnemigosEliminados.clear();
         return copia;
+    }
+
+    public ArrayList<OrbeMagica> getOrbesNuevos()
+    {
+        if(jugador instanceof Walter)
+        {
+            return ((Walter) jugador).getOrbesNuevos();
+        }
+        return new ArrayList<>();
+    }
+
+    public ArrayList<OrbeMagica> getOrbesActivos()
+    {
+        if(jugador instanceof Walter)
+        {
+            return ((Walter) jugador).getOrbesActivos();
+        }
+        return new ArrayList<>();
+    }
+
+    public ArrayList<Integer> getOrbesEliminados()
+    {
+        if(jugador instanceof Walter)
+        {
+            return ((Walter) jugador).getOrbesEliminados();
+        }
+        return new ArrayList<>();
     }
 }

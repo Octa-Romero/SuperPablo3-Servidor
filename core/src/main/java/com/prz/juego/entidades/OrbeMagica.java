@@ -16,9 +16,10 @@ public class OrbeMagica {
     private static final float VELOCIDAD = 400f;
     private static final float DISTANCIA_MAXIMA = 400f;
     private static final float RADIO = 12f;
+    private int id;
     private float x;
     private float y;
-    private final float DIRECCION;
+    private final int DIRECCION;
     private float distanciaRecorrida;
     private final Sprite SPRITE;
     private final Circle BOUNDS;
@@ -27,7 +28,7 @@ public class OrbeMagica {
     private final Colisiones colision;
     private final ArrayList<Entidad> entidades;
 
-    public OrbeMagica(float x, float y, float DIRECCION, Walter walter, Colisiones colision, ArrayList<Entidad> entidades) {
+    public OrbeMagica(int id, float x, float y, int DIRECCION, Walter walter, Colisiones colision, ArrayList<Entidad> entidades) {
         this.x = x;
         this.y = y;
         this.DIRECCION = DIRECCION;
@@ -125,6 +126,25 @@ public class OrbeMagica {
 
     public boolean estaActiva() {
         return activa;
+    }
+
+    public int getId()
+    {
+        return this.id;
+    }
+
+    public float getX()
+    {
+        return this.x;
+    }
+
+    public float getY() {
+        return this.y;
+    }
+
+    public int getDireccion()
+    {
+        return this.DIRECCION;
     }
 
     public void dispose() {

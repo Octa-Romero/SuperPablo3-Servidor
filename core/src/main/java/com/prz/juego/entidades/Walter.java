@@ -13,7 +13,10 @@ public class Walter extends Jugador {
     private static final float COOLDOWN_ATAQUE = 0.8f;
     private float tiempoCooldown;
     private boolean cooldownAtaque;
+    private int idOrbes = 1;
+    private final ArrayList<OrbeMagica> ORBES_NUEVOS = new ArrayList<>();
     private final ArrayList<OrbeMagica> ORBES = new ArrayList<>();
+    private final ArrayList<Integer> ID_ORBES_ELIMINADOS = new ArrayList<>();
     private ArrayList<Entidad> entidades;
     private Colisiones colision;
 
@@ -55,6 +58,7 @@ public class Walter extends Jugador {
             OrbeMagica orbe = ORBES.get(i);
             orbe.update(delta);
             if (!orbe.estaActiva()) {
+                ID_ORBES_ELIMINADOS.add(orbe.getId());
                 orbe.dispose();
                 ORBES.remove(i);
             }
@@ -74,7 +78,7 @@ public class Walter extends Jugador {
         if (entidades == null || colision == null) {
             return;
         }
-        float direccion = mirandoDerecha ? 1f : -1f;
+        int direccion = mirandoDerecha ? 1 : -1;
         float posicionX;
         if (direccion > 0) {
             posicionX = x + ancho + 50f;
@@ -84,7 +88,13 @@ public class Walter extends Jugador {
         float posicionY = y + alto / 2f - 10f;
 
         Sonido.BOLA_FUEGO.sonar();
-        ORBES.add(new OrbeMagica(posicionX, posicionY, direccion, this, colision, entidades));
+        agregarOrbes(new OrbeMagica(idOrbes++, posicionX, posicionY, direccion, this, colision, entidades));
+    }
+
+    private void agregarOrbes(OrbeMagica orbe)
+    {
+        ORBES.add(orbe);
+        ORBES_NUEVOS.add(orbe);
     }
 
     public void dibujarOrbes() {
@@ -97,6 +107,23 @@ public class Walter extends Jugador {
         for (OrbeMagica orbe : ORBES) {
             orbe.dibujarHitbox(shapeRenderer);
         }
+    }
+
+    public ArrayList<OrbeMagica> getOrbesNuevos() {
+        ArrayList<OrbeMagica> copia = new ArrayList<>(ORBES_NUEVOS);
+        ORBES_NUEVOS.clear();
+        return copia;
+    }
+
+    public ArrayList<OrbeMagica> getOrbesActivos()
+    {
+        return new ArrayList<>(ORBES);
+    }
+
+    public ArrayList<Integer> getOrbesEliminados() {
+        ArrayList<Integer> copia = new ArrayList<>(ID_ORBES_ELIMINADOS);
+        ID_ORBES_ELIMINADOS.clear();
+        return copia;
     }
 
     @Override

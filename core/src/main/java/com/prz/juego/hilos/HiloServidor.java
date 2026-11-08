@@ -17,7 +17,6 @@ public class HiloServidor extends Thread {
     private int cantClientes = 0;
     private JugadorRed[] jugadores = new JugadorRed[2];
     private String[] mensajeParametrizado;
-    private boolean izquierda, derecha;
 
     public HiloServidor()
     {

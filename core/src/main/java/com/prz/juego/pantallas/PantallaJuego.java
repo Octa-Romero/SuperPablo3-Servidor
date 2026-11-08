@@ -6,6 +6,7 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.prz.juego.entidades.Enemigo;
 import com.prz.juego.entidades.Jugador;
+import com.prz.juego.entidades.OrbeMagica;
 import com.prz.juego.entidades.Personajes;
 import com.prz.juego.hilos.JugadorRed;
 import com.prz.juego.principal.Navegable;
@@ -88,6 +89,21 @@ public class PantallaJuego implements Screen {
             for(Integer id : nivel.getEnemigosEliminados())
             {
                 servidor.enviarEliminacionEnemigo(id);
+            }
+
+            for(OrbeMagica o : nivel.getOrbesNuevos())
+            {
+                servidor.enviarCreacionOrbes(o.getId(), o.getX(), o.getY(), o.getDireccion());
+            }
+
+            for(OrbeMagica o : nivel.getOrbesActivos())
+            {
+                servidor.enviarEstadoOrbes(o.getId(), o.getX(), o.getY());
+            }
+
+            for(Integer id : nivel.getOrbesEliminados())
+            {
+                servidor.enviarEliminacionOrbes(id);
             }
 
         }
