@@ -23,72 +23,60 @@ public class Servidor {
 
     public void enviarPosicion(Jugador jugador)
     {
-        JugadorRed jugadorRed = hilo.getJugadores()[0];
-        String msj = "POS;" + jugador.getX() + ";" + jugador.getY() + ";" + jugador.getDireccion();
+        String msj = "POS;" + jugador.getPersonaje().name() + ";" + jugador.getX() + ";" + jugador.getY() + ";" + jugador.getDireccion();
 
-        hilo.enviarMensaje(msj, jugadorRed.getIp(), jugadorRed.getPuerto());
+        hilo.enviarMensajeATodos(msj);
     }
 
     public void enviarEstadoAtaque(Jugador jugador)
     {
-        JugadorRed jugadorRed = hilo.getJugadores()[0];
-        String msj = "ATAQUE;" + jugador.estaAtacando();
+        String msj = "ATAQUE;" + jugador.getPersonaje().name() + ";" + jugador.estaAtacando();
 
-        hilo.enviarMensaje(msj, jugadorRed.getIp(), jugadorRed.getPuerto());
+        hilo.enviarMensajeATodos(msj);
     }
 
     public void enviarEstadoVida(Jugador jugador)
     {
-        JugadorRed jugadorRed = hilo.getJugadores()[0];
-        String msj = "VIDA;" + jugador.getVida();
+        String msj = "VIDA;" + jugador.getPersonaje().name() + ";" + jugador.getVida();
 
-        hilo.enviarMensaje(msj, jugadorRed.getIp(), jugadorRed.getPuerto());
+        hilo.enviarMensajeATodos(msj);
     }
 
     public void enviarCreacionEnemigos(int id, TipoEnemigo tipo, float x, float y, double vida)
     {
-        JugadorRed jugadorRed = hilo.getJugadores()[0];
         String msj = "CREAR_ENEMIGO;" + id + ";" + tipo + ";" + x + ";" + y + ";" + vida;
 
-        hilo.enviarMensaje(msj, jugadorRed.getIp(), jugadorRed.getPuerto());
+        hilo.enviarMensajeATodos(msj);
     }
 
     public void enviarEstadoEnemigo(int id, float x, float y, int direccion, boolean estaAtacando, double vida)
     {
-        JugadorRed jugadorRed = hilo.getJugadores()[0];
         String msj = "ESTADO_ENEMIGO;" + id + ";" + x + ";" + y + ";" + direccion + ";" + estaAtacando + ";" + vida;
-        hilo.enviarMensaje(msj, jugadorRed.getIp(), jugadorRed.getPuerto());
+        hilo.enviarMensajeATodos(msj);
     }
 
     public void enviarEliminacionEnemigo(int id)
     {
-        JugadorRed jugadorRed = hilo.getJugadores()[0];
         String msj = "ELIMINAR_ENEMIGO;" + id;
-        hilo.enviarMensaje(msj, jugadorRed.getIp(), jugadorRed.getPuerto());
+        hilo.enviarMensajeATodos(msj);
     }
 
     public void enviarCreacionOrbes(int id, float x, float y, int direccion)
     {
-        JugadorRed jugadorRed = hilo.getJugadores()[0];
         String msj = "CREAR_ORBE;" + id + ";" + x + ";" + y + ";" + direccion;
-
-        hilo.enviarMensaje(msj, jugadorRed.getIp(), jugadorRed.getPuerto());
+        hilo.enviarMensajeATodos(msj);
     }
 
     public void enviarEstadoOrbes(int id, float x, float y)
     {
-        JugadorRed jugadorRed = hilo.getJugadores()[0];
         String msj = "ESTADO_ORBE;" + id + ";" + x + ";" + y ;
-
-        hilo.enviarMensaje(msj, jugadorRed.getIp(), jugadorRed.getPuerto());
+        hilo.enviarMensajeATodos(msj);
     }
 
     public void enviarEliminacionOrbes(int id)
     {
-        JugadorRed jugadorRed = hilo.getJugadores()[0];
         String msj = "ELIMINAR_ORBE;" + id;
-
-        hilo.enviarMensaje(msj, jugadorRed.getIp(), jugadorRed.getPuerto());
+        hilo.enviarMensajeATodos(msj);
     }
 
     public void cerrar() {

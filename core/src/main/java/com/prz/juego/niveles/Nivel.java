@@ -21,7 +21,9 @@ public class Nivel {
     private Camara camara;
     private TiledMap mapa;
     private OrthogonalTiledMapRenderer mapRenderer;
-    private Jugador jugador;
+    private Jugador[] jugadores;
+    private Pablo pablo;
+    private Walter walter;
     private Colisiones colision;
     private final ArrayList<Entidad> entidades = new ArrayList<>();
     private final ArrayList<Enemigo> enemigosNuevos = new ArrayList<>();
@@ -30,14 +32,23 @@ public class Nivel {
     private boolean gameOver = false;
     private int idEnemigo = 1;
 
-    public void cargar(String ruta, Jugador jugador) {
+    public void cargar(String ruta, Jugador[] jugadores) {
         camara = new Camara();
 
-        this.jugador = jugador;
+        this.jugadores = jugadores;
 
-        entidades.add(jugador);
-        agregarEnemigo(new Bicho1(idEnemigo++, 2000, 300, jugador));
-        agregarEnemigo(new Bicho1(idEnemigo++,2200, 300, jugador));
+        for (Jugador jugador : jugadores) {
+            entidades.add(jugador);
+
+            if (jugador instanceof Pablo p) {
+                pablo = p;
+            } else if (jugador instanceof Walter w) {
+                walter = w;
+            }
+        }
+
+        agregarEnemigo(new Bicho1(idEnemigo++, 2000, 300, jugadores[0]));
+        agregarEnemigo(new Bicho1(idEnemigo++, 2200, 300, jugadores[0]));
 
         shapeRenderer = new ShapeRenderer();
 
@@ -46,11 +57,9 @@ public class Nivel {
 
         colision = new Colisiones(mapa);
 
-        if(jugador instanceof Pablo){
-            ((Pablo) jugador).setEntidades(entidades);
-        } else {
-            ((Walter) jugador).configurarAtaque(entidades, colision);
-        }
+        pablo.setEntidades(entidades);
+
+        walter.configurarAtaque(entidades, colision);
 
         MapProperties props = mapa.getProperties();
 
@@ -85,13 +94,8 @@ public class Nivel {
             }
         }
 
-        if (jugador instanceof Pablo) {
-            ((Pablo) jugador).dibujarAtaque();
-        }
-
-        if (jugador instanceof Walter) {
-            ((Walter) jugador).dibujarOrbes();
-        }
+        pablo.dibujarAtaque();
+        walter.dibujarOrbes();
     }
 
     public void renderDebug() {
@@ -108,9 +112,7 @@ public class Nivel {
             entidad.dibujarHitbox(shapeRenderer);
         }
 
-        if (jugador instanceof Walter) {
-            ((Walter) jugador).dibujarOrbesHitbox(shapeRenderer);
-        }
+        walter.dibujarOrbesHitbox(shapeRenderer);
 
         shapeRenderer.end();
     }
@@ -141,8 +143,8 @@ public class Nivel {
 
         // Cámara
         camara.seguirPersonaje(
-            jugador.getX() + jugador.getAncho() / 2f,
-            jugador.getY() + jugador.getAlto() / 2f,
+            jugadores[0].getX() + jugadores[0].getAncho() / 2f,
+            jugadores[0].getY() + jugadores[0].getAlto() / 2f,
             delta
         );
 
@@ -151,7 +153,7 @@ public class Nivel {
         //    Debug.cambiarHitboxes();
         //}
 
-        if (jugador.estaMuerto()) {
+        if (jugadores[0].estaMuerto() && jugadores[1].estaMuerto()) {
             gameOver = true;
         }
 
@@ -226,30 +228,15 @@ public class Nivel {
         return copia;
     }
 
-    public ArrayList<OrbeMagica> getOrbesNuevos()
-    {
-        if(jugador instanceof Walter)
-        {
-            return ((Walter) jugador).getOrbesNuevos();
-        }
-        return new ArrayList<>();
+    public ArrayList<OrbeMagica> getOrbesNuevos() {
+        return walter.getOrbesNuevos();
     }
 
-    public ArrayList<OrbeMagica> getOrbesActivos()
-    {
-        if(jugador instanceof Walter)
-        {
-            return ((Walter) jugador).getOrbesActivos();
-        }
-        return new ArrayList<>();
+    public ArrayList<OrbeMagica> getOrbesActivos() {
+        return walter.getOrbesActivos();
     }
 
-    public ArrayList<Integer> getOrbesEliminados()
-    {
-        if(jugador instanceof Walter)
-        {
-            return ((Walter) jugador).getOrbesEliminados();
-        }
-        return new ArrayList<>();
+    public ArrayList<Integer> getOrbesEliminados() {
+        return walter.getOrbesEliminados();
     }
 }

@@ -109,6 +109,11 @@ public class Walter extends Jugador {
         }
     }
 
+    @Override
+    public Personajes getPersonaje() {
+        return Personajes.WALTER;
+    }
+
     public ArrayList<OrbeMagica> getOrbesNuevos() {
         ArrayList<OrbeMagica> copia = new ArrayList<>(ORBES_NUEVOS);
         ORBES_NUEVOS.clear();

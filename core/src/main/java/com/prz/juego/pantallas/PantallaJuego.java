@@ -23,7 +23,7 @@ public class PantallaJuego implements Screen {
 
     private Servidor servidor;
     private final Navegable nav;
-    private Jugador jugador;
+    private Jugador[] jugadores = new Jugador[2];
     private final Nivel nivel;
     private final MenuPausa menuPausa;
     private boolean pausado = false;
@@ -35,15 +35,20 @@ public class PantallaJuego implements Screen {
         this.menuPausa = new MenuPausa(nav, this);
         this.servidor = servidor;
 
-        jugador = personajeElegido.crear(50, 150);
+        JugadorRed[] jugadoresRed = servidor.getJugadoresRed();
 
-        JugadorRed jugadorRed = servidor.getJugadoresRed()[0];
+        for (int i = 0; i < jugadores.length; i++) {
+            JugadorRed estado = jugadoresRed[i];
 
-        jugador.setEstadoRed(jugadorRed);
+            Personajes personaje = Personajes.valueOf(estado.getPersonaje());
 
-        nivel.cargar("Niveles/Niveles/Level1.tmx", jugador);
+            jugadores[i] = personaje.crear(50 + i * 100, 150);
+            jugadores[i].setEstadoRed(estado);
+        }
 
-        hud = new Hud(jugador, Render.batch);
+        nivel.cargar("Niveles/Niveles/Level1.tmx", jugadores);
+
+        hud = new Hud(jugadores[0], Render.batch);
     }
 
     @Override
@@ -72,9 +77,12 @@ public class PantallaJuego implements Screen {
 
         if (!pausado) {
             nivel.update(delta);
-            servidor.enviarPosicion(jugador);
-            servidor.enviarEstadoAtaque(jugador);
-            servidor.enviarEstadoVida(jugador);
+
+            for(Jugador jugador : jugadores) {
+                servidor.enviarPosicion(jugador);
+                servidor.enviarEstadoAtaque(jugador);
+                servidor.enviarEstadoVida(jugador);
+            }
 
             for(Enemigo e : nivel.getEnemigosNuevos())
             {

@@ -56,6 +56,8 @@ public abstract class Jugador extends Entidad {
 
 	public abstract void atacar();
 
+    public abstract Personajes getPersonaje();
+
 	public void dibujar() {
 		if (spriteVisible && sprite != null) {
 			sprite.draw(Render.batch);

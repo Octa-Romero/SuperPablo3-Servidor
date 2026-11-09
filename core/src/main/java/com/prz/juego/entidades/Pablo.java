@@ -65,7 +65,12 @@ public class Pablo extends Jugador {
 		}
 	}
 
-	private void actualizarAtaque(float delta) {
+    @Override
+    public Personajes getPersonaje() {
+        return Personajes.PABLO;
+    }
+
+    private void actualizarAtaque(float delta) {
 		if (atacando) {
 			tiempoAtaque += delta;
 			if (!yaDanio) {
