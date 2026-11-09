@@ -4,32 +4,49 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.prz.juego.principal.Navegable;
+import com.prz.juego.recursos.Imagen;
 import com.prz.juego.utilidades.Config;
+import com.prz.juego.utilidades.FuenteJuego;
 import com.prz.juego.utilidades.Render;
 
 public class ComoJugar implements Screen {
 
-    private final Navegable nav;
+    private Imagen fondo;
+    private final Navegable NAV;
     private Stage stage;
     private BitmapFont font;
 
-    public ComoJugar(Navegable nav) {
-        this.nav = nav;
+    public ComoJugar(Navegable NAV) {
+        this.NAV = NAV;
     }
 
     @Override
     public void show() {
         inicializarStage();
+        inicializarFondo();
         inicializarFuentes();
         crearInterfaz();
 
         Gdx.input.setInputProcessor(stage);
+    }
+
+    private void inicializarFondo() {
+        fondo = new Imagen("Menu/fondoComoJugar.png");
+        actualizarFondo();
+    }
+
+    private void actualizarFondo() {
+        float w = stage.getViewport().getWorldWidth();
+        float h = stage.getViewport().getWorldHeight();
+
+        fondo.setSize(w, h);
+        fondo.setPosition(0, 0);
     }
 
     private void inicializarStage() {
@@ -37,7 +54,7 @@ public class ComoJugar implements Screen {
     }
 
     private void inicializarFuentes() {
-        font = new BitmapFont();
+        font = FuenteJuego.generar(32);
     }
 
     private void crearInterfaz() {
@@ -48,32 +65,31 @@ public class ComoJugar implements Screen {
 
         table.defaults().pad(6);
 
-        Label titulo = new Label("CÓMO JUGAR", new Label.LabelStyle(font, Color.WHITE));
+        Label titulo = new Label("Cómo jugar", new Label.LabelStyle(font, Color.WHITE));
         titulo.setFontScale(1.6f);
 
-        Label separador1 = new Label("---------------------------", new Label.LabelStyle(font, Color.WHITE));
-
-        Label movTitulo = new Label("MOVIMIENTO", new Label.LabelStyle(font, Color.WHITE));
+        Label movTitulo = new Label("Movimiento", new Label.LabelStyle(font, Color.WHITE));
         movTitulo.setFontScale(1.2f);
 
-        Label mov = new Label("A/D o Flecha Izquierda/Flecha Derecha", new Label.LabelStyle(font, Color.WHITE));
+        Label mov =
+                new Label(
+                        "A/D o Flecha Izquierda/Flecha Derecha",
+                        new Label.LabelStyle(font, Color.WHITE));
 
-        Label saltoTitulo = new Label("SALTO", new Label.LabelStyle(font, Color.WHITE));
+        Label saltoTitulo = new Label("Salto", new Label.LabelStyle(font, Color.WHITE));
         saltoTitulo.setFontScale(1.2f);
 
         Label salto = new Label("W, Z o Flecha Arriba", new Label.LabelStyle(font, Color.WHITE));
 
-        Label ataqueTitulo = new Label("ATAQUE", new Label.LabelStyle(font, Color.WHITE));
+        Label ataqueTitulo = new Label("Ataque", new Label.LabelStyle(font, Color.WHITE));
         ataqueTitulo.setFontScale(1.2f);
 
         Label ataque = new Label("X, J o Espacio", new Label.LabelStyle(font, Color.WHITE));
 
-        Label pausaTitulo = new Label("PAUSA", new Label.LabelStyle(font, Color.WHITE));
+        Label pausaTitulo = new Label("Pausa", new Label.LabelStyle(font, Color.WHITE));
         pausaTitulo.setFontScale(1.2f);
 
         Label pausa = new Label("Esc", new Label.LabelStyle(font, Color.WHITE));
-
-        Label separador2 = new Label("---------------------------", new Label.LabelStyle(font, Color.WHITE));
 
         TextButton.TextButtonStyle style = new TextButton.TextButtonStyle();
         style.font = font;
@@ -83,15 +99,15 @@ public class ComoJugar implements Screen {
 
         TextButton volver = new TextButton("VOLVER", style);
 
-        volver.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                nav.cambiarPantalla(new PantallaMenu(nav));
-            }
-        });
+        volver.addListener(
+                new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        NAV.cambiarPantalla(new PantallaMenu(NAV));
+                    }
+                });
 
         table.add(titulo).padBottom(10).row();
-        table.add(separador1).padBottom(20).row();
 
         table.add(movTitulo).padTop(10).row();
         table.add(mov).padBottom(10).row();
@@ -105,8 +121,6 @@ public class ComoJugar implements Screen {
         table.add(pausaTitulo).row();
         table.add(pausa).padBottom(20).row();
 
-        table.add(separador2).padBottom(20).row();
-
         table.add(volver).width(250).height(50);
 
         stage.addActor(table);
@@ -115,6 +129,12 @@ public class ComoJugar implements Screen {
     @Override
     public void render(float delta) {
         Render.limpiarPantalla();
+
+        Render.begin(stage.getCamera());
+
+        fondo.dibujar(Render.batch);
+
+        Render.end();
 
         stage.act(delta);
         stage.draw();
@@ -125,9 +145,11 @@ public class ComoJugar implements Screen {
         stage.getViewport().update(width, height, true);
     }
 
-    @Override public void pause() {}
+    @Override
+    public void pause() {}
 
-    @Override public void resume() {}
+    @Override
+    public void resume() {}
 
     @Override
     public void hide() {

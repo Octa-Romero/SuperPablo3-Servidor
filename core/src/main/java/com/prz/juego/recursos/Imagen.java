@@ -1,45 +1,62 @@
 package com.prz.juego.recursos;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 
-public class Imagen {
+public class Imagen extends Image {
 
-    private Texture t;
-    private Sprite s;
+    private static final float GROSOR_CONTORNO = 2f;
+    private boolean contorno;
 
     public Imagen(String ruta) {
-        t = GestorRecursos.obtenerTextura(ruta);
-        s = new Sprite(t);
+        this(GestorRecursos.obtenerTextura(ruta), false);
     }
 
-    public void setPosition(float x, float y)
-    {
-        s.setPosition(x, y);
+    public Imagen(Texture textura) {
+        this(textura, false);
     }
 
-    public void dibujar(SpriteBatch batch)
-    {
-        s.draw(batch);
+    public Imagen(Texture textura, boolean contorno) {
+        super(textura);
+        this.contorno = contorno;
     }
 
-    public void setSize(float ancho, float alto)
-    {
-        s.setSize(ancho, alto);
+    public Imagen(Drawable drawable, boolean contorno) {
+        super(drawable);
+        this.contorno = contorno;
+    }
+
+    public void setContorno(boolean contorno) {
+        this.contorno = contorno;
+    }
+
+    @Override
+    public void draw(Batch batch, float parentAlpha) {
+        Drawable drawable = getDrawable();
+        if (contorno && drawable != null) {
+            Color colorAnterior = batch.getColor().cpy();
+            batch.setColor(0f, 0f, 0f, getColor().a * parentAlpha);
+            drawable.draw(
+                    batch,
+                    getX() - GROSOR_CONTORNO,
+                    getY() - GROSOR_CONTORNO,
+                    getWidth() + GROSOR_CONTORNO * 2,
+                    getHeight() + GROSOR_CONTORNO * 2);
+            batch.setColor(colorAnterior);
+        }
+
+        super.draw(batch, parentAlpha);
+    }
+
+    public void dibujar(SpriteBatch batch) {
+        draw(batch, 1f);
     }
 
     public void dispose() {
-        s = null;
-        t = null;
-    }
-
-    public void setX(float x) {
-        s.setX(x);
-    }
-
-    public void setY(float y)
-    {
-        s.setY(y);
+        setDrawable(null);
     }
 }

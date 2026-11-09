@@ -4,6 +4,29 @@ Todos los cambios importantes de este proyecto serán documentados en este archi
 
 [Volver al repositorio](https://github.com/Octa-Romero/SuperPablo3)
 
+
+## [0.4.0] - 2026-10-31
+
+### Agregado
+
+- Implementación de nuevos niveles, ampliando la progresión del juego hasta el nivel 7.
+- Incorporación del NPC Pancrasio en el Hub, junto con su sistema de diálogo.
+- Implementación del sistema de reliquias y su integración en los niveles.
+- Incorporación de nuevos recursos y elementos para ampliar los escenarios del juego.
+- Desarrollo de nuevos escenarios y mapas mediante Tiled.
+
+### Cambiado
+
+- Ampliación y reorganización de los niveles, incorporando nuevas áreas y mecánicas.
+- Ajustes en las colisiones y el comportamiento de la cámara para mejorar la experiencia de juego.
+- Integración de los nuevos niveles con el sistema de navegación y selección desde el Hub.
+- Actualización de recursos gráficos y elementos visuales de los escenarios.
+
+### Corregido
+
+- Ajustes en las mecánicas de los niveles para mejorar su funcionamiento.
+- Correcciones en la integración de recursos y escenarios.
+
 ## [0.3.1] - 2026-09-19
 
 ### Cambiado
@@ -40,7 +63,7 @@ Todos los cambios importantes de este proyecto serán documentados en este archi
 - Mejora en la arquitectura del menú principal usando ExtendViewport.
 - Reorganización de la lógica de PantallaMenu para mejor inicialización.
 - Optimización de carga de texturas de entidades.
-- Refactor general del sistema de UI (HUD, menúes y pantallas).
+- Refactor general del sistema de UI (HUD, menús y pantallas).
 - Centralización de lógica de gameplay en Nivel.
 
 ### Corregido
@@ -109,11 +132,11 @@ movimiento del jugador, colisiones, enemigos y cámara del nivel.
 
 ### Agregado
 - Se integraron dos ramas principales del proyecto, una orientada al sistema de mapa (TiledMap, camara, viewport y menu de inicio) y otra orientada al jugador (movimiento y colisiones).
-- Implementación de colisiones basicas del jugador con el mapa utilizando el layer de TiledMap.
-- Mejoras en el sistema de movimiento del jugador, incluyendo la mecanica de salto.
-- Incorporación del sistema de camara y viewport para el seguimiento del jugador.
+- Implementación de colisiones básicas del jugador con el mapa utilizando el layer de TiledMap.
+- Mejoras en el sistema de movimiento del jugador, incluyendo la mecánica de salto.
+- Incorporación del sistema de cámara y viewport para el seguimiento del jugador.
 - Clases como Camara, Colisiones y Entrada.
-- Estructura basica para sonidos y musicas.
+- Estructura básica para sonidos y musicas.
 
 
 
@@ -121,8 +144,8 @@ movimiento del jugador, colisiones, enemigos y cámara del nivel.
 
 ### Agregado
 - Se modifico la version de Java a 21.
-- build.gradle y gradle.properties fueron configurado correctamente para correr esta version.
-- Se realizo un merge minimo para modificar lo ya establecido en el repositorio remoto.
+- build.gradle y gradle.properties fueron configurados correctamente para correr esta version.
+- Se realizó un merge minimo para modificar lo ya establecido en el repositorio remoto.
 
 
 
@@ -130,9 +153,9 @@ movimiento del jugador, colisiones, enemigos y cámara del nivel.
 
 ### Agregado
 - Paquetes como entidades, recursos, utilidades y pantallas.
-- Pantallas para el juego en general, el menu y pausa pero sin una logica significativamente importante aún.
+- Pantallas para el juego en general, el menu y pausa pero sin una lógica significativamente importante aún.
 - Clase Render para manejar el batch de forma static.
-- Logica basica de movimiento para Jugador.
+- Lógica básica de movimiento para Jugador.
 
 
 

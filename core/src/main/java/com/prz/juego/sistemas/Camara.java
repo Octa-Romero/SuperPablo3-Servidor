@@ -8,8 +8,8 @@ import com.prz.juego.utilidades.Config;
 
 public class Camara {
 
-    private final OrthographicCamera camera;
-    private final Viewport viewport;
+    private final OrthographicCamera CAMERA;
+    private final Viewport VIEWPORT;
     public static final float V_WIDTH = Config.ANCHO_BASE;
     public static final float V_HEIGHT = Config.ALTO_BASE;
     private float limiteMinX, limiteMaxX;
@@ -18,10 +18,10 @@ public class Camara {
     private float posicionGuardadaY;
 
     public Camara() {
-        camera = new OrthographicCamera();
-        viewport = new FitViewport(V_WIDTH, V_HEIGHT, camera);
-        camera.position.set(V_WIDTH / 2f, V_HEIGHT / 2f, 0);
-        camera.update();
+        CAMERA = new OrthographicCamera();
+        VIEWPORT = new FitViewport(V_WIDTH, V_HEIGHT, CAMERA);
+        CAMERA.position.set(V_WIDTH / 2f, V_HEIGHT / 2f, 0);
+        CAMERA.update();
     }
 
     public void setLimitesMapa(float anchoMapaPx, float altoMapaPx) {
@@ -33,36 +33,43 @@ public class Camara {
     }
 
     public void seguirPersonaje(float targetX, float targetY, float delta) {
-        float lerp = 10f * delta;
-        camera.position.x += (targetX - camera.position.x) * lerp;
-        camera.position.y += (targetY - camera.position.y) * lerp;
+        float lerp = Math.min(1f, 10f * delta);
 
-        if (limiteMaxX > limiteMinX) {
-            camera.position.x = MathUtils.clamp(camera.position.x, limiteMinX, limiteMaxX);
-        }
-        if (limiteMaxY > limiteMinY) {
-            camera.position.y = MathUtils.clamp(camera.position.y, limiteMinY, limiteMaxY);
+        CAMERA.position.x += (targetX - CAMERA.position.x) * lerp;
+        CAMERA.position.y += (targetY - CAMERA.position.y) * lerp;
+
+        if (limiteMaxX <= limiteMinX) {
+            CAMERA.position.x = limiteMinX;
+        } else {
+            CAMERA.position.x = MathUtils.clamp(CAMERA.position.x, limiteMinX, limiteMaxX);
         }
 
-        camera.update();
+        if (limiteMaxY <= limiteMinY) {
+            CAMERA.position.y = limiteMinY;
+        } else {
+            CAMERA.position.y = MathUtils.clamp(CAMERA.position.y, limiteMinY, limiteMaxY);
+        }
+
+        CAMERA.update();
     }
 
     public void actualizarTamano(int width, int height) {
-        viewport.update(width, height, true);
+        VIEWPORT.update(width, height, false);
+        CAMERA.update();
     }
 
     public OrthographicCamera getCamera() {
-        return camera;
+        return CAMERA;
     }
 
     public void guardarPosicion() {
-        posicionGuardadaX = camera.position.x;
-        posicionGuardadaY = camera.position.y;
+        posicionGuardadaX = CAMERA.position.x;
+        posicionGuardadaY = CAMERA.position.y;
     }
 
     public void restaurarPosicion() {
-        camera.position.x = posicionGuardadaX;
-        camera.position.y = posicionGuardadaY;
-        camera.update();
+        CAMERA.position.x = posicionGuardadaX;
+        CAMERA.position.y = posicionGuardadaY;
+        CAMERA.update();
     }
 }

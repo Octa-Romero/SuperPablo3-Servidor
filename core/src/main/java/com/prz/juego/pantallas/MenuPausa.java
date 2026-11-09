@@ -1,5 +1,6 @@
 package com.prz.juego.pantallas;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -13,39 +14,37 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.prz.juego.principal.Navegable;
 import com.prz.juego.utilidades.Config;
+import com.prz.juego.utilidades.FuenteJuego;
 import com.prz.juego.utilidades.Sonido;
 
 public class MenuPausa {
 
-    private final Stage stage;
-    private final Navegable nav;
+    private final Stage STAGE;
+    private final Navegable NAV;
     private boolean activo = false;
-    private final PantallaJuego pantallaJuego;
-    private final BitmapFont fontTitulo;
-    private final BitmapFont fontBotones;
+    private final PantallaJuego PANTALLA_JUEGO;
+    private final BitmapFont FONT_TITULO;
+    private final BitmapFont FONT_BOTONES;
     private Texture texturaFondoOscuro;
     private Texture texturaPanelOscuro;
     private Image fondoOscuro;
     private Image panelOscuro;
 
-    public MenuPausa(Navegable nav, PantallaJuego anteriorPantalla) {
-        this.nav = nav;
-        this.pantallaJuego = anteriorPantalla;
+    public MenuPausa(Navegable NAV, PantallaJuego anteriorPantalla) {
+        this.NAV = NAV;
+        this.PANTALLA_JUEGO = anteriorPantalla;
 
-        stage = new Stage(new FitViewport(Config.ANCHO_BASE, Config.ALTO_BASE));
+        STAGE = new Stage(new FitViewport(Config.ANCHO_BASE, Config.ALTO_BASE));
 
-        stage.setKeyboardFocus(null);
-        stage.setScrollFocus(null);
+        STAGE.setKeyboardFocus(null);
+        STAGE.setScrollFocus(null);
 
-        fontTitulo = new BitmapFont();
-        fontTitulo.getData().setScale(3.0f);
-
-        fontBotones = new BitmapFont();
-        fontBotones.getData().setScale(2.0f);
+        FONT_TITULO = crearFuente(42);
+        FONT_BOTONES = crearFuente(28);
 
         mostrar();
 
-        // El menú empieza desactivado
+        // El menu empieza desactivado
         desactivar();
     }
 
@@ -54,54 +53,64 @@ public class MenuPausa {
 
         Table contenedor = new Table();
 
-        Label titulo = new Label("PAUSA", new Label.LabelStyle(fontTitulo, Color.GOLD));
+        Label titulo = new Label("Pausa", new Label.LabelStyle(FONT_TITULO, Color.GOLD));
 
         TextButton.TextButtonStyle style = new TextButton.TextButtonStyle();
 
-        style.font = fontBotones;
+        style.font = FONT_BOTONES;
         style.fontColor = Color.WHITE;
         style.overFontColor = Color.YELLOW;
         style.downFontColor = Color.RED;
 
-        TextButton reanudar = new TextButton("REANUDAR", style);
-        TextButton opciones = new TextButton("OPCIONES", style);
-        TextButton menu = new TextButton("SALIR AL MENÚ", style);
+        TextButton reanudar = new TextButton("Reanudar", style);
+        TextButton opciones = new TextButton("Opciones", style);
+        TextButton hub = new TextButton("Volver al hub", style);
+        TextButton menu = new TextButton("Salir al menú", style);
 
         reanudar.addListener(
-            new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    Sonido.CLICK.sonar();
-                    pantallaJuego.setPausa(false);
-                    desactivar();
-                }
-            }
-        );
+                new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        Sonido.CLICK.sonar();
+                        PANTALLA_JUEGO.setPausa(false);
+                        desactivar();
+                    }
+                });
 
         opciones.addListener(
-            new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    Sonido.CLICK.sonar();
-                    pantallaJuego.guardarPosicionCamara();
-                    nav.cambiarPantalla(new PantallaOpciones(nav, pantallaJuego, true));
-                }
-            }
-        );
+                new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        Sonido.CLICK.sonar();
+                        PANTALLA_JUEGO.guardarPosicionCamara();
+                        NAV.cambiarPantalla(new PantallaOpciones(NAV, PANTALLA_JUEGO, true));
+                    }
+                });
+
+        hub.addListener(
+                new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        Sonido.CLICK.sonar();
+                        PANTALLA_JUEGO.volverAlHub();
+                    }
+                });
 
         menu.addListener(
-            new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    Sonido.CLICK.sonar();
-                    nav.cambiarPantalla(new PantallaMenu(nav));
-                }
-            }
-        );
+                new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        Sonido.CLICK.sonar();
+                        NAV.cambiarPantalla(new PantallaMenu(NAV));
+                    }
+                });
 
         contenedor.add(titulo).padBottom(40).row();
         contenedor.add(reanudar).width(250).height(50).padBottom(20).row();
         contenedor.add(opciones).width(250).height(50).padBottom(20).row();
+        if (!PANTALLA_JUEGO.estaEnHub()) {
+            contenedor.add(hub).width(250).height(50).padBottom(20).row();
+        }
         contenedor.add(menu).width(250).height(50).padBottom(20).row();
         contenedor.pack();
 
@@ -110,13 +119,18 @@ public class MenuPausa {
 
         panelOscuro.setSize(anchoPanel, altoPanel);
 
-        panelOscuro.setPosition((Config.ANCHO_BASE - anchoPanel) / 2f, (Config.ALTO_BASE - altoPanel) / 2f);
+        panelOscuro.setPosition(
+                (Config.ANCHO_BASE - anchoPanel) / 2f, (Config.ALTO_BASE - altoPanel) / 2f);
 
         contenedor.setPosition(Config.ANCHO_BASE / 2f, Config.ALTO_BASE / 2f, Align.center);
 
-        stage.addActor(fondoOscuro);
-        stage.addActor(panelOscuro);
-        stage.addActor(contenedor);
+        STAGE.addActor(fondoOscuro);
+        STAGE.addActor(panelOscuro);
+        STAGE.addActor(contenedor);
+    }
+
+    private BitmapFont crearFuente(int tamano) {
+        return FuenteJuego.generar(tamano);
     }
 
     private void crearFondos() {
@@ -139,37 +153,37 @@ public class MenuPausa {
 
     public void activar() {
         activo = true;
-        stage.getRoot().setVisible(true);
-        stage.getRoot().setTouchable(Touchable.enabled);
+        STAGE.getRoot().setVisible(true);
+        STAGE.getRoot().setTouchable(Touchable.enabled);
     }
 
     public void desactivar() {
         activo = false;
-        stage.getRoot().setVisible(false);
-        stage.getRoot().setTouchable(Touchable.disabled);
+        STAGE.getRoot().setVisible(false);
+        STAGE.getRoot().setTouchable(Touchable.disabled);
     }
 
     public void update(float delta) {
         if (activo) {
-            stage.act(delta);
+            STAGE.act(delta);
         }
     }
 
     public void render() {
         if (activo) {
-            stage.draw();
+            STAGE.draw();
         }
     }
 
     public void resize(int width, int height) {
-        stage.getViewport().update(width, height, true);
+        STAGE.getViewport().update(width, height, true);
     }
 
     public void dispose() {
-        stage.dispose();
+        STAGE.dispose();
 
-        fontTitulo.dispose();
-        fontBotones.dispose();
+        FONT_TITULO.dispose();
+        FONT_BOTONES.dispose();
 
         if (texturaFondoOscuro != null) {
             texturaFondoOscuro.dispose();
@@ -181,6 +195,6 @@ public class MenuPausa {
     }
 
     public Stage getStage() {
-        return stage;
+        return STAGE;
     }
 }

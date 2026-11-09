@@ -1,8 +1,8 @@
 {
-    "activeFile": "Niveles/Level1.tmx",
+    "activeFile": "Niveles/Nivel2.1.tmx",
     "expandedProjectPaths": [
-        "Niveles",
         ".",
+        "Niveles",
         "Tilesets"
     ],
     "file.lastUsedOpenFilter": "Todos los archivos (*)",
@@ -29,18 +29,53 @@
             "dynamicWrapping": false,
             "scaleInDock": 1
         },
-        "Niveles/Level1.tmx": {
+        "Niveles/Hub.tmx": {
+            "expandedObjectLayers": [
+                4
+            ],
+            "scale": 0.75,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 890.6666666666665,
+                "y": -604
+            }
+        },
+        "Niveles/Level 2.tmx": {
+            "scale": 0.100009765625,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 5119.500048823357,
+                "y": 479.9531295771899
+            }
+        },
+        "Niveles/Level1 - copia.tmx": {
             "expandedGroupLayers": [
-                8,
                 11,
-                16,
+                8,
                 17
             ],
-            "scale": 0.5,
-            "selectedLayer": 6,
+            "expandedObjectLayers": [
+                25
+            ],
+            "scale": 1,
+            "selectedLayer": 7,
             "viewCenter": {
-                "x": 734,
-                "y": 644
+                "x": 410,
+                "y": -19
+            }
+        },
+        "Niveles/Level1.tmx": {
+            "expandedGroupLayers": [
+                17,
+                11,
+                8,
+                16
+            ],
+            "scale": 0.33,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 3878.787878787879,
+                "y": 604.5454545454546
             }
         },
         "Niveles/Level2.tmx": {
@@ -51,32 +86,133 @@
             "selectedLayer": 5,
             "viewCenter": {
                 "x": 5120,
-                "y": 476
+                "y": 472
             }
         },
         "Niveles/Nivel 2.tmx": {
             "expandedGroupLayers": [
-                16,
-                9
+                9,
+                16
             ],
             "scale": 0.33,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 463.63636363636374,
-                "y": 1703.030303030303
+                "x": 1212.121212121212,
+                "y": 2515.151515151515
+            }
+        },
+        "Niveles/Nivel2.1.tmx": {
+            "expandedObjectLayers": [
+                7,
+                6
+            ],
+            "scale": 1,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 4415,
+                "y": 904
+            }
+        },
+        "Niveles/Nivel2.2.1.tmx": {
+            "expandedGroupLayers": [
+                2
+            ],
+            "expandedObjectLayers": [
+                9
+            ],
+            "scale": 0.33,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 4000,
+                "y": 151.5151515151515
+            }
+        },
+        "Niveles/Nivel2.2.tmx": {
+            "expandedGroupLayers": [
+                6
+            ],
+            "scale": 0.25,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 908,
+                "y": 464
             }
         },
         "Niveles/Nivel2.tmx": {
             "expandedGroupLayers": [
+                9,
                 8,
-                16,
-                9
+                16
             ],
             "scale": 0.5,
             "selectedLayer": 0,
             "viewCenter": {
                 "x": 1516,
-                "y": 1709
+                "y": 936
+            }
+        },
+        "Niveles/Nivel3.1.tmx": {
+            "expandedObjectLayers": [
+                11
+            ],
+            "scale": 2,
+            "selectedLayer": 7,
+            "viewCenter": {
+                "x": 69.5,
+                "y": 120.5
+            }
+        },
+        "Niveles/Nivel3.tmx": {
+            "expandedGroupLayers": [
+                13,
+                6
+            ],
+            "expandedObjectLayers": [
+                9
+            ],
+            "scale": 0.75,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 1113.3333333333333,
+                "y": 544
+            }
+        },
+        "Niveles/Nivel5.1.tmx": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 0.125,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": -888,
+                "y": 1304
+            }
+        },
+        "Niveles/Nivel5.tmx": {
+            "expandedObjectLayers": [
+                3
+            ],
+            "scale": 0.33,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 6115.151515151515,
+                "y": 424.24242424242425
+            }
+        },
+        "Niveles/Nivel6.tmx": {
+            "scale": 0.33,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 742.4242424242425,
+                "y": 1598.4848484848485
+            }
+        },
+        "Niveles/Nivel7.tmx": {
+            "scale": 0.25462740384615384,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 640.1510502714184,
+                "y": 1158.555581779561
             }
         },
         "Niveles/forestTileset.tsx": {
@@ -91,7 +227,20 @@
             "dynamicWrapping": true,
             "scaleInDock": 1
         },
+        "Niveles/nivel4.tmx": {
+            "expandedObjectLayers": [
+                4,
+                3
+            ],
+            "scale": 0.5,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 4136,
+                "y": 456
+            }
+        },
         "Niveles/tileSetHub.tsx": {
+            "dynamicWrapping": true,
             "scaleInDock": 0.33,
             "scaleInEditor": 0.33
         },
@@ -101,9 +250,36 @@
         "Pruebas/propsFores.tsx": {
             "scaleInDock": 1
         },
+        "Tilesets/Cueva.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Tilesets/Enviroment.tsx": {
+            "scaleInDock": 2
+        },
+        "Tilesets/Props.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "Tilesets/Props2.tsx": {
+            "scaleInDock": 1.5,
+            "scaleInEditor": 3
+        },
         "Tilesets/TileSetForest2.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Tilesets/castle_env.tsx": {
+            "scaleInDock": 0.75,
+            "scaleInEditor": 2
+        },
+        "Tilesets/cuevaTilesets.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Tilesets/cuevaTilesets2.tsx": {
+            "scaleInDock": 0.75,
             "scaleInEditor": 1
         },
         "Tilesets/foresTileset.tsx": {
@@ -114,32 +290,61 @@
             "dynamicWrapping": true,
             "scaleInDock": 1
         },
+        "Tilesets/puebloPesqueeroTileSet.tsx": {
+            "scaleInDock": 4,
+            "scaleInEditor": 1
+        },
+        "Tilesets/sueloTextura.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 2
+        },
+        "Tilesets/tileset-sliced.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 3
+        },
+        "Tilesets/tileset.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 3
+        },
+        "Tilesets/valdoriaTileSets.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "morning_adventures_tileset_16x16.tsx": {
             "scaleInDock": 1
         }
     },
-    "last.imagePath": "C:/Users/santi/Desktop/SuperPablo3/assets/Niveless/Tilesets",
-    "map.height": 17,
+    "last.imagePath": "C:/Users/santi/Desktop/SuperPablo3/assets/Niveles/Tilesets",
+    "map.height": 38,
     "map.lastUsedFormat": "tmx",
-    "map.width": 32,
+    "map.tileHeight": 32,
+    "map.tileWidth": 32,
+    "map.width": 60,
+    "mapScene.enableWorlds": true,
     "openFiles": [
-        "Niveles/Nivel2.tmx",
-        "Niveles/Level2.tmx",
+        "Niveles/Nivel6.tmx",
         "Niveles/Level1.tmx",
-        "Tilesets/TileSetForest2.tsx"
+        "Niveles/Nivel2.1.tmx"
     ],
     "project": "Niveles.tiled-project",
     "recentFiles": [
-        "Niveles/Nivel2.tmx",
-        "Niveles/Level2.tmx",
-        "Tilesets/TileSetForest2.tsx",
+        "Niveles/Nivel7.tmx",
+        "Niveles/Nivel6.tmx",
         "Niveles/Level1.tmx",
-        "Niveles/hubTilset.tsx",
-        "Niveles/tileSetHub.tsx",
+        "Niveles/Nivel2.1.tmx",
+        "Niveles/nivel4.tmx",
         "Niveles/Nivel 2.tmx",
-        "Tilesets/foresTileset.tsx",
-        "Level1.tmx"
+        "Niveles/Nivel2.2.tmx",
+        "Niveles/Nivel2.2.1.tmx",
+        "Tilesets/tileset.tsx",
+        "Niveles/Nivel5.1.tmx",
+        "Niveles/Nivel3.tmx",
+        "Niveles/Nivel3.1.tmx"
     ],
     "resizeMap.removeObjects": false,
-    "tileset.lastUsedFormat": "tsx"
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    }
 }

@@ -1,22 +1,28 @@
 package com.prz.juego.niveles;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.prz.juego.entidades.*;
+import com.prz.juego.entidades.Entidad;
+import com.prz.juego.entidades.Lanzable;
+import com.prz.juego.entidades.OrbeMagica;
+import com.prz.juego.entidades.Reliquia;
+import com.prz.juego.entidades.enemigos.Enemigo;
+import com.prz.juego.entidades.enemigos.rango.EnemigoRango;
+import com.prz.juego.entidades.jefes.Retumbar;
+import com.prz.juego.entidades.jugadores.*;
 import com.prz.juego.sistemas.Camara;
 import com.prz.juego.sistemas.Colisiones;
 import com.prz.juego.utilidades.Debug;
 import com.prz.juego.utilidades.Musica;
 import com.prz.juego.utilidades.Render;
 
-public class Nivel {
+import java.util.ArrayList;
+
+public abstract class Nivel {
 
     private Camara camara;
     private TiledMap mapa;
@@ -25,12 +31,44 @@ public class Nivel {
     private Pablo pablo;
     private Walter walter;
     private Colisiones colision;
+    private boolean enemigoReliquiaDerrotado = false;
+    private final ArrayList<Entidad> ENTIDADES = new ArrayList<>();
+    private final ArrayList<Entidad> ENTIDADES_PENDIENTES = new ArrayList<>();
+    private final ArrayList<Entidad> ENTIDADES_PENDIENTES_ELIMINAR = new ArrayList<>();
+    private final ArrayList<Lanzable> PROYECTILES = new ArrayList<>();
+    private final ArrayList<Reliquia> RELIQUIAS = new ArrayList<>();
     private final ArrayList<Entidad> entidades = new ArrayList<>();
     private final ArrayList<Enemigo> enemigosNuevos = new ArrayList<>();
     private ArrayList<Integer> idEnemigosEliminados = new ArrayList<>();
     private ShapeRenderer shapeRenderer;
     private boolean gameOver = false;
+    private boolean tieneReliquia = false;
+    private float anchoMapa;
+    protected Musica musica = Musica.NIVEL;
     private int idEnemigo = 1;
+
+    public static Nivel crear(String ruta) {
+        switch (ruta) {
+            case Nivel1.RUTA:
+                return new Nivel1();
+            case Nivel2.RUTA:
+                return new Nivel2();
+            case Nivel3.RUTA:
+                return new Nivel3();
+            case Nivel4.RUTA:
+                return new Nivel4();
+            case Nivel5.RUTA:
+                return new Nivel5();
+            case Nivel6.RUTA:
+                return new Nivel6();
+            case Nivel7.RUTA:
+                return new Nivel7();
+            default:
+                throw new IllegalArgumentException(
+                    "No existe una clase para el nivel: " + ruta
+                );
+        }
+    }
 
     public void cargar(String ruta, Jugador[] jugadores) {
         camara = new Camara();
@@ -38,7 +76,7 @@ public class Nivel {
         this.jugadores = jugadores;
 
         for (Jugador jugador : jugadores) {
-            entidades.add(jugador);
+            ENTIDADES.add(jugador);
 
             if (jugador instanceof Pablo p) {
                 pablo = p;
@@ -53,13 +91,23 @@ public class Nivel {
         shapeRenderer = new ShapeRenderer();
 
         TmxMapLoader mapLoader = new TmxMapLoader();
-        mapa = mapLoader.load(ruta);
+        mapa = mapLoader.load(getRutaMapa());
 
         colision = new Colisiones(mapa);
 
-        pablo.setEntidades(entidades);
+        for (Jugador jugador : jugadores)
+        {
+            jugador.setColisiones(colision);
+        }
 
-        walter.configurarAtaque(entidades, colision);
+        pablo.setEntidades(ENTIDADES);
+        pablo.setProyectiles(PROYECTILES);
+
+        walter.configurarAtaque(ENTIDADES, colision, PROYECTILES);
+
+        for(Jugador jugador : jugadores) {
+            configurarContenidoEspecifico(jugador);
+        }
 
         MapProperties props = mapa.getProperties();
 
@@ -75,7 +123,62 @@ public class Nivel {
 
         mapRenderer = new OrthogonalTiledMapRenderer(mapa, 1f);
 
-        Musica.NIVEL1.sonar();
+        musica.sonar();
+    }
+
+    protected abstract String getRutaMapa();
+
+    protected abstract void configurarContenidoEspecifico(Jugador jugador);
+
+    protected float getPosicionInicialX() {
+        return 50;
+    }
+
+    protected float getPosicionInicialY() {
+        return 150;
+    }
+
+    protected void agregarEntidad(Entidad entidad) {
+        if (entidad instanceof EnemigoRango) {
+            ((EnemigoRango) entidad).configurarDisparo(
+                colision, PROYECTILES
+            );
+        }
+
+        ENTIDADES.add(entidad);
+    }
+
+    protected void agregarEntidadDiferida(Entidad entidad) {
+        if (entidad instanceof EnemigoRango) {
+            ((EnemigoRango) entidad).configurarDisparo(colision, PROYECTILES);
+        }
+
+        ENTIDADES_PENDIENTES.add(entidad);
+    }
+
+    protected void eliminarEntidadDiferida(Entidad entidad) {
+        if (entidad instanceof EnemigoRango) {
+            ((EnemigoRango) entidad).cancelarAtaques();
+        }
+
+        if (!ENTIDADES_PENDIENTES_ELIMINAR.contains(entidad)) {
+            ENTIDADES_PENDIENTES_ELIMINAR.add(entidad);
+        }
+    }
+
+    protected void agregarEntidadAlFondo(Entidad entidad) {
+        if (entidad instanceof EnemigoRango) {
+            ((EnemigoRango) entidad).configurarDisparo(colision, PROYECTILES);
+        }
+
+        ENTIDADES.add(0, entidad);
+    }
+
+    protected void configurarEntornoEspecifico(float ancho, float alto) {}
+
+    // Por el momento los niveles no tienen jefe, solo Nivel7 lo sobrescribe
+    public Retumbar getJefe() {
+        return null;
     }
 
     public void renderMapa() {
@@ -85,17 +188,30 @@ public class Nivel {
 
     public void render() {
         Render.batch.setProjectionMatrix(camara.getCamera().combined);
+        boolean dibujarJugadorAlFrente = getJefe() != null;
 
-        for (Entidad entidad : entidades) {
+        for (Entidad entidad : ENTIDADES) {
+            if (dibujarJugadorAlFrente && entidad == jugador) {
+                continue;
+            }
+
             entidad.dibujar();
 
-            if (entidad instanceof Enemigo) {
-                ((Enemigo) entidad).dibujarAtaque();
+            if (dibujarJugadorAlFrente) {
+                getJefe().dibujarAtaquesExtra();
+                walter.dibujar();
+                pablo.dibujar();
             }
-        }
 
-        pablo.dibujarAtaque();
-        walter.dibujarOrbes();
+            for (Lanzable proyectil : PROYECTILES) {
+                proyectil.dibujar();
+            }
+
+            // Dibujar las reliquias dentro del mundo del juego.
+            for (Reliquia reliquia : RELIQUIAS) {
+                reliquia.dibujar();
+            }
+    }
     }
 
     public void renderDebug() {
@@ -108,11 +224,17 @@ public class Nivel {
 
         colision.dibujarHitboxes(shapeRenderer);
 
-        for (Entidad entidad : entidades) {
+        for (Entidad entidad : ENTIDADES) {
             entidad.dibujarHitbox(shapeRenderer);
         }
 
-        walter.dibujarOrbesHitbox(shapeRenderer);
+        if (getJefe() != null) {
+            getJefe().dibujarHitboxesAtaquesExtra(shapeRenderer);
+        }
+
+        for (Lanzable proyectil : PROYECTILES) {
+            proyectil.dibujarHitbox(shapeRenderer);
+        }
 
         shapeRenderer.end();
     }
@@ -120,14 +242,36 @@ public class Nivel {
     public void update(float delta) {
 
         // Actualizar entidades
-        for (Entidad entidad : entidades) {
+        for (Entidad entidad : ENTIDADES) {
             entidad.update(delta);
-            colision.chequearColision(entidad);
+            if (entidad.debeVerificarColisionesMapa()) {
+                colision.chequearColision(entidad);
+            }
+            entidad.limitarMovimientoHorizontal(0, anchoMapa);
+        }
+        for (Entidad entidad : ENTIDADES_PENDIENTES_ELIMINAR) {
+            if (ENTIDADES.remove(entidad)) {
+                entidad.dispose();
+            }
+            ENTIDADES_PENDIENTES.remove(entidad);
+        }
+        ENTIDADES_PENDIENTES_ELIMINAR.clear();
+        ENTIDADES.addAll(ENTIDADES_PENDIENTES);
+        ENTIDADES_PENDIENTES.clear();
+
+        // Actualizar proyectiles.
+        for (int i = PROYECTILES.size() - 1; i >= 0; i--) {
+            Lanzable proyectil = PROYECTILES.get(i);
+            proyectil.update(delta);
+
+            if (!proyectil.estaActiva()) {
+                PROYECTILES.remove(i);
+            }
         }
 
-        // Eliminar enemigos muertos
-        for (int i = entidades.size() - 1; i >= 0; i--) {
-            Entidad entidad = entidades.get(i);
+        // Eliminar enemigos muertos y generar la reliquia si corresponde.
+        for (int i = ENTIDADES.size() - 1; i >= 0; i--) {
+            Entidad entidad = ENTIDADES.get(i);
 
             if (entidad instanceof Enemigo) {
                 Enemigo enemigo = (Enemigo) entidad;
@@ -135,13 +279,49 @@ public class Nivel {
                 if (enemigo.estaMuerto()) {
                     idEnemigosEliminados.add(enemigo.getId());
 
+                    if (enemigo.sueltaReliquia()) {
+                        enemigoReliquiaDerrotado = true;
+                        System.out.println(
+                            "[RELIQUIA] ¡El enemigo marcado murió!"
+                        );
+
+                        float xReliquia = enemigo.getX()
+                            + (enemigo.getAncho() - 32f) / 2f;
+
+                        float yReliquia = enemigo.getY();
+
+                        System.out.println(
+                            "[RELIQUIA] Posición: X="
+                                + xReliquia + ", Y=" + yReliquia
+                        );
+
+                        RELIQUIAS.add(
+                            new Reliquia(xReliquia, yReliquia, colision)
+                        );
+
+                        System.out.println(
+                            "[RELIQUIA] Reliquia creada. Total: "
+                                + RELIQUIAS.size()
+                        );
+                    }
+
                     enemigo.dispose();
-                    entidades.remove(i);
+                    ENTIDADES.remove(i);
                 }
             }
         }
 
-        // Cámara
+        // Actualizar reliquias.
+        for (int i = RELIQUIAS.size() - 1; i >= 0; i--) {
+            Reliquia reliquia = RELIQUIAS.get(i);
+            if (reliquia.actualizar(jugador, delta)) {
+                tieneReliquia = true;
+                reliquia.dispose();
+                RELIQUIAS.remove(i);
+            }
+        }
+
+        // Actualizar cámara.
         camara.seguirPersonaje(
             jugadores[0].getX() + jugadores[0].getAncho() / 2f,
             jugadores[0].getY() + jugadores[0].getAlto() / 2f,
@@ -176,11 +356,20 @@ public class Nivel {
             shapeRenderer.dispose();
         }
 
-        for(Entidad e : entidades)
-        {
-            e.dispose();
+        for (Entidad entidad : ENTIDADES) {
+            entidad.dispose();
         }
-        entidades.clear();
+
+        ENTIDADES.clear();
+        ENTIDADES_PENDIENTES.clear();
+        ENTIDADES_PENDIENTES_ELIMINAR.clear();
+        PROYECTILES.clear();
+
+        for (Reliquia reliquia : RELIQUIAS) {
+            reliquia.dispose();
+        }
+
+        RELIQUIAS.clear();
     }
 
     public Camera getCamara() {
@@ -195,7 +384,9 @@ public class Nivel {
         camara.restaurarPosicion();
     }
 
-    public boolean isGameOver(){return this.gameOver;}
+    public boolean isGameOver() {
+        return this.gameOver;
+    }
 
     private void agregarEnemigo(Enemigo enemigo)
     {
@@ -239,4 +430,10 @@ public class Nivel {
     public ArrayList<Integer> getOrbesEliminados() {
         return walter.getOrbesEliminados();
     }
+
+    public boolean tieneReliquia() {
+        return tieneReliquia;
+    }
+
+    public boolean enemigoReliquiaDerrotado(){return enemigoReliquiaDerrotado;}
 }

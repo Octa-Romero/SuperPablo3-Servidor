@@ -13,7 +13,7 @@ import com.prz.juego.utilidades.Musica;
 import com.prz.juego.utilidades.Render;
 import com.prz.juego.utilidades.Sonido;
 
-public class Principal extends Game implements Navegable{
+public class Principal extends Game implements Navegable {
 
     private Servidor servidor;
 

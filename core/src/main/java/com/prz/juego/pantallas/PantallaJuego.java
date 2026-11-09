@@ -1,20 +1,26 @@
 package com.prz.juego.pantallas;
 
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
-import com.prz.juego.entidades.Enemigo;
-import com.prz.juego.entidades.Jugador;
+import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.math.Vector3;
+import com.prz.juego.entidades.jugadores.Jugador;
+import com.prz.juego.entidades.jugadores.Personajes;
+import com.prz.juego.niveles.Hub;
+import com.prz.juego.niveles.Nivel;
+import com.prz.juego.entidades.enemigos.Enemigo;
 import com.prz.juego.entidades.OrbeMagica;
-import com.prz.juego.entidades.Personajes;
 import com.prz.juego.hilos.JugadorRed;
 import com.prz.juego.principal.Navegable;
+import com.prz.juego.sistemas.Hud;
+import com.prz.juego.utilidades.Entrada;
 import com.prz.juego.niveles.Nivel;
 import com.prz.juego.red.Servidor;
 import com.prz.juego.utilidades.Global;
 import com.prz.juego.utilidades.Musica;
 import com.prz.juego.utilidades.Render;
+import com.prz.juego.utilidades.Sonido;
 import com.prz.juego.sistemas.Hud;
 
 import java.util.ArrayList;
@@ -22,17 +28,24 @@ import java.util.ArrayList;
 public class PantallaJuego implements Screen {
 
     private Servidor servidor;
-    private final Navegable nav;
+    private final Navegable NAV;
     private Jugador[] jugadores = new Jugador[2];
-    private final Nivel nivel;
-    private final MenuPausa menuPausa;
+    private final Personajes PERSONAJE_ELEGIDO;
+    private final Nivel NIVEL;
+    private final MenuPausa MENU_PAUSA;
     private boolean pausado = false;
-    private final Hud hud;
+    private final Hud HUD;
+    private Hub hub;
 
-    public PantallaJuego(Navegable nav, Personajes personajeElegido, Servidor servidor) {
-        this.nav = nav;
-        this.nivel = new Nivel();
-        this.menuPausa = new MenuPausa(nav, this);
+    public PantallaJuego(Navegable NAV, Personajes PERSONAJE_ELEGIDO, Servidor servidor) {
+        this(NAV, PERSONAJE_ELEGIDO, servidor, null);
+    }
+
+    public PantallaJuego(Navegable nav, Personajes PERSONAJE_ELEGIDO, Servidor servidor, String rutaNivel) {
+        this.NAV = nav;
+        this.PERSONAJE_ELEGIDO = PERSONAJE_ELEGIDO;
+        this.NIVEL = rutaNivel == null ? null : Nivel.crear(rutaNivel);
+        this.MENU_PAUSA = new MenuPausa(nav, this);
         this.servidor = servidor;
 
         JugadorRed[] jugadoresRed = servidor.getJugadoresRed();
@@ -44,26 +57,42 @@ public class PantallaJuego implements Screen {
 
             jugadores[i] = personaje.crear(50 + i * 100, 150);
             jugadores[i].setEstadoRed(estado);
+
+            if (rutaNivel == null) {
+                hub = new Hub();
+                hub.cargar("Niveles/Niveles/Hub.tmx", jugadores);
+            } else {
+                hub = null;
+                NIVEL.cargar(jugadores);
+            }
+
+            HUD = new Hud(jugadores[0], Render.batch);
+
+            if (NIVEL != null) {
+                HUD.setJefe(NIVEL.getJefe());
+            }
         }
-
-        nivel.cargar("Niveles/Niveles/Level1.tmx", jugadores);
-
-        hud = new Hud(jugadores[0], Render.batch);
     }
+
+    public PantallaJuego(Navegable NAV, Personajes PERSONAJE_ELEGIDO) {
+        this(NAV, PERSONAJE_ELEGIDO, servidor, null);
+    }
+
 
     @Override
     public void show() {
+        Gdx.input.setCursorCatched(!pausado);
+
         InputMultiplexer mux = new InputMultiplexer();
 
-        mux.addProcessor(menuPausa.getStage());
-        //mux.addProcessor(entrada);
+        mux.addProcessor(MENU_PAUSA.getStage());
+        //mux.addProcessor(ENTRADA);
 
         Gdx.input.setInputProcessor(mux);
     }
 
     @Override
     public void render(float delta) {
-        if(!Global.empieza) {return;}
         Render.limpiarPantalla();
 
         //if (entrada.aprietaEscape()) {
@@ -76,101 +105,167 @@ public class PantallaJuego implements Screen {
         //}
 
         if (!pausado) {
-            nivel.update(delta);
+            if (hub != null) {
+                hub.update(delta);
+            } else {
+                NIVEL.update(delta);
 
-            for(Jugador jugador : jugadores) {
-                servidor.enviarPosicion(jugador);
-                servidor.enviarEstadoAtaque(jugador);
-                servidor.enviarEstadoVida(jugador);
+                for (Jugador jugador : jugadores) {
+                    servidor.enviarPosicion(jugador);
+                    servidor.enviarEstadoAtaque(jugador);
+                    servidor.enviarEstadoVida(jugador);
+                }
+
+                for (Enemigo e : NIVEL.getEnemigosNuevos()) {
+                    servidor.enviarCreacionEnemigos(e.getId(), e.getTipo(), e.getX(), e.getY(), e.getVida());
+                }
+
+                for (Enemigo e : NIVEL.getEnemigosActivos()) {
+                    servidor.enviarEstadoEnemigo(e.getId(), e.getX(), e.getY(), e.getDireccion(), e.estaAtacando(), e.getVida());
+                }
+
+                for (Integer id : NIVEL.getEnemigosEliminados()) {
+                    servidor.enviarEliminacionEnemigo(id);
+                }
+
+                for (OrbeMagica o : NIVEL.getOrbesNuevos()) {
+                    servidor.enviarCreacionOrbes(o.getId(), o.getX(), o.getY(), o.getDireccion());
+                }
+
+                for (OrbeMagica o : NIVEL.getOrbesActivos()) {
+                    servidor.enviarEstadoOrbes(o.getId(), o.getX(), o.getY());
+                }
+
+                for (Integer id : NIVEL.getOrbesEliminados()) {
+                    servidor.enviarEliminacionOrbes(id);
+                }
+
+                if (NIVEL.enemigoReliquiaDerrotado()) {
+                    NAV.cambiarPantalla(new PantallaFinal(NAV));
+                    return;
+                }
             }
-
-            for(Enemigo e : nivel.getEnemigosNuevos())
-            {
-                servidor.enviarCreacionEnemigos(e.getId(), e.getTipo(), e.getX(), e.getY(), e.getVida());
-            }
-
-            for(Enemigo e : nivel.getEnemigosActivos())
-            {
-                servidor.enviarEstadoEnemigo(e.getId(), e.getX(), e.getY(), e.getDireccion(), e.estaAtacando(), e.getVida());
-            }
-
-            for(Integer id : nivel.getEnemigosEliminados())
-            {
-                servidor.enviarEliminacionEnemigo(id);
-            }
-
-            for(OrbeMagica o : nivel.getOrbesNuevos())
-            {
-                servidor.enviarCreacionOrbes(o.getId(), o.getX(), o.getY(), o.getDireccion());
-            }
-
-            for(OrbeMagica o : nivel.getOrbesActivos())
-            {
-                servidor.enviarEstadoOrbes(o.getId(), o.getX(), o.getY());
-            }
-
-            for(Integer id : nivel.getOrbesEliminados())
-            {
-                servidor.enviarEliminacionOrbes(id);
-            }
-
         }
 
-        if (pausado) {
-            Gdx.input.setInputProcessor(menuPausa.getStage());
+        // Ir a la seleccion de niveles desde el Hub
+        if (!pausado && hub != null && hub.estaEnCentroHub()) {
+
+            guardarPosicionCamara();
+            NAV.cambiarPantalla(new SeleccionNivel(NAV, PERSONAJE_ELEGIDO, this));
+            return;
+        }
+
+        // Dibujar el Hub o el NIVEL seleccionado
+        if (hub != null) {
+            hub.renderMapa();
+
+            Render.begin(hub.getCamara());
+            hub.render();
+            hub.dibujarAlertaCentro();
+            Render.end();
+
         } else {
-            //Gdx.input.setInputProcessor(entrada);
+            NIVEL.renderMapa();
+
+            Render.begin(NIVEL.getCamara());
+            NIVEL.render();
+            Render.end();
+
+            NIVEL.renderDebug();
+
+            if (NIVEL.isGameOver()) {
+                NAV.cambiarPantalla(new GameOver(NAV, PERSONAJE_ELEGIDO));
+                return;
+            }
         }
 
-        nivel.renderMapa();
-
-        Render.begin(nivel.getCamara());
-        nivel.render();
-        Render.end();
-
-        nivel.renderDebug();
-
-        hud.dibujar();
+        if (hub == null) {
+            HUD.setTieneReliquia(NIVEL.tieneReliquia());
+            HUD.dibujar();
+        }
 
         if (pausado) {
-            menuPausa.update(delta);
-            menuPausa.render();
-        }
-
-        if(nivel.isGameOver())
-        {
-            Musica.parar();
-            nav.cambiarPantalla(new GameOver(nav));
+            MENU_PAUSA.update(delta);
+            MENU_PAUSA.render();
         }
     }
 
     @Override
     public void resize(int width, int height) {
-        nivel.resize(width, height);
-        menuPausa.resize(width, height);
-        hud.actualizarTamano(width, height);
+        if (hub != null) {
+            hub.resize(width, height);
+        } else {
+            NIVEL.resize(width, height);
+        }
+
+        MENU_PAUSA.resize(width, height);
+        HUD.actualizarTamano(width, height);
     }
 
-    public void setPausa(boolean valor)
-    {
+    public void setPausa(boolean valor) {
         this.pausado = valor;
+        Gdx.input.setCursorCatched(!valor);
+    }
+
+    private void limitarJugadorDentroDePantalla() {
+        Camera CAMARA_ACTUAL = hub != null ? hub.getCamara() : NIVEL.getCamara();
+        float CENTRO_Y = Gdx.graphics.getHeight() / 2f;
+        float BORDE_IZQUIERDO = CAMARA_ACTUAL.unproject(new Vector3(0, CENTRO_Y, 0)).x;
+        float BORDE_DERECHO = CAMARA_ACTUAL.unproject(new Vector3(Gdx.graphics.getWidth(), CENTRO_Y, 0)).x;
+
+        for (Jugador jugador : jugadores) {
+            jugador.limitarMovimientoHorizontal(BORDE_IZQUIERDO, BORDE_DERECHO);
+        }
     }
 
     public void guardarPosicionCamara() {
-        nivel.guardarPosicionCamara();
+        if (hub != null) {
+            hub.guardarPosicionCamara();
+        } else {
+            NIVEL.guardarPosicionCamara();
+        }
+    }
+
+    public boolean estaEnHub() {
+        return NIVEL == null;
+    }
+
+    public void volverAlHub() {
+        Musica.MENU.sonar();
+        NAV.cambiarPantalla(new PantallaJuego(NAV, PERSONAJE_ELEGIDO, servidor));
     }
 
     public void restaurarPosicionCamara() {
-        nivel.restaurarPosicionCamara();
+        if (hub != null) {
+            hub.restaurarPosicionCamara();
+        } else {
+            NIVEL.restaurarPosicionCamara();
+        }
     }
 
-    @Override public void pause() {}
-    @Override public void resume() {}
-    @Override public void hide() {}
+    @Override
+    public void pause() {
+    }
+
+    @Override
+    public void resume() {
+    }
+
+    @Override
+    public void hide() {
+        Gdx.input.setCursorCatched(false);
+        Sonido.FUEGO_SOSTENIDO.detenerLoop();
+    }
 
     @Override
     public void dispose() {
-        nivel.dispose();
-        menuPausa.dispose();
+        if (hub != null) {
+            hub.dispose();
+        } else {
+            NIVEL.dispose();
+        }
+        MENU_PAUSA.dispose();
+        HUD.dispose();
     }
+}
 }
