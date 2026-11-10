@@ -50,13 +50,11 @@ public class Pablo extends Jugador {
 
     @Override
     public void update(float delta) {
-        if (entrada != null) {
-            if (entrada.mueveDerecha()) {
-                direccion = 1;
-            }
-            if (entrada.mueveIzquierda()) {
-                direccion = -1;
-            }
+        if (estadoRed.mueveDerecha()) {
+            direccion = 1;
+        }
+        if (estadoRed.mueveIzquierda()) {
+            direccion = -1;
         }
 
         super.update(delta);
@@ -74,6 +72,11 @@ public class Pablo extends Jugador {
             PROYECTILES_GOLPEADOS.clear();
             Sonido.ESPADA.sonar();
         }
+    }
+
+    @Override
+    public Personajes getPersonaje() {
+        return Personajes.PABLO;
     }
 
     private void actualizarAtaque(float delta) {

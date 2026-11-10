@@ -6,7 +6,7 @@ public class JugadorRed {
 
     private InetAddress ip;
     private int puerto;
-    private boolean mueveIzquierda = false, mueveDerecha = false, valorSalto = false, valorAtaca = false;
+    private boolean mueveIzquierda = false, mueveDerecha = false, mueveArriba = false, mueveAbajo = false, valorAtaca = false, aprietaE = false;
     private String personaje;
 
     public JugadorRed(InetAddress ip, int puerto) {
@@ -22,17 +22,22 @@ public class JugadorRed {
         return puerto;
     }
 
-    public void setMovimiento(boolean valorIzquierda, boolean valorDerecha)
+    public void setMovimientoHorizontal(boolean valorIzquierda, boolean valorDerecha)
     {
         this.mueveIzquierda = valorIzquierda;
         this.mueveDerecha = valorDerecha;
     }
 
-    public void setSalto(boolean valorSalto)
+    public void setMovimientoVertical(boolean valorArriba, boolean valorAbajo)
     {
-        this.valorSalto = valorSalto;
+        this.mueveArriba = valorArriba;
+        this.mueveAbajo = valorAbajo;
     }
 
+    public void setAprietaE(boolean valor)
+    {
+        this.aprietaE = valor;
+    }
 
     public void setAtaca(boolean valorAtaca)
     {
@@ -49,9 +54,17 @@ public class JugadorRed {
         return this.mueveDerecha;
     }
 
-    public boolean solicitaSaltar()
+    public boolean mueveArriba() {
+        return mueveArriba;
+    }
+
+    public boolean mueveAbajo() {
+        return mueveAbajo;
+    }
+
+    public boolean aprietaE()
     {
-        return this.valorSalto;
+        return this.aprietaE;
     }
 
     public boolean ataca()

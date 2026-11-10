@@ -25,8 +25,8 @@ public class Nivel7 extends Nivel {
     }
 
     @Override
-    protected void configurarContenidoEspecifico(Jugador jugador) {
-        jefe = new Retumbar(CENTRO_MAPA, SUELO, jugador, 0, ANCHO_MAPA);
+    protected void configurarContenidoEspecifico(Jugador[] jugadores) {
+        jefe = new Retumbar(1, CENTRO_MAPA, SUELO, jugadores[0], 0, ANCHO_MAPA);
         agregarEntidadAlFondo(jefe);
         agregarEntidad(jefe.getManoIzquierda());
         agregarEntidad(jefe.getManoDerecha());

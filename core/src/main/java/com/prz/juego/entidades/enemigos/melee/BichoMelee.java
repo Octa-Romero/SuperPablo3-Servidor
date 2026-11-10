@@ -1,6 +1,7 @@
 package com.prz.juego.entidades.enemigos.melee;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.prz.juego.entidades.enemigos.TipoEnemigo;
 import com.prz.juego.entidades.jugadores.Jugador;
 import com.prz.juego.recursos.GestorRecursos;
 
@@ -8,16 +9,19 @@ public class BichoMelee extends EnemigoMelee {
 
     private static final float DURACION_FRAME_IDLE = 0.12f;
 
-    public BichoMelee(float x, float y, Jugador jugador) {
+    public BichoMelee(int id, float x, float y, Jugador jugador) {
         this(
+                id,
                 x,
                 y,
                 jugador,
                 GestorRecursos.obtenerTextura("Enemigos/BichoMelee/bichoMelee.png"));
+        this.tipo = TipoEnemigo.BICHO_MELEE;
     }
 
-    private BichoMelee(float x, float y, Jugador jugador, Texture spritesheet) {
+    private BichoMelee(int id, float x, float y, Jugador jugador, Texture spritesheet) {
         super(
+                id,
                 x,
                 y,
                 70,

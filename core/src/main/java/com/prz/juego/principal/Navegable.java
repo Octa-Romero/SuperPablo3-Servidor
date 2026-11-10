@@ -5,5 +5,7 @@ import com.badlogic.gdx.Screen;
 public interface Navegable {
     void cambiarPantalla(Screen screen);
 
-    void iniciarJuego();
+    void iniciarJuego(String rutaNivel);
+
+    void iniciarPartida();
 }

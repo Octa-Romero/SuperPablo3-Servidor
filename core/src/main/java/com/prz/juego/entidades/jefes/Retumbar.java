@@ -64,6 +64,7 @@ public class Retumbar extends Enemigo {
     private static final int CANTIDAD_DIRECCIONES_FUEGUITOS = 8;
     private static final int CANTIDAD_DISPAROS_LASER_SEGUIDOR = 3;
 
+    protected int id;
     private final float X_INICIAL;
     private final float Y_INICIAL;
     private final Mano MANO_IZQUIERDA;
@@ -170,6 +171,7 @@ public class Retumbar extends Enemigo {
     private int disparosLaserSeguidor;
 
     public Retumbar(
+        int id,
         float centroX,
         float y,
         Jugador jugador,
@@ -177,6 +179,7 @@ public class Retumbar extends Enemigo {
         float sueloXMax
     ) {
         super(
+            id,
             centroX - ANCHO / 2f,
             y,
             ANCHO,
@@ -225,9 +228,9 @@ public class Retumbar extends Enemigo {
         ANIMACION_FUEGUITO = new Animation<>(0.08f, framesFueguito);
         ANIMACION_FUEGUITO.setPlayMode(Animation.PlayMode.LOOP);
 
-        MANO_IZQUIERDA = new Mano(this, Mano.Lado.IZQUIERDA, jugador);
-        MANO_DERECHA = new Mano(this, Mano.Lado.DERECHA, jugador);
-        FUEGO_SUELO = new FuegoSuelo(sueloXMin, sueloXMax, y, jugador);
+        MANO_IZQUIERDA = new Mano(1,this, Mano.Lado.IZQUIERDA, jugador);
+        MANO_DERECHA = new Mano(1,this, Mano.Lado.DERECHA, jugador);
+        FUEGO_SUELO = new FuegoSuelo(1, sueloXMin, sueloXMax, y, jugador);
     }
 
     @Override

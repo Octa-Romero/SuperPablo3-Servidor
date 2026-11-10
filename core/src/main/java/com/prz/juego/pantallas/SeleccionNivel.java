@@ -28,7 +28,6 @@ import com.prz.juego.utilidades.Sonido;
 public class SeleccionNivel implements Screen {
 
     private final Navegable NAV;
-    private final Personajes PERSONAJE_ELEGIDO;
     private final PantallaJuego PANTALLA_HUB;
 
     private Stage stage;
@@ -44,9 +43,8 @@ public class SeleccionNivel implements Screen {
     private Texture texturaPortal7;
 
 
-    public SeleccionNivel(Navegable NAV, Personajes PERSONAJE_ELEGIDO, PantallaJuego PANTALLA_HUB) {
+    public SeleccionNivel(Navegable NAV, PantallaJuego PANTALLA_HUB) {
         this.NAV = NAV;
-        this.PERSONAJE_ELEGIDO = PERSONAJE_ELEGIDO;
         this.PANTALLA_HUB = PANTALLA_HUB;
     }
 
@@ -129,7 +127,7 @@ public class SeleccionNivel implements Screen {
                                 return;
                         }
 
-                        NAV.cambiarPantalla(new PantallaJuego(NAV, PERSONAJE_ELEGIDO, rutaNivel));
+                        NAV.iniciarJuego(rutaNivel);
                     }
                 });
 

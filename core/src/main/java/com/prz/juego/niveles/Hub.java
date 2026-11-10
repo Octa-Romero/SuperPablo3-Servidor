@@ -1,8 +1,6 @@
 package com.prz.juego.niveles;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -16,6 +14,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.prz.juego.entidades.Entidad;
 import com.prz.juego.entidades.enemigos.*;
 import com.prz.juego.entidades.jugadores.*;
+import com.prz.juego.hilos.JugadorRed;
 import com.prz.juego.sistemas.Camara;
 import com.prz.juego.sistemas.Colisiones;
 import com.prz.juego.sistemas.CuadroDialogo;
@@ -25,7 +24,6 @@ import com.prz.juego.utilidades.Entrada;
 import com.prz.juego.utilidades.FuenteJuego;
 import com.prz.juego.utilidades.Render;
 
-import java.awt.*;
 import java.util.ArrayList;
 
 public class Hub {
@@ -33,7 +31,7 @@ public class Hub {
     private Camara camara;
     private TiledMap mapa;
     private OrthogonalTiledMapRenderer mapRenderer;
-    private Jugador jugador;
+    private Jugador[] jugadores;
     private Colisiones colision;
     private ShapeRenderer shapeRenderer;
     private Rectangle centroHub;
@@ -42,14 +40,15 @@ public class Hub {
     private Dialogo dialogoPancrasio;
     private CuadroDialogo cuadroDialogo;
 
-    private final ArrayList<Entidad> ENTIDADES = new ArrayList<>();
-
-    public void cargar(String ruta, Jugador jugador) {
+    public void cargar(String ruta, Jugador[] jugadores) {
         camara = new Camara();
-        this.jugador = jugador;
-        this.jugador.escalar(2f);
-        this.jugador.setVelocidadX(Math.round(this.jugador.getVelocidadX() * 1.5f));
-        this.jugador.setAccionesHabilitadas(false);
+        this.jugadores = jugadores;
+
+        for(Jugador jugador : jugadores) {
+            jugador.escalar(2f);
+            jugador.setVelocidadX(Math.round(jugador.getVelocidadX() * 1.5f));
+            jugador.setAccionesHabilitadas(false);
+        }
         shapeRenderer = new ShapeRenderer();
 
         inicializarFuenteAlerta();
@@ -98,8 +97,21 @@ public class Hub {
     }
 
     private boolean estaCercaPancrasio() {
-        return zonaPancrasio != null && zonaPancrasio.overlaps(jugador.getBounds());
+        if (zonaPancrasio == null) return false;
+
+        for (Jugador jugador : jugadores) {
+            if (zonaPancrasio.overlaps(jugador.getBounds())) {
+                return true;
+            }
+        }
+        return false;
     }
+
+    private boolean estaCercaPancrasio(Jugador jugador) {
+        return zonaPancrasio != null
+            && zonaPancrasio.overlaps(jugador.getBounds());
+    }
+
 
     private void inicializarFuenteAlerta() {
         fontAlerta = FuenteJuego.generar(28);
@@ -113,11 +125,10 @@ public class Hub {
     public void render() {
         Render.batch.setProjectionMatrix(camara.getCamera().combined);
 
-        for (Entidad entidad : ENTIDADES) {
-            entidad.dibujar();
+        for (Jugador jugador : jugadores) {
+            jugador.dibujar();
         }
 
-        jugador.dibujar();
 
         if (cuadroDialogo.estaVisible()) {
             cuadroDialogo.dibujar(Render.batch, camara.getCamera());
@@ -136,55 +147,43 @@ public class Hub {
 
         colision.dibujarHitboxes(shapeRenderer);
 
-        for (Entidad entidad : ENTIDADES) {
-            entidad.dibujarHitbox(shapeRenderer);
-        }
-
         shapeRenderer.end();
     }
 
-    public void update(float delta, Entrada entrada) {
+    public void update(float delta) {
 
-        jugador.update(delta);
-        colision.chequearColision(jugador);
-
-        for (Entidad entidad : ENTIDADES) {
-            entidad.update(delta);
-            colision.chequearColision(entidad);
+        for (Jugador jugador : jugadores) {
+            jugador.update(delta);
+            colision.chequearColision(jugador);
         }
 
-        for (int i = ENTIDADES.size() - 1; i >= 0; i--) {
-            Entidad entidad = ENTIDADES.get(i);
-
-            if (entidad instanceof Enemigo) {
-                Enemigo enemigo = (Enemigo) entidad;
-
-                if (enemigo.estaMuerto()) {
-                    enemigo.dispose();
-                    ENTIDADES.remove(i);
-                }
-            }
-        }
         camara.seguirPersonaje(
-                jugador.getX() + jugador.getAncho() / 2f,
-                jugador.getY() + jugador.getAlto() / 2f,
+                jugadores[0].getX() + jugadores[0].getAncho() / 2f,
+                jugadores[0].getY() + jugadores[0].getAlto() / 2f,
                 delta);
 
         // La tecla E tambien abre la seleccion de nivel desde el centro del hub.
         // Solo consumirla aqui cuando haya una interaccion con Pancrasio.
-        if ((cuadroDialogo.estaVisible() || estaCercaPancrasio()) && entrada.aprietaE()) {
-            if (cuadroDialogo.estaVisible()) {
-                dialogoPancrasio.avanzar();
+        for (Jugador jugador : jugadores) {
+            JugadorRed estadoRed = jugador.getEstadoRed();
 
-                if (dialogoPancrasio.estaActivo()) {
-                    cuadroDialogo.mostrar(dialogoPancrasio.getMensajeActual());
+            if (estadoRed != null
+                && estadoRed.aprietaE()
+                && (cuadroDialogo.estaVisible()
+                || estaCercaPancrasio(jugador))) {
+
+                if (cuadroDialogo.estaVisible()) {
+                    dialogoPancrasio.avanzar();
+
+                    if (dialogoPancrasio.estaActivo()) {
+                        cuadroDialogo.mostrar(dialogoPancrasio.getMensajeActual());
+                    } else {
+                        cuadroDialogo.ocultar();
+                    }
                 } else {
-                    cuadroDialogo.ocultar();
+                    dialogoPancrasio.iniciar();
+                    cuadroDialogo.mostrar(dialogoPancrasio.getMensajeActual());
                 }
-            } else if (estaCercaPancrasio()) {
-                dialogoPancrasio.iniciar();
-
-                cuadroDialogo.mostrar(dialogoPancrasio.getMensajeActual());
             }
         }
     }
@@ -214,12 +213,14 @@ public class Hub {
     }
 
     public boolean estaEnCentroHub() {
+        if (centroHub == null) return false;
 
-        if (centroHub == null) {
-            return false;
+        for (Jugador jugador : jugadores) {
+            if (centroHub.overlaps(jugador.getBounds())) {
+                return true;
+            }
         }
-
-        return centroHub.overlaps(jugador.getBounds());
+        return false;
     }
 
     public Camera getCamara() {

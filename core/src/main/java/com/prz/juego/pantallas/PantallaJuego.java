@@ -5,58 +5,53 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
+import com.prz.juego.entidades.jugadores.BolaFuego;
 import com.prz.juego.entidades.jugadores.Jugador;
 import com.prz.juego.entidades.jugadores.Personajes;
 import com.prz.juego.niveles.Hub;
 import com.prz.juego.niveles.Nivel;
 import com.prz.juego.entidades.enemigos.Enemigo;
-import com.prz.juego.entidades.OrbeMagica;
 import com.prz.juego.hilos.JugadorRed;
 import com.prz.juego.principal.Navegable;
 import com.prz.juego.sistemas.Hud;
-import com.prz.juego.utilidades.Entrada;
-import com.prz.juego.niveles.Nivel;
 import com.prz.juego.red.Servidor;
-import com.prz.juego.utilidades.Global;
 import com.prz.juego.utilidades.Musica;
 import com.prz.juego.utilidades.Render;
 import com.prz.juego.utilidades.Sonido;
-import com.prz.juego.sistemas.Hud;
-
-import java.util.ArrayList;
 
 public class PantallaJuego implements Screen {
 
     private Servidor servidor;
     private final Navegable NAV;
     private Jugador[] jugadores = new Jugador[2];
-    private final Personajes PERSONAJE_ELEGIDO;
     private final Nivel NIVEL;
     private final MenuPausa MENU_PAUSA;
     private boolean pausado = false;
     private final Hud HUD;
     private Hub hub;
 
-    public PantallaJuego(Navegable NAV, Personajes PERSONAJE_ELEGIDO, Servidor servidor) {
-        this(NAV, PERSONAJE_ELEGIDO, servidor, null);
+    public PantallaJuego(Navegable NAV, Servidor servidor) {
+        this(NAV, servidor, null);
     }
 
-    public PantallaJuego(Navegable nav, Personajes PERSONAJE_ELEGIDO, Servidor servidor, String rutaNivel) {
+    public PantallaJuego(Navegable nav, Servidor servidor, String rutaNivel) {
         this.NAV = nav;
-        this.PERSONAJE_ELEGIDO = PERSONAJE_ELEGIDO;
         this.NIVEL = rutaNivel == null ? null : Nivel.crear(rutaNivel);
         this.MENU_PAUSA = new MenuPausa(nav, this);
         this.servidor = servidor;
 
-        JugadorRed[] jugadoresRed = servidor.getJugadoresRed();
+        JugadorRed[] estadosRed = servidor.getJugadoresRed();
+
+        jugadores = new Jugador[estadosRed.length];
 
         for (int i = 0; i < jugadores.length; i++) {
-            JugadorRed estado = jugadoresRed[i];
+            JugadorRed estado = estadosRed[i];
 
             Personajes personaje = Personajes.valueOf(estado.getPersonaje());
 
             jugadores[i] = personaje.crear(50 + i * 100, 150);
             jugadores[i].setEstadoRed(estado);
+        }
 
             if (rutaNivel == null) {
                 hub = new Hub();
@@ -71,11 +66,6 @@ public class PantallaJuego implements Screen {
             if (NIVEL != null) {
                 HUD.setJefe(NIVEL.getJefe());
             }
-        }
-    }
-
-    public PantallaJuego(Navegable NAV, Personajes PERSONAJE_ELEGIDO) {
-        this(NAV, PERSONAJE_ELEGIDO, servidor, null);
     }
 
 
@@ -106,6 +96,9 @@ public class PantallaJuego implements Screen {
 
         if (!pausado) {
             if (hub != null) {
+                for (Jugador jugador : jugadores) {
+                    servidor.enviarPosicion(jugador);
+                }
                 hub.update(delta);
             } else {
                 NIVEL.update(delta);
@@ -128,12 +121,12 @@ public class PantallaJuego implements Screen {
                     servidor.enviarEliminacionEnemigo(id);
                 }
 
-                for (OrbeMagica o : NIVEL.getOrbesNuevos()) {
-                    servidor.enviarCreacionOrbes(o.getId(), o.getX(), o.getY(), o.getDireccion());
+                for (BolaFuego b : NIVEL.getOrbesNuevos()) {
+                    servidor.enviarCreacionOrbes(b.getId(), b.getX(), b.getY(), b.getDireccion());
                 }
 
-                for (OrbeMagica o : NIVEL.getOrbesActivos()) {
-                    servidor.enviarEstadoOrbes(o.getId(), o.getX(), o.getY());
+                for (BolaFuego b : NIVEL.getOrbesActivos()) {
+                    servidor.enviarEstadoOrbes(b.getId(), b.getX(), b.getY());
                 }
 
                 for (Integer id : NIVEL.getOrbesEliminados()) {
@@ -148,10 +141,10 @@ public class PantallaJuego implements Screen {
         }
 
         // Ir a la seleccion de niveles desde el Hub
-        if (!pausado && hub != null && hub.estaEnCentroHub()) {
+        if (!pausado && hub != null && hub.estaEnCentroHub() && (jugadores[0].getEstadoRed().aprietaE() && jugadores[1].getEstadoRed().aprietaE())) {
 
             guardarPosicionCamara();
-            NAV.cambiarPantalla(new SeleccionNivel(NAV, PERSONAJE_ELEGIDO, this));
+            NAV.cambiarPantalla(new SeleccionNivel(NAV, this));
             return;
         }
 
@@ -174,7 +167,7 @@ public class PantallaJuego implements Screen {
             NIVEL.renderDebug();
 
             if (NIVEL.isGameOver()) {
-                NAV.cambiarPantalla(new GameOver(NAV, PERSONAJE_ELEGIDO));
+                NAV.cambiarPantalla(new GameOver(NAV));
                 return;
             }
         }
@@ -232,7 +225,7 @@ public class PantallaJuego implements Screen {
 
     public void volverAlHub() {
         Musica.MENU.sonar();
-        NAV.cambiarPantalla(new PantallaJuego(NAV, PERSONAJE_ELEGIDO, servidor));
+        NAV.cambiarPantalla(new PantallaJuego(NAV, servidor));
     }
 
     public void restaurarPosicionCamara() {
@@ -268,4 +261,4 @@ public class PantallaJuego implements Screen {
         HUD.dispose();
     }
 }
-}
+

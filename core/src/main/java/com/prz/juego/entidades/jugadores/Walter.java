@@ -1,3 +1,4 @@
+
 package com.prz.juego.entidades.jugadores;
 
 import com.prz.juego.entidades.Entidad;
@@ -11,41 +12,50 @@ import java.util.ArrayList;
 public class Walter extends Jugador {
 
     private static final float DURACION_ATAQUE = 0.35f;
-    private float tiempoAtaque;
     private static final float COOLDOWN_ATAQUE = 0.8f;
+
+    private float tiempoAtaque;
     private float tiempoCooldown;
     private boolean cooldownAtaque;
+
+    private int idOrbes = 1;
+
+    // Seguimiento para la sincronización de red.
+    private final ArrayList<BolaFuego> ORBES_NUEVOS = new ArrayList<>();
+    private final ArrayList<Integer> ID_ORBES_ELIMINADOS = new ArrayList<>();
+
     private ArrayList<Lanzable> proyectiles;
     private ArrayList<Entidad> entidades;
     private Colisiones colision;
 
     public Walter(float x, float y) {
         super(
-                x,
-                y,
-                50,
-                80,
-                140,
-                5,
-                0.5,
-                GestorRecursos.obtenerTextura("Personajes/Walter/walter.png"),
-                GestorRecursos.obtenerTextura("Hud/walter_hud.png"));
+            x, y, 50, 80, 140, 5, 0.5,
+            GestorRecursos.obtenerTextura("Personajes/Walter/walter.png"),
+            GestorRecursos.obtenerTextura("Hud/walter_hud.png")
+        );
+
         ANIMACION.configurar(
-                GestorRecursos.obtenerTextura("Personajes/Walter/walter_spritesheet.png"),
-                540,
-                450,
-                new int[] {0},
-                new int[] {1, 2, 3, 4, 5, 3},
-                null,
-                new int[] {6},
-                0.12f);
+            GestorRecursos.obtenerTextura(
+                "Personajes/Walter/walter_spritesheet.png"
+            ),
+            540,
+            450,
+            new int[]{0},
+            new int[]{1, 2, 3, 4, 5, 3},
+            null,
+            new int[]{6},
+            0.12f
+        );
+
         configurarSpriteVisual(96f, 80f, 0f, -46f, 0f);
     }
 
     public void configurarAtaque(
-            ArrayList<Entidad> entidades,
-            Colisiones colision,
-            ArrayList<Lanzable> proyectiles) {
+        ArrayList<Entidad> entidades,
+        Colisiones colision,
+        ArrayList<Lanzable> proyectiles
+    ) {
         this.entidades = entidades;
         this.colision = colision;
         this.proyectiles = proyectiles;
@@ -64,6 +74,7 @@ public class Walter extends Jugador {
 
         if (cooldownAtaque) {
             tiempoCooldown += delta;
+
             if (tiempoCooldown >= COOLDOWN_ATAQUE) {
                 cooldownAtaque = false;
                 tiempoCooldown = 0f;
@@ -84,19 +95,30 @@ public class Walter extends Jugador {
         if (entidades == null || colision == null || proyectiles == null) {
             return;
         }
-        float direccion = mirandoDerecha ? 1f : -1f;
-        float posicionX;
-        if (direccion > 0) {
-            posicionX = x + ancho + 50f;
-        } else {
-            posicionX = x - 50f;
-        }
+
+        int direccion = mirandoDerecha ? 1 : -1;
+
+        float posicionX = direccion > 0
+            ? x + ancho + 50f
+            : x - 50f;
+
         float posicionY = y + alto / 2f - 10f;
 
         Sonido.BOLA_FUEGO.sonar();
-        proyectiles.add(
-                new BolaFuego(
-                        posicionX, posicionY, direccion, this, colision, entidades, proyectiles));
+
+        BolaFuego bola = new BolaFuego(
+            idOrbes++,
+            posicionX,
+            posicionY,
+            direccion,
+            this,
+            colision,
+            entidades,
+            proyectiles
+        );
+
+        proyectiles.add(bola);
+        ORBES_NUEVOS.add(bola);
     }
 
     @Override
@@ -105,5 +127,44 @@ public class Walter extends Jugador {
             return danio * 2;
         }
         return danio;
+    }
+
+    @Override
+    public Personajes getPersonaje() {
+        return Personajes.WALTER;
+    }
+
+    public ArrayList<BolaFuego> getOrbesNuevos() {
+        ArrayList<BolaFuego> copia = new ArrayList<>(ORBES_NUEVOS);
+        ORBES_NUEVOS.clear();
+        return copia;
+    }
+
+    public ArrayList<BolaFuego> getOrbesActivos() {
+        ArrayList<BolaFuego> activos = new ArrayList<>();
+
+        if (proyectiles == null) {
+            return activos;
+        }
+
+        for (Lanzable proyectil : proyectiles) {
+            if (proyectil instanceof BolaFuego bola && bola.estaActiva()) {
+                activos.add(bola);
+            }
+        }
+
+        return activos;
+    }
+
+    public void registrarOrbeEliminado(int id) {
+        ID_ORBES_ELIMINADOS.add(id);
+    }
+
+    public ArrayList<Integer> getOrbesEliminados() {
+        ArrayList<Integer> copia =
+            new ArrayList<>(ID_ORBES_ELIMINADOS);
+
+        ID_ORBES_ELIMINADOS.clear();
+        return copia;
     }
 }

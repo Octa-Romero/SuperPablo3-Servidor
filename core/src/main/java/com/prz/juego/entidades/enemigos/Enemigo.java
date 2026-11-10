@@ -11,10 +11,11 @@ import com.prz.juego.utilidades.Sonido;
 
 public abstract class Enemigo extends Entidad {
 
+    protected int id;
+    protected TipoEnemigo tipo;
     protected float velocidad;
     protected float distanciaDeteccion = 500;
     protected float distanciaDeteccionVertical = 150;
-    protected float direccion = 1; // 1 derecha, -1 izquierda
     protected float tiempoPatrulla = 0;
     protected boolean caminandoPatrulla = false;
     protected boolean atacando = false;
@@ -22,6 +23,7 @@ public abstract class Enemigo extends Entidad {
     protected boolean sueltaReliquia = false;
 
     protected Enemigo(
+            int id,
             float x,
             float y,
             float ancho,
@@ -32,6 +34,7 @@ public abstract class Enemigo extends Entidad {
             Jugador jugador,
             Texture textura) {
         super(x, y, ancho, alto, velocidadX, vida, danio, textura);
+        this.id = id;
         this.jugador = jugador;
         velocidad = velocidadX;
         duracionInvencibilidad = 1f;
@@ -197,9 +200,20 @@ public abstract class Enemigo extends Entidad {
         shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
     }
 
-    public float getDireccion() {
+    public int getDireccion() {
         return direccion;
     }
+
+    public int getId()
+    {
+        return this.id;
+    }
+
+    public TipoEnemigo getTipo()
+    {
+        return this.tipo;
+    }
+
 
     public void setSueltaReliquia(boolean valor) {
         this.sueltaReliquia = valor;

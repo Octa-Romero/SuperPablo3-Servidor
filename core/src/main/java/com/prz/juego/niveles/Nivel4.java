@@ -12,7 +12,7 @@ public class Nivel4 extends Nivel {
     }
 
     @Override
-    protected void configurarContenidoEspecifico(Jugador jugador) {
+    protected void configurarContenidoEspecifico(Jugador[] jugadores) {
         // Este mapa todavía no define entidades propias del nivel.
     }
 }

@@ -21,9 +21,10 @@ public class BolaFuego implements Lanzable {
     private static final float DISTANCIA_MAXIMA = 1000;
     private static final float RADIO = 12f;
     private static final float VELOCIDAD_ROTACION = -720f;
+    private int id;
     private float x;
     private float y;
-    private final float DIRECCION;
+    private final int DIRECCION;
     private float distanciaRecorrida;
     private final Sprite SPRITE;
     private final Circle BOUNDS;
@@ -34,13 +35,15 @@ public class BolaFuego implements Lanzable {
     private final ArrayList<Lanzable> PROYECTILES;
 
     public BolaFuego(
+            int id,
             float x,
             float y,
-            float DIRECCION,
+            int DIRECCION,
             Walter WALTER,
             Colisiones COLISION,
             ArrayList<Entidad> ENTIDADES,
             ArrayList<Lanzable> PROYECTILES) {
+        this.id = id;
         this.x = x;
         this.y = y;
         this.DIRECCION = DIRECCION;
@@ -154,6 +157,24 @@ public class BolaFuego implements Lanzable {
 
         shapeRenderer.setColor(Color.ORANGE);
         shapeRenderer.circle(BOUNDS.x, BOUNDS.y, BOUNDS.radius);
+    }
+    public int getId()
+    {
+        return this.id;
+    }
+
+    public float getX()
+    {
+        return this.x;
+    }
+
+    public float getY() {
+        return this.y;
+    }
+
+    public int getDireccion()
+    {
+        return this.DIRECCION;
     }
 
     @Override

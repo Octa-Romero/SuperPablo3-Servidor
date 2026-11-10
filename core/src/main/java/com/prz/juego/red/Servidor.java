@@ -1,7 +1,7 @@
 package com.prz.juego.red;
 
-import com.prz.juego.entidades.Jugador;
-import com.prz.juego.entidades.TipoEnemigo;
+import com.prz.juego.entidades.enemigos.TipoEnemigo;
+import com.prz.juego.entidades.jugadores.Jugador;
 import com.prz.juego.hilos.HiloServidor;
 import com.prz.juego.hilos.JugadorRed;
 
@@ -16,14 +16,9 @@ public class Servidor {
         }
     }
 
-    public JugadorRed[] getJugadoresRed()
-    {
-        return hilo.getJugadores();
-    }
-
     public void enviarPosicion(Jugador jugador)
     {
-        String msj = "POS;" + jugador.getPersonaje().name() + ";" + jugador.getX() + ";" + jugador.getY() + ";" + jugador.getDireccion();
+        String msj = "POS;" + jugador.getPersonaje().name() + ";" + jugador.getX() + ";" + jugador.getY() + ";" + jugador.getDireccion() + ";" + jugador.estaEnSuelo() + ";" + jugador.estaTrepando();
 
         hilo.enviarMensajeATodos(msj);
     }
@@ -77,6 +72,11 @@ public class Servidor {
     {
         String msj = "ELIMINAR_ORBE;" + id;
         hilo.enviarMensajeATodos(msj);
+    }
+
+    public JugadorRed[] getJugadoresRed()
+    {
+        return hilo.getJugadores();
     }
 
     public void cerrar() {

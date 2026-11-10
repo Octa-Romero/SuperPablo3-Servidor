@@ -8,7 +8,6 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.prz.juego.entidades.Entidad;
 import com.prz.juego.entidades.Lanzable;
-import com.prz.juego.entidades.OrbeMagica;
 import com.prz.juego.entidades.Reliquia;
 import com.prz.juego.entidades.enemigos.Enemigo;
 import com.prz.juego.entidades.enemigos.rango.EnemigoRango;
@@ -37,7 +36,6 @@ public abstract class Nivel {
     private final ArrayList<Entidad> ENTIDADES_PENDIENTES_ELIMINAR = new ArrayList<>();
     private final ArrayList<Lanzable> PROYECTILES = new ArrayList<>();
     private final ArrayList<Reliquia> RELIQUIAS = new ArrayList<>();
-    private final ArrayList<Entidad> entidades = new ArrayList<>();
     private final ArrayList<Enemigo> enemigosNuevos = new ArrayList<>();
     private ArrayList<Integer> idEnemigosEliminados = new ArrayList<>();
     private ShapeRenderer shapeRenderer;
@@ -70,7 +68,7 @@ public abstract class Nivel {
         }
     }
 
-    public void cargar(String ruta, Jugador[] jugadores) {
+    public void cargar(Jugador[] jugadores) {
         camara = new Camara();
 
         this.jugadores = jugadores;
@@ -84,9 +82,6 @@ public abstract class Nivel {
                 walter = w;
             }
         }
-
-        agregarEnemigo(new Bicho1(idEnemigo++, 2000, 300, jugadores[0]));
-        agregarEnemigo(new Bicho1(idEnemigo++, 2200, 300, jugadores[0]));
 
         shapeRenderer = new ShapeRenderer();
 
@@ -105,9 +100,7 @@ public abstract class Nivel {
 
         walter.configurarAtaque(ENTIDADES, colision, PROYECTILES);
 
-        for(Jugador jugador : jugadores) {
-            configurarContenidoEspecifico(jugador);
-        }
+        configurarContenidoEspecifico(jugadores);
 
         MapProperties props = mapa.getProperties();
 
@@ -119,6 +112,8 @@ public abstract class Nivel {
         float mapTotalWidth = tileWidth * mapWidthTiles;
         float mapTotalHeight = tileHeight * mapHeightTiles;
 
+        anchoMapa = mapTotalWidth;
+
         camara.setLimitesMapa(mapTotalWidth, mapTotalHeight);
 
         mapRenderer = new OrthogonalTiledMapRenderer(mapa, 1f);
@@ -128,7 +123,7 @@ public abstract class Nivel {
 
     protected abstract String getRutaMapa();
 
-    protected abstract void configurarContenidoEspecifico(Jugador jugador);
+    protected abstract void configurarContenidoEspecifico(Jugador[] jugadores);
 
     protected float getPosicionInicialX() {
         return 50;
@@ -146,11 +141,19 @@ public abstract class Nivel {
         }
 
         ENTIDADES.add(entidad);
+
+        if (entidad instanceof Enemigo enemigo) {
+            enemigosNuevos.add(enemigo);
+        }
     }
 
     protected void agregarEntidadDiferida(Entidad entidad) {
         if (entidad instanceof EnemigoRango) {
             ((EnemigoRango) entidad).configurarDisparo(colision, PROYECTILES);
+        }
+
+        if (entidad instanceof Enemigo enemigo) {
+            enemigosNuevos.add(enemigo);
         }
 
         ENTIDADES_PENDIENTES.add(entidad);
@@ -171,6 +174,10 @@ public abstract class Nivel {
             ((EnemigoRango) entidad).configurarDisparo(colision, PROYECTILES);
         }
 
+        if (entidad instanceof Enemigo enemigo) {
+            enemigosNuevos.add(enemigo);
+        }
+
         ENTIDADES.add(0, entidad);
     }
 
@@ -188,30 +195,31 @@ public abstract class Nivel {
 
     public void render() {
         Render.batch.setProjectionMatrix(camara.getCamera().combined);
-        boolean dibujarJugadorAlFrente = getJefe() != null;
+
+        boolean dibujarJugadoresAlFrente = getJefe() != null;
 
         for (Entidad entidad : ENTIDADES) {
-            if (dibujarJugadorAlFrente && entidad == jugador) {
+            if (dibujarJugadoresAlFrente
+                && (entidad == pablo || entidad == walter)) {
                 continue;
             }
 
             entidad.dibujar();
+        }
 
-            if (dibujarJugadorAlFrente) {
-                getJefe().dibujarAtaquesExtra();
-                walter.dibujar();
-                pablo.dibujar();
-            }
+        if (dibujarJugadoresAlFrente) {
+            getJefe().dibujarAtaquesExtra();
+            pablo.dibujar();
+            walter.dibujar();
+        }
 
-            for (Lanzable proyectil : PROYECTILES) {
-                proyectil.dibujar();
-            }
+        for (Lanzable proyectil : PROYECTILES) {
+            proyectil.dibujar();
+        }
 
-            // Dibujar las reliquias dentro del mundo del juego.
-            for (Reliquia reliquia : RELIQUIAS) {
-                reliquia.dibujar();
-            }
-    }
+        for (Reliquia reliquia : RELIQUIAS) {
+            reliquia.dibujar();
+        }
     }
 
     public void renderDebug() {
@@ -251,8 +259,14 @@ public abstract class Nivel {
         }
         for (Entidad entidad : ENTIDADES_PENDIENTES_ELIMINAR) {
             if (ENTIDADES.remove(entidad)) {
+
+                if (entidad instanceof Enemigo enemigo) {
+                    idEnemigosEliminados.add(enemigo.getId());
+                }
+
                 entidad.dispose();
             }
+
             ENTIDADES_PENDIENTES.remove(entidad);
         }
         ENTIDADES_PENDIENTES_ELIMINAR.clear();
@@ -262,9 +276,15 @@ public abstract class Nivel {
         // Actualizar proyectiles.
         for (int i = PROYECTILES.size() - 1; i >= 0; i--) {
             Lanzable proyectil = PROYECTILES.get(i);
+
             proyectil.update(delta);
 
             if (!proyectil.estaActiva()) {
+
+                if (proyectil instanceof BolaFuego bola) {
+                    walter.registrarOrbeEliminado(bola.getId());
+                }
+
                 PROYECTILES.remove(i);
             }
         }
@@ -311,13 +331,16 @@ public abstract class Nivel {
             }
         }
 
-        // Actualizar reliquias.
         for (int i = RELIQUIAS.size() - 1; i >= 0; i--) {
             Reliquia reliquia = RELIQUIAS.get(i);
-            if (reliquia.actualizar(jugador, delta)) {
-                tieneReliquia = true;
-                reliquia.dispose();
-                RELIQUIAS.remove(i);
+
+            for (Jugador jugador : jugadores) {
+                if (reliquia.actualizar(jugador, delta)) {
+                    tieneReliquia = true;
+                    reliquia.dispose();
+                    RELIQUIAS.remove(i);
+                    break;
+                }
             }
         }
 
@@ -388,12 +411,6 @@ public abstract class Nivel {
         return this.gameOver;
     }
 
-    private void agregarEnemigo(Enemigo enemigo)
-    {
-        entidades.add(enemigo);
-        enemigosNuevos.add(enemigo);
-    }
-
     public ArrayList<Enemigo> getEnemigosNuevos() {
         ArrayList<Enemigo> nuevos = new ArrayList<>(enemigosNuevos);
         enemigosNuevos.clear();
@@ -403,7 +420,7 @@ public abstract class Nivel {
     public ArrayList<Enemigo> getEnemigosActivos()
     {
         ArrayList<Enemigo> enemigos = new ArrayList<>();
-        for(Entidad e : entidades)
+        for(Entidad e : ENTIDADES)
         {
             if(e instanceof Enemigo)
             {
@@ -419,16 +436,21 @@ public abstract class Nivel {
         return copia;
     }
 
-    public ArrayList<OrbeMagica> getOrbesNuevos() {
+    public ArrayList<BolaFuego> getOrbesNuevos() {
         return walter.getOrbesNuevos();
     }
 
-    public ArrayList<OrbeMagica> getOrbesActivos() {
+    public ArrayList<BolaFuego> getOrbesActivos() {
         return walter.getOrbesActivos();
     }
 
     public ArrayList<Integer> getOrbesEliminados() {
         return walter.getOrbesEliminados();
+    }
+
+    public int getIdEnemigo()
+    {
+        return this.idEnemigo++;
     }
 
     public boolean tieneReliquia() {

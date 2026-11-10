@@ -2,6 +2,7 @@ package com.prz.juego.entidades.jugadores;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.prz.juego.entidades.Entidad;
+import com.prz.juego.hilos.JugadorRed;
 import com.prz.juego.sistemas.Colisiones;
 import com.prz.juego.utilidades.Entrada;
 import com.prz.juego.utilidades.Render;
@@ -9,7 +10,7 @@ import com.prz.juego.utilidades.Sonido;
 
 public abstract class Jugador extends Entidad {
 
-    protected Entrada entrada;
+    protected JugadorRed estadoRed;
     private final Texture TEXTURA_HUD;
     protected boolean atacando;
     protected float respawnY = 1000;
@@ -34,10 +35,6 @@ public abstract class Jugador extends Entidad {
         this.TEXTURA_HUD = TEXTURA_HUD;
     }
 
-    public void setEntrada(Entrada entrada) {
-        this.entrada = entrada;
-    }
-
     @Override
     public void update(float delta) {
         guardarPosicionAnterior();
@@ -47,17 +44,17 @@ public abstract class Jugador extends Entidad {
 
         if (!dentroEscalera) {
             trepando = false;
-        } else if (entrada.mueveArriba() || entrada.mueveAbajo()) {
+        } else if (estadoRed.mueveArriba() || estadoRed.mueveAbajo()) {
             trepando = true;
         }
 
         if (trepando && dentroEscalera) {
             enSuelo = false;
 
-            if (entrada.mueveArriba()) {
+            if (estadoRed.mueveArriba()) {
                 velocidadY = VELOCIDAD_ESCALERA;
                 y += VELOCIDAD_ESCALERA * delta;
-            } else if (entrada.mueveAbajo()) {
+            } else if (estadoRed.mueveAbajo()) {
                 velocidadY = -VELOCIDAD_ESCALERA;
                 y -= VELOCIDAD_ESCALERA * delta;
             } else {
@@ -67,7 +64,7 @@ public abstract class Jugador extends Entidad {
             bounds.setPosition(x, y);
 
         } else {
-            if (accionesHabilitadas && entrada.mueveArriba() && enSuelo) {
+            if (accionesHabilitadas && estadoRed.mueveArriba() && enSuelo) {
                 saltar();
             }
 
@@ -82,15 +79,15 @@ public abstract class Jugador extends Entidad {
             trepando = false;
         }
 
-        if (entrada.mueveIzquierda()) {
+        if (estadoRed.mueveIzquierda()) {
             x -= velocidadX * delta;
         }
 
-        if (entrada.mueveDerecha()) {
+        if (estadoRed.mueveDerecha()) {
             x += velocidadX * delta;
         }
 
-        if (accionesHabilitadas && entrada.ataca()) {
+        if (accionesHabilitadas && estadoRed.ataca()) {
             atacar();
         }
 
@@ -144,6 +141,18 @@ public abstract class Jugador extends Entidad {
 
     public boolean estaAtacando() {
         return atacando;
+    }
+
+    public abstract Personajes getPersonaje();
+
+    public void setEstadoRed(JugadorRed estado)
+    {
+        this.estadoRed = estado;
+    }
+
+    public JugadorRed getEstadoRed()
+    {
+        return this.estadoRed;
     }
 
     public void setColisiones(Colisiones colisiones) {

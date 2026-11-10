@@ -19,13 +19,11 @@ import com.prz.juego.utilidades.Render;
 public class GameOver implements Screen {
 
     private final Navegable NAV;
-    private final Personajes PERSONAJE_ELEGIDO;
     private Stage stage;
     private BitmapFont font;
 
-    public GameOver(Navegable NAV, Personajes PERSONAJE_ELEGIDO) {
+    public GameOver(Navegable NAV) {
         this.NAV = NAV;
-        this.PERSONAJE_ELEGIDO = PERSONAJE_ELEGIDO;
     }
 
     @Override
@@ -74,7 +72,7 @@ public class GameOver implements Screen {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
                         Musica.MENU.sonar();
-                        NAV.cambiarPantalla(new PantallaJuego(NAV, PERSONAJE_ELEGIDO));
+                        //NAV.cambiarPantalla(new PantallaJuego(NAV, PERSONAJE_ELEGIDO));
                     }
                 });
 

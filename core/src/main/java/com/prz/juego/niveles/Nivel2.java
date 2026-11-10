@@ -19,8 +19,8 @@ public class Nivel2 extends Nivel {
     }
 
     @Override
-    protected void configurarContenidoEspecifico(Jugador jugador) {
-        agregarEntidad(new BichoRango(2650, 650, jugador, EnemigoRango.Modo.ESTATICO));
-        agregarEntidad(new BichoRango(5000, 260, jugador, EnemigoRango.Modo.MOVIL));
+    protected void configurarContenidoEspecifico(Jugador[] jugadores) {
+        agregarEntidad(new BichoRango(getIdEnemigo(), 2650, 650, jugadores[0], EnemigoRango.Modo.ESTATICO));
+        agregarEntidad(new BichoRango(getIdEnemigo(), 5000, 260, jugadores[0], EnemigoRango.Modo.MOVIL));
     }
 }

@@ -23,7 +23,6 @@ import com.prz.juego.utilidades.Sonido;
 
 public class SeleccionPersonaje implements Screen {
 
-    private Servidor servidor;
     private final Navegable NAV;
     private final PantallaMenu PANTALLA_MENU;
     private Stage stage;
@@ -148,6 +147,10 @@ public class SeleccionPersonaje implements Screen {
         Render.end();
         stage.act(delta);
         stage.draw();
+        if(Global.empieza)
+        {
+            NAV.iniciarPartida();
+        }
     }
 
     @Override

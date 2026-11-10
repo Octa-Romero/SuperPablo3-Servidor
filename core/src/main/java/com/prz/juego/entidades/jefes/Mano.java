@@ -106,8 +106,9 @@ public class Mano extends Enemigo {
     private float tiempoMovimientoIdle;
     private float desfaseMovimientoVertical;
 
-    public Mano(Retumbar RETUMBAR, Lado LADO, Jugador jugador) {
+    public Mano(int id, Retumbar RETUMBAR, Lado LADO, Jugador jugador) {
         super(
+            id,
             0,
             RETUMBAR.getY(),
             ANCHO,

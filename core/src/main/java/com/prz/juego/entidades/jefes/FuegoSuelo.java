@@ -34,8 +34,9 @@ public class FuegoSuelo extends Enemigo {
     private float tiempoRestante = 0f;
     private float tiempoBajada = 0f;
 
-    public FuegoSuelo(float xMin, float xMax, float ySuelo, Jugador jugador) {
+    public FuegoSuelo(int id, float xMin, float xMax, float ySuelo, Jugador jugador) {
         super(
+            id,
             xMin,
             ySuelo,
             xMax - xMin,

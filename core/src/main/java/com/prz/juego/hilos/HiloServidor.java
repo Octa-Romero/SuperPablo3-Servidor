@@ -1,7 +1,6 @@
 package com.prz.juego.hilos;
 
 
-import com.prz.juego.entidades.Personajes;
 import com.prz.juego.utilidades.Global;
 
 import java.io.IOException;
@@ -96,21 +95,29 @@ public class HiloServidor extends Thread {
 
         if (mensajeParametrizado[0].equals("INPUT")) {
             if (mensajeParametrizado[1].equals("IZQUIERDA")) {
-                jugadores[indice].setMovimiento(true, jugadores[indice].mueveDerecha());
+                jugadores[indice].setMovimientoHorizontal(true, jugadores[indice].mueveDerecha());
             } else if (mensajeParametrizado[1].equals("NOIZQUIERDA")) {
-                jugadores[indice].setMovimiento(false, jugadores[indice].mueveDerecha());
+                jugadores[indice].setMovimientoHorizontal(false, jugadores[indice].mueveDerecha());
             } else if (mensajeParametrizado[1].equals("DERECHA")) {
-                jugadores[indice].setMovimiento(jugadores[indice].mueveIzquierda(), true);
+                jugadores[indice].setMovimientoHorizontal(jugadores[indice].mueveIzquierda(), true);
             } else if (mensajeParametrizado[1].equals("NODERECHA")) {
-                jugadores[indice].setMovimiento(jugadores[indice].mueveIzquierda(), false);
+                jugadores[indice].setMovimientoHorizontal(jugadores[indice].mueveIzquierda(), false);
             } else if (mensajeParametrizado[1].equals("ARRIBA")) {
-                jugadores[indice].setSalto(true);
+                jugadores[indice].setMovimientoVertical(true, jugadores[indice].mueveAbajo());
             } else if (mensajeParametrizado[1].equals("NOARRIBA")) {
-                jugadores[indice].setSalto(false);
+                jugadores[indice].setMovimientoVertical(false, jugadores[indice].mueveAbajo());
+            } else if (mensajeParametrizado[1].equals("ABAJO")) {
+                jugadores[indice].setMovimientoVertical(jugadores[indice].mueveArriba(), true);
+            } else if (mensajeParametrizado[1].equals("NOABAJO")) {
+                jugadores[indice].setMovimientoVertical(jugadores[indice].mueveArriba(), false);
             } else if (mensajeParametrizado[1].equals("ATACA")) {
                 jugadores[indice].setAtaca(true);
             } else if (mensajeParametrizado[1].equals("NOATACA")) {
                 jugadores[indice].setAtaca(false);
+            }else if (mensajeParametrizado[1].equals("E")) {
+                jugadores[indice].setAprietaE(true);
+            } else if (mensajeParametrizado[1].equals("NOE")) {
+                jugadores[indice].setAprietaE(false);
             }
         }
     }

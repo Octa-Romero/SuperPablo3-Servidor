@@ -16,6 +16,7 @@ public abstract class Entidad {
     protected float anchoSprite, altoSprite;
     protected float offsetSpriteXDerecha, offsetSpriteXIzquierda, offsetSpriteY;
     protected float xAnterior, yAnterior;
+    protected int direccion = 1;
     protected int velocidadX;
     protected float velocidadY = 0;
     protected final float GRAVEDAD = 400;
@@ -269,6 +270,11 @@ public abstract class Entidad {
 
     public float getAlto() {
         return alto;
+    }
+
+    public int getDireccion()
+    {
+        return this.direccion;
     }
 
     public Rectangle getBounds() {
