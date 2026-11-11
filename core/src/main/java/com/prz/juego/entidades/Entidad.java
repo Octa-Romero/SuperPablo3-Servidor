@@ -208,19 +208,18 @@ public abstract class Entidad {
         actualizarSpriteVisual();
     }
 
-    protected void orientarSprite(Sprite sprite, float direccion) {
+    protected void orientarSprite(Sprite sprite, float movimiento) {
+        if (sprite == null) return;
 
-        if (sprite == null) {
-            return;
+        if (movimiento > 0) {
+            direccion = 1;
+        } else if (movimiento < 0) {
+            direccion = -1;
         }
 
-        if (direccion != 0) {
-            mirandoDerecha = direccion > 0;
-        }
+        boolean invertir = direccion < 0;
 
-        boolean debeInvertirse = !mirandoDerecha;
-
-        if (sprite.isFlipX() != debeInvertirse) {
+        if (sprite.isFlipX() != invertir) {
             sprite.flip(true, false);
         }
     }
@@ -230,7 +229,6 @@ public abstract class Entidad {
     protected void actualizarOrientacionSegunMovimiento() {
         orientarSprite(sprite, x - xAnterior);
     }
-
     protected void morir() {
         muerto = true;
     }

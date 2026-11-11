@@ -87,15 +87,6 @@ public class PantallaJuego implements Screen {
     public void render(float delta) {
         Render.limpiarPantalla();
 
-        //if (entrada.aprietaEscape()) {
-        //    pausado = !pausado;
-        //    if (pausado) {
-        //        menuPausa.activar();
-        //    } else {
-        //        menuPausa.desactivar();
-        //    }
-        //}
-
         if (!pausado) {
             if (hub != null) {
                 hub.update(delta);

@@ -89,53 +89,48 @@ public class SeleccionNivel implements Screen {
         texturaPortal7 = GestorRecursos.obtenerTextura("Menu/Portales/portal7.png");
     }
 
-    private ImageButton crearPortal(Texture textura, final int NUMERO_NIVEL) {
+    private ImageButton crearPortal(Texture textura) {
 
-        ImageButton.ImageButtonStyle style = new ImageButton.ImageButtonStyle();
+        ImageButton.ImageButtonStyle style =
+            new ImageButton.ImageButtonStyle();
 
-        style.imageUp = new TextureRegionDrawable(new TextureRegion(textura));
+        style.imageUp =
+            new TextureRegionDrawable(new TextureRegion(textura));
 
-        ImageButton portal = new ImageButton(style);
+        return new ImageButton(style);
+    }
 
-        portal.addListener(
-                new ClickListener() {
-                    @Override
-                    public void clicked(InputEvent event, float x, float y) {
+    private void iniciarNivel(int numeroNivel) {
 
-                        String rutaNivel;
+        String rutaNivel;
 
-                        switch (NUMERO_NIVEL) {
-                            case 1:
-                                rutaNivel = "Niveles/Niveles/Level1.tmx";
-                                break;
-                            case 2:
-                                rutaNivel = "Niveles/Niveles/Nivel2.1.tmx";
-                                break;
-                            case 3:
-                                rutaNivel = "Niveles/Niveles/Nivel3.tmx";
-                                break;
-                            case 4:
-                                rutaNivel = "Niveles/Niveles/nivel4.tmx";
-                                break;
-                            case 5:
-                                rutaNivel = "Niveles/Niveles/Nivel5.tmx";
-                                break;
-                            case 6:
-                                rutaNivel = "Niveles/Niveles/Nivel6.tmx";
-                                break;
-                            case 7:
-                                rutaNivel = "Niveles/Niveles/Nivel7.tmx";
-                                break;
-                            default:
-                                return;
-                        }
-                        if(nivelIniciado) {
-                            NAV.iniciarJuego(rutaNivel);
-                        }
-                    }
-                });
+        switch (numeroNivel) {
+            case 1:
+                rutaNivel = "Niveles/Niveles/Level1.tmx";
+                break;
+            case 2:
+                rutaNivel = "Niveles/Niveles/Nivel2.1.tmx";
+                break;
+            case 3:
+                rutaNivel = "Niveles/Niveles/Nivel3.tmx";
+                break;
+            case 4:
+                rutaNivel = "Niveles/Niveles/nivel4.tmx";
+                break;
+            case 5:
+                rutaNivel = "Niveles/Niveles/Nivel5.tmx";
+                break;
+            case 6:
+                rutaNivel = "Niveles/Niveles/Nivel6.tmx";
+                break;
+            case 7:
+                rutaNivel = "Niveles/Niveles/Nivel7.tmx";
+                break;
+            default:
+                return;
+        }
 
-        return portal;
+        NAV.iniciarJuego(rutaNivel);
     }
 
     private void animarPortal(ImageButton portal, float retraso) {
@@ -156,13 +151,13 @@ public class SeleccionNivel implements Screen {
 
         titulo.addAction(Actions.sequence(Actions.delay(0.2f), Actions.fadeIn(0.6f)));
 
-        ImageButton portal1 = crearPortal(texturaPortal1, 1);
-        ImageButton portal2 = crearPortal(texturaPortal2, 2);
-        ImageButton portal3 = crearPortal(texturaPortal3, 3);
-        ImageButton portal4 = crearPortal(texturaPortal4, 4);
-        ImageButton portal5 = crearPortal(texturaPortal5, 5);
-        ImageButton portal6 = crearPortal(texturaPortal6, 6);
-        ImageButton portal7 = crearPortal(texturaPortal7, 7);
+        ImageButton portal1 = crearPortal(texturaPortal1);
+        ImageButton portal2 = crearPortal(texturaPortal2);
+        ImageButton portal3 = crearPortal(texturaPortal3);
+        ImageButton portal4 = crearPortal(texturaPortal4);
+        ImageButton portal5 = crearPortal(texturaPortal5);
+        ImageButton portal6 = crearPortal(texturaPortal6);
+        ImageButton portal7 = crearPortal(texturaPortal7);
 
 
         TextButton.TextButtonStyle estiloCancelar = new TextButton.TextButtonStyle();
@@ -222,7 +217,15 @@ public class SeleccionNivel implements Screen {
         if (voto1 != 0 && voto1 == voto2 && !nivelIniciado) {
             nivelIniciado = true;
 
+            for (JugadorRed jugador : estadosRed) {
+                jugador.setSolicitoSeleccionNivel(false);
+                jugador.setNivelSeleccionado(0);
+            }
+
             servidor.enviarInicioNivel(voto1);
+
+            iniciarNivel(voto1);
+            return;
         }
 
         // Dibujar el fondo.
