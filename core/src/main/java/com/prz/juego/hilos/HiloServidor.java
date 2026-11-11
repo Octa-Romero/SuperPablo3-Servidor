@@ -60,6 +60,16 @@ public class HiloServidor extends Thread {
 
         if (msj.equals("PABLO") || msj.equals("WALTER")) {
             procesarSeleccionPersonaje(msj, indice);
+            return;
+        }
+
+        if (msj.startsWith("SELECCION_NIVEL;")) {
+            procesarSeleccionNivel(msj, indice);
+            return;
+        }
+
+        if (msj.startsWith("VOTAR_NIVEL;")) {
+            procesarVotoNivel(msj, indice);
         }
     }
 
@@ -114,10 +124,6 @@ public class HiloServidor extends Thread {
                 jugadores[indice].setAtaca(true);
             } else if (mensajeParametrizado[1].equals("NOATACA")) {
                 jugadores[indice].setAtaca(false);
-            }else if (mensajeParametrizado[1].equals("E")) {
-                jugadores[indice].setAprietaE(true);
-            } else if (mensajeParametrizado[1].equals("NOE")) {
-                jugadores[indice].setAprietaE(false);
             }
         }
     }
@@ -166,6 +172,28 @@ public class HiloServidor extends Thread {
         }
 
         Global.empieza = true;
+    }
+    private void procesarSeleccionNivel(String msj, int indice) {
+
+        String[] mensajeParametrizado = msj.split(";");
+
+        boolean solicitaSeleccion = Boolean.parseBoolean(mensajeParametrizado[1]);
+
+        jugadores[indice].setSolicitoSeleccionNivel(solicitaSeleccion);
+    }
+
+    private void procesarVotoNivel(String msj, int indice) {
+        String[] mensajeParametrizados = msj.split(";");
+
+        try {
+            int nivel = Integer.parseInt(mensajeParametrizados[1]);
+
+            if (nivel >= 0 && nivel <= 7) {
+                jugadores[indice].setNivelSeleccionado(nivel);
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Nivel recibido inválido");
+        }
     }
 
     private int buscarJugador (InetAddress ip,int puerto){

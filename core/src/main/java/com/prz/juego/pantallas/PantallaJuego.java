@@ -29,6 +29,8 @@ public class PantallaJuego implements Screen {
     private boolean pausado = false;
     private final Hud HUD;
     private Hub hub;
+    private float tiempoEstadoHub = 0f;
+    private boolean seleccionNotificada = false;
 
     public PantallaJuego(Navegable NAV, Servidor servidor) {
         this(NAV, servidor, null);
@@ -96,10 +98,37 @@ public class PantallaJuego implements Screen {
 
         if (!pausado) {
             if (hub != null) {
-                for (Jugador jugador : jugadores) {
+                hub.update(delta);
+
+                for(Jugador jugador : jugadores)
+                {
                     servidor.enviarPosicion(jugador);
                 }
-                hub.update(delta);
+
+                tiempoEstadoHub += delta;
+
+                if (tiempoEstadoHub >= 0.25f) {
+                    tiempoEstadoHub = 0f;
+
+                    for (Jugador jugador : jugadores) {
+                        servidor.enviarEstadoCentroHub(
+                            jugador.getEstadoRed(),
+                            hub.estaEnCentroHub(jugador)
+                        );
+
+                        servidor.enviarEstadoSeleccion(
+                            jugador.getEstadoRed()
+                        );
+                    }
+                }
+
+                if (hub.contarJugadoresConfirmados() == 2
+                    && !seleccionNotificada) {
+
+                    seleccionNotificada = true;
+                    servidor.enviarInicioSeleccionNivel();
+                    NAV.cambiarPantalla(new SeleccionNivel(NAV, servidor));
+                }
             } else {
                 NIVEL.update(delta);
 
@@ -138,14 +167,6 @@ public class PantallaJuego implements Screen {
                     return;
                 }
             }
-        }
-
-        // Ir a la seleccion de niveles desde el Hub
-        if (!pausado && hub != null && hub.estaEnCentroHub() && (jugadores[0].getEstadoRed().aprietaE() && jugadores[1].getEstadoRed().aprietaE())) {
-
-            guardarPosicionCamara();
-            NAV.cambiarPantalla(new SeleccionNivel(NAV, this));
-            return;
         }
 
         // Dibujar el Hub o el NIVEL seleccionado

@@ -112,6 +112,18 @@ public class Hub {
             && zonaPancrasio.overlaps(jugador.getBounds());
     }
 
+    public boolean ambosConfirmaronSeleccion()
+    {
+        int cont = 0;
+        for(Jugador jugador : jugadores)
+        {
+            if(jugador.getEstadoRed().solicitaSeleccion())
+            {
+                cont++;
+            }
+        }
+        return cont == jugadores.length;
+    }
 
     private void inicializarFuenteAlerta() {
         fontAlerta = FuenteJuego.generar(28);
@@ -168,7 +180,7 @@ public class Hub {
             JugadorRed estadoRed = jugador.getEstadoRed();
 
             if (estadoRed != null
-                && estadoRed.aprietaE()
+                //&& estadoRed.aprietaE()
                 && (cuadroDialogo.estaVisible()
                 || estaCercaPancrasio(jugador))) {
 
@@ -221,6 +233,23 @@ public class Hub {
             }
         }
         return false;
+    }
+
+    public boolean estaEnCentroHub(Jugador jugador) {
+        return centroHub != null
+            && centroHub.overlaps(jugador.getBounds());
+    }
+
+    public int contarJugadoresConfirmados() {
+        int cont = 0;
+
+        for (Jugador jugador : jugadores) {
+            if (jugador.getEstadoRed().solicitaSeleccion()) {
+                cont++;
+            }
+        }
+
+        return cont;
     }
 
     public Camera getCamara() {

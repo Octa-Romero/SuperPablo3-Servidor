@@ -37,6 +37,13 @@ public abstract class Jugador extends Entidad {
 
     @Override
     public void update(float delta) {
+        if (estadoRed.solicitaSeleccion()) {
+            velocidadY = 0;
+            guardarPosicionAnterior();
+            actualizarSpriteVisual();
+            return;
+        }
+
         guardarPosicionAnterior();
         cooldownSaltoRestante = Math.max(0f, cooldownSaltoRestante - delta);
 

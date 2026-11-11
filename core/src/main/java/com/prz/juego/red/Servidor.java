@@ -74,6 +74,40 @@ public class Servidor {
         hilo.enviarMensajeATodos(msj);
     }
 
+    public void enviarEstadoCentroHub(JugadorRed estadoRed, boolean valor) {
+        String msj = "CENTRO_HUB;" + valor;
+
+        hilo.enviarMensaje(msj, estadoRed.getIp(), estadoRed.getPuerto());
+    }
+
+    public void enviarEstadoSeleccion(JugadorRed estadoRed) {
+        String msj = "ESTADO_SELECCION;" + estadoRed.solicitaSeleccion();
+
+        hilo.enviarMensaje(msj, estadoRed.getIp(), estadoRed.getPuerto());
+    }
+
+    public void enviarInicioSeleccionNivel() {
+        String msj = "ABRIR_SELECCION_NIVEL";
+        hilo.enviarMensajeATodos(msj);
+    }
+
+    public void enviarVotosNivel(JugadorRed destinatario, int votoLocal, int votoRemoto) {
+        String msj = "VOTOS_NIVEL;" + votoLocal + ";" + votoRemoto;
+
+        hilo.enviarMensaje(
+            msj,
+            destinatario.getIp(),
+            destinatario.getPuerto()
+        );
+    }
+
+    public void enviarInicioNivel(int voto)
+    {
+        String msj = "INICIAR_NIVEL;" + voto;
+
+        hilo.enviarMensajeATodos(msj);
+    }
+
     public JugadorRed[] getJugadoresRed()
     {
         return hilo.getJugadores();

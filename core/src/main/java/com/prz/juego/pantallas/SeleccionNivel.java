@@ -16,10 +16,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.prz.juego.entidades.jugadores.Personajes;
+import com.prz.juego.hilos.JugadorRed;
 import com.prz.juego.principal.Navegable;
 import com.prz.juego.recursos.GestorRecursos;
 import com.prz.juego.recursos.Imagen;
+import com.prz.juego.red.Servidor;
 import com.prz.juego.utilidades.Config;
 import com.prz.juego.utilidades.FuenteJuego;
 import com.prz.juego.utilidades.Render;
@@ -28,7 +29,9 @@ import com.prz.juego.utilidades.Sonido;
 public class SeleccionNivel implements Screen {
 
     private final Navegable NAV;
-    private final PantallaJuego PANTALLA_HUB;
+    private Servidor servidor;
+    private JugadorRed[] estadosRed;
+    private boolean nivelIniciado = false;
 
     private Stage stage;
     private BitmapFont font;
@@ -42,10 +45,10 @@ public class SeleccionNivel implements Screen {
     private Texture texturaPortal6;
     private Texture texturaPortal7;
 
-
-    public SeleccionNivel(Navegable NAV, PantallaJuego PANTALLA_HUB) {
-        this.NAV = NAV;
-        this.PANTALLA_HUB = PANTALLA_HUB;
+    public SeleccionNivel(Navegable nav, Servidor servidor) {
+        this.NAV = nav;
+        this.servidor = servidor;
+        this.estadosRed = servidor.getJugadoresRed();
     }
 
     @Override
@@ -126,8 +129,9 @@ public class SeleccionNivel implements Screen {
                             default:
                                 return;
                         }
-
-                        NAV.iniciarJuego(rutaNivel);
+                        if(nivelIniciado) {
+                            NAV.iniciarJuego(rutaNivel);
+                        }
                     }
                 });
 
@@ -169,7 +173,7 @@ public class SeleccionNivel implements Screen {
 
         TextButton botonCancelar = new TextButton("Cancelar", estiloCancelar);
         botonCancelar.getLabel().setFontScale(0.65f);
-        botonCancelar.addListener(
+        /*botonCancelar.addListener(
                 new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
@@ -178,6 +182,8 @@ public class SeleccionNivel implements Screen {
                         NAV.cambiarPantalla(PANTALLA_HUB);
                     }
                 });
+
+         */
 
         animarPortal(portal1, 0.5f);
         animarPortal(portal2, 0.7f);
@@ -205,6 +211,19 @@ public class SeleccionNivel implements Screen {
     public void render(float delta) {
 
         Render.limpiarPantalla();
+
+        int voto1 = estadosRed[0].getNivelSeleccionado();
+        int voto2 = estadosRed[1].getNivelSeleccionado();
+
+        servidor.enviarVotosNivel(estadosRed[0], voto1, voto2);
+
+        servidor.enviarVotosNivel(estadosRed[1], voto2, voto1);
+
+        if (voto1 != 0 && voto1 == voto2 && !nivelIniciado) {
+            nivelIniciado = true;
+
+            servidor.enviarInicioNivel(voto1);
+        }
 
         // Dibujar el fondo.
         Render.begin(stage.getCamera());

@@ -6,7 +6,8 @@ public class JugadorRed {
 
     private InetAddress ip;
     private int puerto;
-    private boolean mueveIzquierda = false, mueveDerecha = false, mueveArriba = false, mueveAbajo = false, valorAtaca = false, aprietaE = false;
+    private boolean mueveIzquierda = false, mueveDerecha = false, mueveArriba = false, mueveAbajo = false, valorAtaca = false, solicitaSeleccion = false;
+    private volatile int nivelSeleccionado = 0;
     private String personaje;
 
     public JugadorRed(InetAddress ip, int puerto) {
@@ -34,9 +35,9 @@ public class JugadorRed {
         this.mueveAbajo = valorAbajo;
     }
 
-    public void setAprietaE(boolean valor)
-    {
-        this.aprietaE = valor;
+
+    public void setSolicitoSeleccionNivel(boolean solicitaSeleccion) {
+        this.solicitaSeleccion = solicitaSeleccion;
     }
 
     public void setAtaca(boolean valorAtaca)
@@ -62,9 +63,9 @@ public class JugadorRed {
         return mueveAbajo;
     }
 
-    public boolean aprietaE()
+    public boolean solicitaSeleccion()
     {
-        return this.aprietaE;
+        return this.solicitaSeleccion;
     }
 
     public boolean ataca()
@@ -80,5 +81,13 @@ public class JugadorRed {
     public String getPersonaje()
     {
         return this.personaje;
+    }
+
+    public void setNivelSeleccionado(int nivel) {
+        nivelSeleccionado = nivel;
+    }
+
+    public int getNivelSeleccionado() {
+        return nivelSeleccionado;
     }
 }
