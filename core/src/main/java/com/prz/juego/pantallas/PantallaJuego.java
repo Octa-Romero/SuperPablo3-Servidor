@@ -5,6 +5,8 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
+import com.prz.juego.entidades.Lanzable;
+import com.prz.juego.entidades.enemigos.rango.Proyectil;
 import com.prz.juego.entidades.jugadores.BolaFuego;
 import com.prz.juego.entidades.jugadores.Jugador;
 import com.prz.juego.entidades.jugadores.Personajes;
@@ -141,16 +143,30 @@ public class PantallaJuego implements Screen {
                     servidor.enviarEliminacionEnemigo(id);
                 }
 
-                for (BolaFuego b : NIVEL.getOrbesNuevos()) {
-                    servidor.enviarCreacionOrbes(b.getId(), b.getX(), b.getY(), b.getDireccion());
+                for (Lanzable p : NIVEL.getProyectilesNuevos()) {
+
+                    if (p instanceof BolaFuego bola) {
+                        servidor.enviarCreacionProyectil(
+                            p.getId(), "WALTER",
+                            p.getX(), p.getY(),
+                            bola.getDireccion()
+                        );
+
+                    } else if (p instanceof Proyectil proyectilEnemigo) {
+                        servidor.enviarCreacionProyectil(
+                            p.getId(), "ENEMIGO",
+                            p.getX(), p.getY(),
+                            proyectilEnemigo.getAngulo()
+                        );
+                    }
                 }
 
-                for (BolaFuego b : NIVEL.getOrbesActivos()) {
-                    servidor.enviarEstadoOrbes(b.getId(), b.getX(), b.getY());
+                for (Lanzable p : NIVEL.getProyectilesActivos()) {
+                    servidor.enviarEstadoProyectil(p.getId(), p.getX(), p.getY());
                 }
 
-                for (Integer id : NIVEL.getOrbesEliminados()) {
-                    servidor.enviarEliminacionOrbes(id);
+                for (Integer id : NIVEL.getProyectilesEliminados()) {
+                    servidor.enviarEliminacionProyectil(id);
                 }
 
                 if (NIVEL.enemigoReliquiaDerrotado()) {

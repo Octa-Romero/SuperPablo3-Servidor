@@ -43,4 +43,10 @@ public class BichoMelee extends EnemigoMelee {
                 DURACION_FRAME_IDLE);
         ANIMACION.actualizar(sprite, 0f, false, false, false);
     }
+
+
+    @Override
+    public TipoEnemigo getTipo() {
+        return TipoEnemigo.BICHO_MELEE;
+    }
 }

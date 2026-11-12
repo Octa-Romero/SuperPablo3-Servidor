@@ -18,8 +18,6 @@ public class Walter extends Jugador {
     private float tiempoCooldown;
     private boolean cooldownAtaque;
 
-    private int idOrbes = 1;
-
     // Seguimiento para la sincronización de red.
     private final ArrayList<BolaFuego> ORBES_NUEVOS = new ArrayList<>();
     private final ArrayList<Integer> ID_ORBES_ELIMINADOS = new ArrayList<>();
@@ -96,8 +94,6 @@ public class Walter extends Jugador {
             return;
         }
 
-        int direccion = mirandoDerecha ? 1 : -1;
-
         float posicionX = direccion > 0
             ? x + ancho + 50f
             : x - 50f;
@@ -107,7 +103,6 @@ public class Walter extends Jugador {
         Sonido.BOLA_FUEGO.sonar();
 
         BolaFuego bola = new BolaFuego(
-            idOrbes++,
             posicionX,
             posicionY,
             direccion,
@@ -132,39 +127,5 @@ public class Walter extends Jugador {
     @Override
     public Personajes getPersonaje() {
         return Personajes.WALTER;
-    }
-
-    public ArrayList<BolaFuego> getOrbesNuevos() {
-        ArrayList<BolaFuego> copia = new ArrayList<>(ORBES_NUEVOS);
-        ORBES_NUEVOS.clear();
-        return copia;
-    }
-
-    public ArrayList<BolaFuego> getOrbesActivos() {
-        ArrayList<BolaFuego> activos = new ArrayList<>();
-
-        if (proyectiles == null) {
-            return activos;
-        }
-
-        for (Lanzable proyectil : proyectiles) {
-            if (proyectil instanceof BolaFuego bola && bola.estaActiva()) {
-                activos.add(bola);
-            }
-        }
-
-        return activos;
-    }
-
-    public void registrarOrbeEliminado(int id) {
-        ID_ORBES_ELIMINADOS.add(id);
-    }
-
-    public ArrayList<Integer> getOrbesEliminados() {
-        ArrayList<Integer> copia =
-            new ArrayList<>(ID_ORBES_ELIMINADOS);
-
-        ID_ORBES_ELIMINADOS.clear();
-        return copia;
     }
 }

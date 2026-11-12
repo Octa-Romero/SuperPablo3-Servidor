@@ -209,10 +209,7 @@ public abstract class Enemigo extends Entidad {
         return this.id;
     }
 
-    public TipoEnemigo getTipo()
-    {
-        return this.tipo;
-    }
+    public abstract TipoEnemigo getTipo();
 
 
     public void setSueltaReliquia(boolean valor) {

@@ -16,6 +16,7 @@ import com.prz.juego.utilidades.Render;
 
 public class Proyectil implements Lanzable {
 
+    private int id;
     private float x;
     private float y;
     private final float ANCHO;
@@ -189,6 +190,30 @@ public class Proyectil implements Lanzable {
     @Override
     public boolean estaActiva() {
         return activa;
+    }
+
+    @Override
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    @Override
+    public int getId() {
+        return this.id;
+    }
+
+    @Override
+    public float getX() {
+        return this.x;
+    }
+
+    @Override
+    public float getY() {
+        return this.y;
+    }
+
+    public float getAngulo() {
+        return DIRECCION.angleDeg();
     }
 
     public void desactivar() {

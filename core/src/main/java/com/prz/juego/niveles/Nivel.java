@@ -34,7 +34,9 @@ public abstract class Nivel {
     private final ArrayList<Entidad> ENTIDADES = new ArrayList<>();
     private final ArrayList<Entidad> ENTIDADES_PENDIENTES = new ArrayList<>();
     private final ArrayList<Entidad> ENTIDADES_PENDIENTES_ELIMINAR = new ArrayList<>();
-    private final ArrayList<Lanzable> PROYECTILES = new ArrayList<>();
+    private final ArrayList<Lanzable> PROYECTILES_NUEVOS = new ArrayList<>();
+    private final ArrayList<Lanzable> PROYECTILES_ACTIVOS = new ArrayList<>();
+    private final ArrayList<Integer> PROYECTILES_ELIMINADOS = new ArrayList<>();
     private final ArrayList<Reliquia> RELIQUIAS = new ArrayList<>();
     private final ArrayList<Enemigo> enemigosNuevos = new ArrayList<>();
     private ArrayList<Integer> idEnemigosEliminados = new ArrayList<>();
@@ -43,6 +45,7 @@ public abstract class Nivel {
     private boolean tieneReliquia = false;
     private float anchoMapa;
     protected Musica musica = Musica.NIVEL;
+    private int idProyectil = 1;
     private int idEnemigo = 1;
 
     public static Nivel crear(String ruta) {
@@ -96,9 +99,9 @@ public abstract class Nivel {
         }
 
         pablo.setEntidades(ENTIDADES);
-        pablo.setProyectiles(PROYECTILES);
+        pablo.setProyectiles(PROYECTILES_ACTIVOS);
 
-        walter.configurarAtaque(ENTIDADES, colision, PROYECTILES);
+        walter.configurarAtaque(ENTIDADES, colision, PROYECTILES_ACTIVOS);
 
         configurarContenidoEspecifico(jugadores);
 
@@ -136,7 +139,7 @@ public abstract class Nivel {
     protected void agregarEntidad(Entidad entidad) {
         if (entidad instanceof EnemigoRango) {
             ((EnemigoRango) entidad).configurarDisparo(
-                colision, PROYECTILES
+                colision, PROYECTILES_ACTIVOS
             );
         }
 
@@ -149,7 +152,7 @@ public abstract class Nivel {
 
     protected void agregarEntidadDiferida(Entidad entidad) {
         if (entidad instanceof EnemigoRango) {
-            ((EnemigoRango) entidad).configurarDisparo(colision, PROYECTILES);
+            ((EnemigoRango) entidad).configurarDisparo(colision, PROYECTILES_ACTIVOS);
         }
 
         if (entidad instanceof Enemigo enemigo) {
@@ -171,7 +174,7 @@ public abstract class Nivel {
 
     protected void agregarEntidadAlFondo(Entidad entidad) {
         if (entidad instanceof EnemigoRango) {
-            ((EnemigoRango) entidad).configurarDisparo(colision, PROYECTILES);
+            ((EnemigoRango) entidad).configurarDisparo(colision, PROYECTILES_ACTIVOS);
         }
 
         if (entidad instanceof Enemigo enemigo) {
@@ -213,7 +216,7 @@ public abstract class Nivel {
             walter.dibujar();
         }
 
-        for (Lanzable proyectil : PROYECTILES) {
+        for (Lanzable proyectil : PROYECTILES_ACTIVOS) {
             proyectil.dibujar();
         }
 
@@ -240,7 +243,7 @@ public abstract class Nivel {
             getJefe().dibujarHitboxesAtaquesExtra(shapeRenderer);
         }
 
-        for (Lanzable proyectil : PROYECTILES) {
+        for (Lanzable proyectil : PROYECTILES_ACTIVOS) {
             proyectil.dibujarHitbox(shapeRenderer);
         }
 
@@ -273,19 +276,23 @@ public abstract class Nivel {
         ENTIDADES.addAll(ENTIDADES_PENDIENTES);
         ENTIDADES_PENDIENTES.clear();
 
+        for(Lanzable proyectil : PROYECTILES_ACTIVOS)
+        {
+            if(proyectil.getId() == 0) {
+                proyectil.setId(idProyectil++);
+                PROYECTILES_NUEVOS.add(proyectil);
+            }
+        }
+
         // Actualizar proyectiles.
-        for (int i = PROYECTILES.size() - 1; i >= 0; i--) {
-            Lanzable proyectil = PROYECTILES.get(i);
+        for (int i = PROYECTILES_ACTIVOS.size() - 1; i >= 0; i--) {
+            Lanzable proyectil = PROYECTILES_ACTIVOS.get(i);
 
             proyectil.update(delta);
 
             if (!proyectil.estaActiva()) {
-
-                if (proyectil instanceof BolaFuego bola) {
-                    walter.registrarOrbeEliminado(bola.getId());
-                }
-
-                PROYECTILES.remove(i);
+                PROYECTILES_ELIMINADOS.add(proyectil.getId());
+                PROYECTILES_ACTIVOS.remove(i);
             }
         }
 
@@ -386,7 +393,7 @@ public abstract class Nivel {
         ENTIDADES.clear();
         ENTIDADES_PENDIENTES.clear();
         ENTIDADES_PENDIENTES_ELIMINAR.clear();
-        PROYECTILES.clear();
+        PROYECTILES_ACTIVOS.clear();
 
         for (Reliquia reliquia : RELIQUIAS) {
             reliquia.dispose();
@@ -436,16 +443,20 @@ public abstract class Nivel {
         return copia;
     }
 
-    public ArrayList<BolaFuego> getOrbesNuevos() {
-        return walter.getOrbesNuevos();
+    public ArrayList<Lanzable> getProyectilesNuevos() {
+        ArrayList<Lanzable> copia = new ArrayList<>(PROYECTILES_NUEVOS);
+        PROYECTILES_NUEVOS.clear();
+        return copia;
     }
 
-    public ArrayList<BolaFuego> getOrbesActivos() {
-        return walter.getOrbesActivos();
+    public ArrayList<Lanzable> getProyectilesActivos() {
+        return new ArrayList<>(PROYECTILES_ACTIVOS);
     }
 
-    public ArrayList<Integer> getOrbesEliminados() {
-        return walter.getOrbesEliminados();
+    public ArrayList<Integer> getProyectilesEliminados() {
+        ArrayList<Integer> copia = new ArrayList<>(PROYECTILES_ELIMINADOS);
+        PROYECTILES_ELIMINADOS.clear();
+        return copia;
     }
 
     public int getIdEnemigo()

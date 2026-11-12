@@ -40,4 +40,9 @@ public class BichoRango extends EnemigoRango {
         vidaProyectil = 0.5;
         this.tipo = TipoEnemigo.BICHO_RANGO;
     }
+
+    @Override
+    public TipoEnemigo getTipo() {
+        return TipoEnemigo.BICHO_RANGO;
+    }
 }

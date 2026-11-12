@@ -35,7 +35,6 @@ public class BolaFuego implements Lanzable {
     private final ArrayList<Lanzable> PROYECTILES;
 
     public BolaFuego(
-            int id,
             float x,
             float y,
             int DIRECCION,
@@ -43,7 +42,6 @@ public class BolaFuego implements Lanzable {
             Colisiones COLISION,
             ArrayList<Entidad> ENTIDADES,
             ArrayList<Lanzable> PROYECTILES) {
-        this.id = id;
         this.x = x;
         this.y = y;
         this.DIRECCION = DIRECCION;
@@ -180,5 +178,10 @@ public class BolaFuego implements Lanzable {
     @Override
     public boolean estaActiva() {
         return activa;
+    }
+
+    @Override
+    public void setId(int id) {
+        this.id = id;
     }
 }

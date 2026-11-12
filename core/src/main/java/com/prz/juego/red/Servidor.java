@@ -56,21 +56,22 @@ public class Servidor {
         hilo.enviarMensajeATodos(msj);
     }
 
-    public void enviarCreacionOrbes(int id, float x, float y, int direccion)
-    {
-        String msj = "CREAR_ORBE;" + id + ";" + x + ";" + y + ";" + direccion;
+    public void enviarCreacionProyectil(int id, String origen, float x, float y, float direccion) {
+
+        String msj = "CREAR_PROYECTIL;" + id + ";" + origen + ";" + x + ";" + y + ";" + direccion;
+
         hilo.enviarMensajeATodos(msj);
     }
 
-    public void enviarEstadoOrbes(int id, float x, float y)
+    public void enviarEstadoProyectil(int id, float x, float y)
     {
-        String msj = "ESTADO_ORBE;" + id + ";" + x + ";" + y ;
+        String msj = "ESTADO_PROYECTIL;" + id + ";" + x + ";" + y ;
         hilo.enviarMensajeATodos(msj);
     }
 
-    public void enviarEliminacionOrbes(int id)
+    public void enviarEliminacionProyectil(int id)
     {
-        String msj = "ELIMINAR_ORBE;" + id;
+        String msj = "ELIMINAR_PROYECTIL;" + id;
         hilo.enviarMensajeATodos(msj);
     }
 

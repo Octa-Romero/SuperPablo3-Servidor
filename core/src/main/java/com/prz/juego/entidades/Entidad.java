@@ -31,7 +31,6 @@ public abstract class Entidad {
     protected float duracionInvencibilidad = 2f;
     protected float tiempoParpadeo = 0;
     protected boolean spriteVisible = true;
-    protected boolean mirandoDerecha = true;
     protected final Animacion ANIMACION;
 
     protected Entidad(
