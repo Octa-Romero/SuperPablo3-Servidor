@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.prz.juego.entidades.enemigos.Enemigo;
+import com.prz.juego.entidades.enemigos.TipoEnemigo;
 import com.prz.juego.entidades.jugadores.Jugador;
 import com.prz.juego.recursos.GestorRecursos;
 import com.prz.juego.utilidades.Render;
@@ -178,6 +179,11 @@ public class FuegoSuelo extends Enemigo {
                 bounds.height
             );
         }
+    }
+
+    @Override
+    public TipoEnemigo getTipo() {
+        return null;
     }
 
     @Override

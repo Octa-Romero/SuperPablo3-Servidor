@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.prz.juego.entidades.enemigos.Enemigo;
+import com.prz.juego.entidades.enemigos.TipoEnemigo;
 import com.prz.juego.entidades.jugadores.Jugador;
 import com.prz.juego.recursos.GestorRecursos;
 import com.prz.juego.utilidades.Animacion;
@@ -509,6 +510,11 @@ public class Mano extends Enemigo {
         } else {
             super.dibujarHitbox(shapeRenderer);
         }
+    }
+
+    @Override
+    public TipoEnemigo getTipo() {
+        return null;
     }
 
     void desactivarPorMuerteJefe() {

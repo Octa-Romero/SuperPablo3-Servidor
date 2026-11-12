@@ -11,6 +11,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.prz.juego.entidades.Entidad;
 import com.prz.juego.entidades.enemigos.Enemigo;
+import com.prz.juego.entidades.enemigos.TipoEnemigo;
 import com.prz.juego.entidades.jugadores.Jugador;
 import com.prz.juego.recursos.GestorRecursos;
 import com.prz.juego.utilidades.Render;
@@ -1096,6 +1097,11 @@ public class Retumbar extends Enemigo {
         for (Fueguito fueguito : FUEGUITOS_DIRECCIONADOS) {
             fueguito.dibujar();
         }
+    }
+
+    @Override
+    public TipoEnemigo getTipo() {
+        return null;
     }
 
     public void dibujarAtaquesExtra() {
