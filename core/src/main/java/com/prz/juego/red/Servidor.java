@@ -154,6 +154,28 @@ public class Servidor {
         hilo.enviarMensajeATodos(msj);
     }
 
+    public void enviarEstadoRayos(String fase, boolean mostrarAviso, float[] posiciones) {
+
+        String msj = "ESTADO_RAYOS;" + fase + ";" + mostrarAviso;
+
+        for (float posicion : posiciones) {
+            msj += ";" + posicion;
+        }
+
+        hilo.enviarMensajeATodos(msj);
+    }
+
+    public void enviarEstadoLasers(String fase, boolean mostrarAviso, boolean[] activos) {
+
+        String msj = "ESTADO_LASERES;" + fase + ";" + mostrarAviso;
+
+        for (boolean activo : activos) {
+            msj += ";" + activo;
+        }
+
+        hilo.enviarMensajeATodos(msj);
+    }
+
     public JugadorRed[] getJugadoresRed()
     {
         return hilo.getJugadores();

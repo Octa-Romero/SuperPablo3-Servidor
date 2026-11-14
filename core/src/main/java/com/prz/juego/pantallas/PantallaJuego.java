@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.prz.juego.entidades.Lanzable;
 import com.prz.juego.entidades.enemigos.rango.Proyectil;
+import com.prz.juego.entidades.jefes.AtaquesExtraRetumbar;
 import com.prz.juego.entidades.jefes.FuegoSuelo;
 import com.prz.juego.entidades.jefes.Mano;
 import com.prz.juego.entidades.jefes.Retumbar;
@@ -220,6 +221,22 @@ public class PantallaJuego implements Screen {
                             fuego.getAlto(),
                             fuego.estaActiva()
                         );
+
+                        AtaquesExtraRetumbar ataques = jefe.getAtaquesExtra();
+
+                        if (ataques != null) {
+                            servidor.enviarEstadoRayos(
+                                ataques.getFaseRayos(),
+                                ataques.mostrarAvisoRayos(),
+                                ataques.getPosicionesRayos()
+                            );
+
+                            servidor.enviarEstadoLasers(
+                                ataques.getFaseLasers(),
+                                ataques.mostrarAvisoLaser(),
+                                ataques.getLasersActivos()
+                            );
+                        }
 
                     } else if (!jefeEliminado) {
                         jefeEliminado = true;

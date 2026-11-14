@@ -678,4 +678,28 @@ public class AtaquesExtraRetumbar {
         }
     }
 
+    public String getFaseRayos() {
+        return faseRayos == null ? "NINGUNO" : faseRayos.name();
+    }
+
+    public boolean mostrarAvisoRayos() {
+        return mostrarAvisoRayo;
+    }
+
+    public float[] getPosicionesRayos() {
+        return POSICIONES_RAYOS;
+    }
+
+    public String getFaseLasers() {
+        return faseLasers == null ? "NINGUNO" : faseLasers.name();
+    }
+
+    public boolean mostrarAvisoLaser() {
+        return mostrarAvisoLaser;
+    }
+
+    public boolean[] getLasersActivos() {
+        return LASERES_ACTIVOS;
+    }
+
 }

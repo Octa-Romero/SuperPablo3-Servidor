@@ -119,6 +119,7 @@ public abstract class Nivel {
         anchoMapa = mapTotalWidth;
 
         camara.setLimitesMapa(mapTotalWidth, mapTotalHeight);
+        configurarEntornoEspecifico(mapTotalWidth, mapTotalHeight);
 
         mapRenderer = new OrthogonalTiledMapRenderer(mapa, 1f);
 

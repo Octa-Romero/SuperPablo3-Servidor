@@ -1111,6 +1111,11 @@ public class Retumbar extends Enemigo {
         return this.sprite.getScaleX();
     }
 
+    public AtaquesExtraRetumbar getAtaquesExtra()
+    {
+        return this.ataquesExtra;
+    }
+
     public void dibujarAtaquesExtra() {
         if (!muerto && ataquesExtra != null) {
             ataquesExtra.dibujar();
