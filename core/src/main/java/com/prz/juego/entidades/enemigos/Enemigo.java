@@ -23,7 +23,6 @@ public abstract class Enemigo extends Entidad {
     protected boolean sueltaReliquia = false;
 
     protected Enemigo(
-            int id,
             float x,
             float y,
             float ancho,
@@ -34,7 +33,6 @@ public abstract class Enemigo extends Entidad {
             Jugador jugador,
             Texture textura) {
         super(x, y, ancho, alto, velocidadX, vida, danio, textura);
-        this.id = id;
         this.jugador = jugador;
         velocidad = velocidadX;
         duracionInvencibilidad = 1f;
@@ -200,8 +198,9 @@ public abstract class Enemigo extends Entidad {
         shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
     }
 
-    public int getDireccion() {
-        return direccion;
+    public void setId(int id)
+    {
+        this.id = id;
     }
 
     public int getId()

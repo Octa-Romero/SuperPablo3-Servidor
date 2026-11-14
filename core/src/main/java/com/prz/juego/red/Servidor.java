@@ -1,6 +1,7 @@
 package com.prz.juego.red;
 
 import com.prz.juego.entidades.enemigos.TipoEnemigo;
+import com.prz.juego.entidades.jefes.Mano;
 import com.prz.juego.entidades.jugadores.Jugador;
 import com.prz.juego.hilos.HiloServidor;
 import com.prz.juego.hilos.JugadorRed;
@@ -50,7 +51,7 @@ public class Servidor {
         hilo.enviarMensajeATodos(msj);
     }
 
-    public void enviarEliminacionEnemigo(int id)
+    public void enviarEliminacionJefe(int id)
     {
         String msj = "ELIMINAR_ENEMIGO;" + id;
         hilo.enviarMensajeATodos(msj);
@@ -105,6 +106,50 @@ public class Servidor {
     public void enviarInicioNivel(int voto)
     {
         String msj = "INICIAR_NIVEL;" + voto;
+
+        hilo.enviarMensajeATodos(msj);
+    }
+
+    public void enviarCreacionJefe(float x, float y, double vida) {
+        String mensaje = "CREAR_JEFE;" + x + ";" + y + ";" + vida;
+        hilo.enviarMensajeATodos(mensaje);
+    }
+
+    public void enviarEstadoJefe(float x, float y, double vida, boolean visible, float escala) {
+
+        String mensaje = "ESTADO_JEFE;" + x + ";" + y + ";" + vida + ";" + visible + ";" + escala;
+
+        hilo.enviarMensajeATodos(mensaje);
+    }
+
+    public void enviarEliminacionJefe()
+    {
+        String mensaje = "ELIMINAR_JEFE";
+
+        hilo.enviarMensajeATodos(mensaje);
+    }
+
+    public void enviarEstadoMano(
+        Mano.Lado lado,
+        float x,
+        float y,
+        double vida,
+        boolean visible,
+        float escala,
+        Mano.EstadoAtaque estadoAtaque,
+        Mano.EstiloAtaque estiloAtaque,
+        boolean mostrarFuegoGolpe) {
+
+        String mensaje = "ESTADO_MANO;" + lado + ";" + x + ";" + y + ";"
+            + vida + ";" + visible + ";" + escala + ";"
+            + estadoAtaque + ";" + estiloAtaque + ";" + mostrarFuegoGolpe;
+
+        hilo.enviarMensajeATodos(mensaje);
+    }
+
+    public void enviarEstadoFuegoSuelo(float x, float y, float alto, boolean activa)
+    {
+        String msj = "ESTADO_FUEGO_SUELO;" + x + ";" + y + ";" + alto + ";" + activa;
 
         hilo.enviarMensajeATodos(msj);
     }

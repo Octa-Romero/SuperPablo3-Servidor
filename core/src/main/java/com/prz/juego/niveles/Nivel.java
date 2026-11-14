@@ -10,6 +10,7 @@ import com.prz.juego.entidades.Entidad;
 import com.prz.juego.entidades.Lanzable;
 import com.prz.juego.entidades.Reliquia;
 import com.prz.juego.entidades.enemigos.Enemigo;
+import com.prz.juego.entidades.enemigos.TipoEnemigo;
 import com.prz.juego.entidades.enemigos.rango.EnemigoRango;
 import com.prz.juego.entidades.jefes.Retumbar;
 import com.prz.juego.entidades.jugadores.*;
@@ -136,30 +137,40 @@ public abstract class Nivel {
         return 150;
     }
 
-    protected void agregarEntidad(Entidad entidad) {
-        if (entidad instanceof EnemigoRango) {
-            ((EnemigoRango) entidad).configurarDisparo(
-                colision, PROYECTILES_ACTIVOS
-            );
-        }
+    private void registrarEnemigo(Entidad entidad) {
+        if (entidad instanceof Enemigo enemigo
+            && enemigo.getTipo() != TipoEnemigo.JEFE) {
 
-        ENTIDADES.add(entidad);
-
-        if (entidad instanceof Enemigo enemigo) {
+            enemigo.setId(idEnemigo++);
             enemigosNuevos.add(enemigo);
         }
     }
 
+    protected void agregarEntidad(Entidad entidad) {
+        if (entidad instanceof EnemigoRango rango) {
+            rango.configurarDisparo(colision, PROYECTILES_ACTIVOS);
+        }
+
+        ENTIDADES.add(entidad);
+        registrarEnemigo(entidad);
+    }
+
     protected void agregarEntidadDiferida(Entidad entidad) {
-        if (entidad instanceof EnemigoRango) {
-            ((EnemigoRango) entidad).configurarDisparo(colision, PROYECTILES_ACTIVOS);
+        if (entidad instanceof EnemigoRango rango) {
+            rango.configurarDisparo(colision, PROYECTILES_ACTIVOS);
         }
 
-        if (entidad instanceof Enemigo enemigo) {
-            enemigosNuevos.add(enemigo);
-        }
-
+        registrarEnemigo(entidad);
         ENTIDADES_PENDIENTES.add(entidad);
+    }
+
+    protected void agregarEntidadAlFondo(Entidad entidad) {
+        if (entidad instanceof EnemigoRango rango) {
+            rango.configurarDisparo(colision, PROYECTILES_ACTIVOS);
+        }
+
+        ENTIDADES.add(0, entidad);
+        registrarEnemigo(entidad);
     }
 
     protected void eliminarEntidadDiferida(Entidad entidad) {
@@ -172,22 +183,10 @@ public abstract class Nivel {
         }
     }
 
-    protected void agregarEntidadAlFondo(Entidad entidad) {
-        if (entidad instanceof EnemigoRango) {
-            ((EnemigoRango) entidad).configurarDisparo(colision, PROYECTILES_ACTIVOS);
-        }
-
-        if (entidad instanceof Enemigo enemigo) {
-            enemigosNuevos.add(enemigo);
-        }
-
-        ENTIDADES.add(0, entidad);
-    }
-
     protected void configurarEntornoEspecifico(float ancho, float alto) {}
 
-    // Por el momento los niveles no tienen jefe, solo Nivel7 lo sobrescribe
-    public Retumbar getJefe() {
+    public Retumbar getJefe()
+    {
         return null;
     }
 

@@ -75,7 +75,6 @@ public class AtaquesExtraRetumbar {
     }
 
     private final Jugador JUGADOR;
-    protected int idEnemigo = 1;
     private final float ANCHO_MAPA;
     private final float ALTO_MAPA;
     private final float SUELO_Y;
@@ -305,10 +304,9 @@ public class AtaquesExtraRetumbar {
     private void invocarBichos() {
         float anchoBicho = 70f;
         BichoRango izquierdo =
-                new BichoRango(idEnemigo++, 50f, ALTO_MAPA + 30f, JUGADOR, EnemigoRango.Modo.MOVIL);
+                new BichoRango(50f,  ALTO_MAPA + 30f, JUGADOR, EnemigoRango.Modo.MOVIL);
         BichoRango derecho =
                 new BichoRango(
-                        idEnemigo++,
                         Math.max(50f, ANCHO_MAPA - 50f - anchoBicho),
                         ALTO_MAPA + 30f,
                         JUGADOR,

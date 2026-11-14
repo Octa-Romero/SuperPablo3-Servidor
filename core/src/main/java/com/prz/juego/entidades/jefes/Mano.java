@@ -58,7 +58,7 @@ public class Mano extends Enemigo {
     private static final int CANTIDAD_FRAMES_FUEGO = 2;
     private static final float DURACION_FRAME = 0.12f;
 
-    private enum EstadoAtaque {
+    public enum EstadoAtaque {
         NINGUNO,
         LEVANTANDO,
         BAJANDO,
@@ -73,7 +73,7 @@ public class Mano extends Enemigo {
         VOLVIENDO
     }
 
-    private enum EstiloAtaque {
+    public enum EstiloAtaque {
         NORMAL,
         PUNIO,
         PALMA
@@ -107,9 +107,8 @@ public class Mano extends Enemigo {
     private float tiempoMovimientoIdle;
     private float desfaseMovimientoVertical;
 
-    public Mano(int id, Retumbar RETUMBAR, Lado LADO, Jugador jugador) {
+    public Mano(Retumbar RETUMBAR, Lado LADO, Jugador jugador) {
         super(
-            id,
             0,
             RETUMBAR.getY(),
             ANCHO,
@@ -514,7 +513,7 @@ public class Mano extends Enemigo {
 
     @Override
     public TipoEnemigo getTipo() {
-        return null;
+        return TipoEnemigo.JEFE;
     }
 
     void desactivarPorMuerteJefe() {
@@ -604,6 +603,27 @@ public class Mano extends Enemigo {
 
     public boolean estaEnAtaque() {
         return !muerto && estadoAtaque != EstadoAtaque.NINGUNO;
+    }
+
+    public EstadoAtaque getEstadoAtaque() {
+        return estadoAtaque;
+    }
+
+    public EstiloAtaque getEstiloAtaque() {
+        return estiloAtaque;
+    }
+
+    public boolean estaVisible() {
+        return visible;
+    }
+
+    public float getEscalaSprite() {
+        return escalaTeletransporte;
+    }
+
+    public boolean mostrarFuegoGolpe()
+    {
+        return this.tiempoHitboxExtendida > 0;
     }
 
     @Override

@@ -10,7 +10,6 @@ import com.prz.juego.utilidades.Sonido;
 
 public abstract class EnemigoMelee extends Enemigo {
 
-    protected int id;
     protected float anchoAtaque = 100;
     protected float altoAtaque = 10;
     protected float distanciaAtaque = 15;
@@ -22,7 +21,6 @@ public abstract class EnemigoMelee extends Enemigo {
     protected boolean yaDanio = false;
 
     protected EnemigoMelee(
-            int id,
             float x,
             float y,
             float ancho,
@@ -32,7 +30,7 @@ public abstract class EnemigoMelee extends Enemigo {
             double danio,
             Jugador jugador,
             Texture textura) {
-        super(id, x, y, ancho, alto, velocidadX, vida, danio, jugador, textura);
+        super(x, y, ancho, alto, velocidadX, vida, danio, jugador, textura);
     }
 
     @Override

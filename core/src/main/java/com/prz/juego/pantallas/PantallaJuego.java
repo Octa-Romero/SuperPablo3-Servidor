@@ -7,6 +7,9 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.prz.juego.entidades.Lanzable;
 import com.prz.juego.entidades.enemigos.rango.Proyectil;
+import com.prz.juego.entidades.jefes.FuegoSuelo;
+import com.prz.juego.entidades.jefes.Mano;
+import com.prz.juego.entidades.jefes.Retumbar;
 import com.prz.juego.entidades.jugadores.BolaFuego;
 import com.prz.juego.entidades.jugadores.Jugador;
 import com.prz.juego.entidades.jugadores.Personajes;
@@ -33,6 +36,8 @@ public class PantallaJuego implements Screen {
     private Hub hub;
     private float tiempoEstadoHub = 0f;
     private boolean seleccionNotificada = false;
+    private boolean jefeEliminado = false;
+    private boolean jefeCreado = false;
 
     public PantallaJuego(Navegable NAV, Servidor servidor) {
         this(NAV, servidor, null);
@@ -140,7 +145,7 @@ public class PantallaJuego implements Screen {
                 }
 
                 for (Integer id : NIVEL.getEnemigosEliminados()) {
-                    servidor.enviarEliminacionEnemigo(id);
+                    servidor.enviarEliminacionJefe(id);
                 }
 
                 for (Lanzable p : NIVEL.getProyectilesNuevos()) {
@@ -167,6 +172,59 @@ public class PantallaJuego implements Screen {
 
                 for (Integer id : NIVEL.getProyectilesEliminados()) {
                     servidor.enviarEliminacionProyectil(id);
+                }
+
+                Retumbar jefe = NIVEL.getJefe();
+
+                if (jefe != null) {
+                    if (!jefeCreado) {
+                        servidor.enviarCreacionJefe(jefe.getX(), jefe.getY(), jefe.getVida());
+                        jefeCreado = true;
+                    }
+
+                    if (!jefe.estaMuerto()) {
+                        servidor.enviarEstadoJefe(jefe.getX(), jefe.getY(), jefe.getVida(), jefe.estaVisible(), jefe.getEscalaSprite());
+
+                        Mano izquierda = jefe.getManoIzquierda();
+                        Mano derecha = jefe.getManoDerecha();
+
+                        servidor.enviarEstadoMano(
+                            izquierda.getLado(),
+                            izquierda.getX(),
+                            izquierda.getY(),
+                            izquierda.getVida(),
+                            izquierda.estaVisible(),
+                            izquierda.getEscalaSprite(),
+                            izquierda.getEstadoAtaque(),
+                            izquierda.getEstiloAtaque(),
+                            izquierda.mostrarFuegoGolpe()
+                        );
+
+                        servidor.enviarEstadoMano(
+                            derecha.getLado(),
+                            derecha.getX(),
+                            derecha.getY(),
+                            derecha.getVida(),
+                            derecha.estaVisible(),
+                            derecha.getEscalaSprite(),
+                            derecha.getEstadoAtaque(),
+                            derecha.getEstiloAtaque(),
+                            derecha.mostrarFuegoGolpe()
+                        );
+
+                        FuegoSuelo fuego = jefe.getFuegoSuelo();
+
+                        servidor.enviarEstadoFuegoSuelo(
+                            fuego.getX(),
+                            fuego.getY(),
+                            fuego.getAlto(),
+                            fuego.estaActiva()
+                        );
+
+                    } else if (!jefeEliminado) {
+                        jefeEliminado = true;
+                        servidor.enviarEliminacionJefe();
+                    }
                 }
 
                 if (NIVEL.enemigoReliquiaDerrotado()) {

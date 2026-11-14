@@ -17,7 +17,6 @@ public abstract class EnemigoRango extends Enemigo {
         MOVIL
     }
 
-    protected int id;
     protected float distanciaDisparo = 400;
     protected float distanciaHuida = 300;
     protected float tiempoAntesDeDisparar = 0.5f;
@@ -42,7 +41,6 @@ public abstract class EnemigoRango extends Enemigo {
     private float tiempoRetrasoInicial;
 
     protected EnemigoRango(
-            int id,
             float x,
             float y,
             float ancho,
@@ -56,7 +54,7 @@ public abstract class EnemigoRango extends Enemigo {
             float ANCHO_PROYECTIL,
             float ALTO_PROYECTIL,
             Modo MODO) {
-        super(id, x, y, ancho, alto, velocidadX, vida, danio, jugador, textura);
+        super(x, y, ancho, alto, velocidadX, vida, danio, jugador, textura);
         this.TEXTURA_PROYECTIL = TEXTURA_PROYECTIL;
         this.ANCHO_PROYECTIL = ANCHO_PROYECTIL;
         this.ALTO_PROYECTIL = ALTO_PROYECTIL;
