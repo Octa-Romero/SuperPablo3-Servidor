@@ -279,6 +279,48 @@ public class PantallaJuego implements Screen {
                             for (int id : ataques.getMeteoritosEliminados()) {
                                 servidor.enviarEliminacionMeteorito(id);
                             }
+
+                            for (Fueguito fueguito : ataques.getFueguitosNuevos()) {
+                                String tipo;
+
+                                if (fueguito.esRadial()) {
+                                    tipo = "RADIAL";
+                                } else {
+                                    tipo = "LLUVIA";
+                                }
+
+                                servidor.enviarCreacionFueguito(
+                                    fueguito.getId(),
+                                    tipo,
+                                    fueguito.getXSprite(),
+                                    fueguito.getYSprite(),
+                                    fueguito.getTamano(),
+                                    fueguito.getRotacion()
+                                );
+                            }
+
+                            for (Fueguito fueguito : ataques.getFueguitosActivos()) {
+                                String tipo;
+
+                                if (fueguito.esRadial()) {
+                                    tipo = "RADIAL";
+                                } else {
+                                    tipo = "LLUVIA";
+                                }
+
+                                servidor.enviarEstadoFueguito(
+                                    fueguito.getId(),
+                                    tipo,
+                                    fueguito.getXSprite(),
+                                    fueguito.getYSprite(),
+                                    fueguito.getTamano(),
+                                    fueguito.getRotacion()
+                                );
+                            }
+
+                            for (int id : ataques.getFueguitosEliminados()) {
+                                servidor.enviarEliminacionFueguito(id);
+                            }
                         }
 
                     } else if (!jefeEliminado) {

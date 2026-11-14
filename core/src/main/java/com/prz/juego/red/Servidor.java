@@ -204,6 +204,24 @@ public class Servidor {
         hilo.enviarMensajeATodos("ELIMINAR_METEORITO;" + id);
     }
 
+    public void enviarCreacionFueguito(int id, String tipo, float x, float y, float tamano, float rotacion) {
+
+        String msj = "CREAR_FUEGUITO;" + id + ";" + tipo + ";" + x + ";" + y + ";" + tamano + ";" + rotacion;
+
+        hilo.enviarMensajeATodos(msj);
+    }
+
+    public void enviarEstadoFueguito(int id, String tipo, float x, float y, float tamano, float rotacion) {
+
+        String msj = "ESTADO_FUEGUITO;" + id + ";" + tipo + ";" + x + ";" + y + ";" + tamano + ";" + rotacion;
+
+        hilo.enviarMensajeATodos(msj);
+    }
+
+    public void enviarEliminacionFueguito(int id) {
+        hilo.enviarMensajeATodos("ELIMINAR_FUEGUITO;" + id);
+    }
+
     public JugadorRed[] getJugadoresRed()
     {
         return hilo.getJugadores();

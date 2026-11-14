@@ -121,6 +121,9 @@ public class AtaquesExtraRetumbar {
     private int oleadaLaser;
     private FaseLasers faseLasers;
     private boolean mostrarAvisoLaser;
+    private int siguienteIdFueguito = 1;
+    private final ArrayList<Fueguito> FUEGUITOS_NUEVOS = new ArrayList<>();
+    private final ArrayList<Integer> FUEGUITOS_ELIMINADOS = new ArrayList<>();
 
     public AtaquesExtraRetumbar(
             Jugador jugador,
@@ -358,6 +361,12 @@ public class AtaquesExtraRetumbar {
 
         METEORITOS.clear();
         METEORITOS_GRANDES.clear();
+
+        for (Fueguito fueguito : FUEGUITOS) {
+            FUEGUITOS_ELIMINADOS.add(fueguito.getId());
+        }
+
+        FUEGUITOS.clear();
         FUEGUITOS.clear();
         lluviaFueguitosActiva = false;
         lluviaEsAtaque = false;
@@ -370,6 +379,13 @@ public class AtaquesExtraRetumbar {
             ELIMINAR_ENTIDAD.accept(bicho);
         }
         BICHOS_INVOCADOS.clear();
+    }
+
+    private void agregarFueguito(Fueguito fueguito) {
+        fueguito.setIdRed(siguienteIdFueguito++);
+
+        FUEGUITOS.add(fueguito);
+        FUEGUITOS_NUEVOS.add(fueguito);
     }
 
     public void iniciarLluviaFueguitos() {
@@ -401,8 +417,14 @@ public class AtaquesExtraRetumbar {
             tiempoSiguienteFueguito += intervaloFueguitos;
         }
 
-        FUEGUITOS.removeIf(fueguito -> !fueguito.update(delta));
-        if (tiempoLluviaFueguitos <= 0f) {
+        FUEGUITOS.removeIf(fueguito -> {
+            if (!fueguito.update(delta)) {
+                FUEGUITOS_ELIMINADOS.add(fueguito.getId());
+                return true;
+            }
+
+            return false;
+        });        if (tiempoLluviaFueguitos <= 0f) {
             lluviaFueguitosActiva = false;
             FUEGUITOS.clear();
             if (lluviaEsAtaque) {
@@ -416,8 +438,12 @@ public class AtaquesExtraRetumbar {
         float y = ALTO_MAPA + RANDOM.nextFloat() * 250f;
         float tamano = 28f + RANDOM.nextFloat() * 24f;
         float velocidad = 300f + RANDOM.nextFloat() * 250f;
-        FUEGUITOS.add(
-            new Fueguito(x, y, tamano, velocidad, SUELO_Y, JUGADOR, TEXTURA_FUEGUITO));
+        Fueguito fueguito = new Fueguito(
+            x, y, tamano, velocidad, SUELO_Y,
+            JUGADOR, TEXTURA_FUEGUITO
+        );
+
+        agregarFueguito(fueguito);
     }
 
     private void iniciarOleadaRayos() {
@@ -762,6 +788,26 @@ public class AtaquesExtraRetumbar {
             new ArrayList<>(METEORITOS_ELIMINADOS);
 
         METEORITOS_ELIMINADOS.clear();
+        return eliminados;
+    }
+
+    public ArrayList<Fueguito> getFueguitosNuevos() {
+        ArrayList<Fueguito> nuevos =
+            new ArrayList<>(FUEGUITOS_NUEVOS);
+
+        FUEGUITOS_NUEVOS.clear();
+        return nuevos;
+    }
+
+    public ArrayList<Fueguito> getFueguitosActivos() {
+        return new ArrayList<>(FUEGUITOS);
+    }
+
+    public ArrayList<Integer> getFueguitosEliminados() {
+        ArrayList<Integer> eliminados =
+            new ArrayList<>(FUEGUITOS_ELIMINADOS);
+
+        FUEGUITOS_ELIMINADOS.clear();
         return eliminados;
     }
 }

@@ -33,6 +33,7 @@ public class Fueguito {
     private final float ANCHO_MAPA;
     private final float ALTO_MAPA;
 
+    private int id;
     private float x;
     private float y;
     private float tiempoAnimacion;
@@ -146,6 +147,34 @@ public class Fueguito {
         float centroY = y - direccionY * (ALTO_RADIAL - ANCHO_RADIAL) / 2f;
         SPRITE.setPosition(centroX - ANCHO_RADIAL / 2f, centroY - ALTO_RADIAL / 2f);
         HITBOX.set(x, y, ANCHO_RADIAL / 2f);
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setIdRed(int idRed) {
+        this.id = idRed;
+    }
+
+    public boolean esRadial() {
+        return ES_RADIAL;
+    }
+
+    public float getXSprite() {
+        return SPRITE.getX();
+    }
+
+    public float getYSprite() {
+        return SPRITE.getY();
+    }
+
+    public float getTamano() {
+        return TAMANO;
+    }
+
+    public float getRotacion() {
+        return SPRITE.getRotation();
     }
 
     public Circle getHitbox() {
