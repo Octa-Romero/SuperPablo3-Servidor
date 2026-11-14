@@ -7,10 +7,7 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.prz.juego.entidades.Lanzable;
 import com.prz.juego.entidades.enemigos.rango.Proyectil;
-import com.prz.juego.entidades.jefes.AtaquesExtraRetumbar;
-import com.prz.juego.entidades.jefes.FuegoSuelo;
-import com.prz.juego.entidades.jefes.Mano;
-import com.prz.juego.entidades.jefes.Retumbar;
+import com.prz.juego.entidades.jefes.*;
 import com.prz.juego.entidades.jugadores.BolaFuego;
 import com.prz.juego.entidades.jugadores.Jugador;
 import com.prz.juego.entidades.jugadores.Personajes;
@@ -236,6 +233,52 @@ public class PantallaJuego implements Screen {
                                 ataques.mostrarAvisoLaser(),
                                 ataques.getLasersActivos()
                             );
+
+                            for (Meteorito meteorito : ataques.getMeteoritosNuevos()) {
+                                servidor.enviarCreacionMeteorito(
+                                    meteorito.getIdRed(),
+                                    "NORMAL",
+                                    meteorito.getX(),
+                                    meteorito.getY()
+                                );
+                            }
+
+                            for (MeteoritoGrande meteorito : ataques.getMeteoritosGrandesNuevos()) {
+                                servidor.enviarCreacionMeteorito(
+                                    meteorito.getIdRed(),
+                                    "GRANDE",
+                                    meteorito.getX(),
+                                    meteorito.getY()
+                                );
+                            }
+
+                            for (Meteorito meteorito : ataques.getMeteoritosActivos()) {
+                                servidor.enviarEstadoMeteorito(
+                                    meteorito.getIdRed(),
+                                    "NORMAL",
+                                    meteorito.getX(),
+                                    meteorito.getY(),
+                                    meteorito.estaImpactando(),
+                                    meteorito.getRotacion(),
+                                    meteorito.getTiempoEfecto()
+                                );
+                            }
+
+                            for (MeteoritoGrande meteorito : ataques.getMeteoritosGrandesActivos()) {
+                                servidor.enviarEstadoMeteorito(
+                                    meteorito.getIdRed(),
+                                    "GRANDE",
+                                    meteorito.getX(),
+                                    meteorito.getY(),
+                                    meteorito.estaImpactando(),
+                                    meteorito.getRotacion(),
+                                    meteorito.getTiempoEfecto()
+                                );
+                            }
+
+                            for (int id : ataques.getMeteoritosEliminados()) {
+                                servidor.enviarEliminacionMeteorito(id);
+                            }
                         }
 
                     } else if (!jefeEliminado) {

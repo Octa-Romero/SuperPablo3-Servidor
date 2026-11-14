@@ -176,6 +176,34 @@ public class Servidor {
         hilo.enviarMensajeATodos(msj);
     }
 
+    public void enviarCreacionMeteorito(
+        int id, String tipo, float x, float y) {
+
+        String msj = "CREAR_METEORITO;" + id + ";"
+            + tipo + ";" + x + ";" + y;
+
+        hilo.enviarMensajeATodos(msj);
+    }
+
+    public void enviarEstadoMeteorito(
+        int id, String tipo, float x, float y,
+        boolean impacto, float rotacion, float tiempoEfecto) {
+
+        String msj = "ESTADO_METEORITO;" + id
+            + ";" + tipo
+            + ";" + x
+            + ";" + y
+            + ";" + impacto
+            + ";" + rotacion
+            + ";" + tiempoEfecto;
+
+        hilo.enviarMensajeATodos(msj);
+    }
+
+    public void enviarEliminacionMeteorito(int id) {
+        hilo.enviarMensajeATodos("ELIMINAR_METEORITO;" + id);
+    }
+
     public JugadorRed[] getJugadoresRed()
     {
         return hilo.getJugadores();

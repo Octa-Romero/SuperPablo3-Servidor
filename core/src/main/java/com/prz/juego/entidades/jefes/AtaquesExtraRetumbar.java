@@ -111,6 +111,10 @@ public class AtaquesExtraRetumbar {
     private final float[] POSICIONES_RAYOS = new float[CANTIDAD_RAYOS];
     private final float[] POSICIONES_LASERES = new float[CANTIDAD_LASERES];
     private final boolean[] LASERES_ACTIVOS = new boolean[CANTIDAD_LASERES];
+    private int siguienteIdMeteorito = 1;
+    private final List<Meteorito> METEORITOS_NUEVOS = new ArrayList<>();
+    private final List<MeteoritoGrande> METEORITOS_GRANDES_NUEVOS = new ArrayList<>();
+    private final List<Integer> METEORITOS_ELIMINADOS = new ArrayList<>();
     private float tiempoFaseLaser;
     private float tiempoParpadeoLaser;
     private float tiempoAnimacionLaser;
@@ -163,8 +167,21 @@ public class AtaquesExtraRetumbar {
             return;
         }
 
-        METEORITOS.removeIf(m -> !m.update(delta));
-        METEORITOS_GRANDES.removeIf(m -> !m.update(delta));
+        METEORITOS.removeIf(meteorito -> {
+            if (!meteorito.update(delta)) {
+                METEORITOS_ELIMINADOS.add(meteorito.getIdRed());
+                return true;
+            }
+            return false;
+        });
+
+        METEORITOS_GRANDES.removeIf(meteorito -> {
+            if (!meteorito.update(delta)) {
+                METEORITOS_ELIMINADOS.add(meteorito.getIdRed());
+                return true;
+            }
+            return false;
+        });
 
         if (ataqueActual == TipoAtaque.NINGUNO) {
             tiempoCooldown += delta;
@@ -258,14 +275,19 @@ public class AtaquesExtraRetumbar {
     private void invocarMeteorito() {
         float margen = 45f;
         float x = margen + RANDOM.nextFloat() * Math.max(0f, ANCHO_MAPA - 2f * margen);
-        METEORITOS.add(
-            new Meteorito(
-                x,
-                ALTO_MAPA + 30f,
-                SUELO_Y,
-                JUGADOR,
-                TEXTURA_METEORITO,
-                ANIMACION_FUEGO));
+        Meteorito meteorito = new Meteorito(
+            x,
+            ALTO_MAPA + 30f,
+            SUELO_Y,
+            JUGADOR,
+            TEXTURA_METEORITO,
+            ANIMACION_FUEGO
+        );
+
+        meteorito.setIdRed(siguienteIdMeteorito++);
+
+        METEORITOS.add(meteorito);
+        METEORITOS_NUEVOS.add(meteorito);
     }
 
     private void actualizarAtaqueMeteoritosGrandes(float delta) {
@@ -286,19 +308,21 @@ public class AtaquesExtraRetumbar {
 
     private void invocarMeteoritoGrande() {
         float margen = 100f;
-        float x =
-                margen
-                        + RANDOM.nextFloat()
-                                * Math.max(0f, ANCHO_MAPA - 2f * margen);
-        METEORITOS_GRANDES.add(
-                new MeteoritoGrande(
-                        x,
-                        ALTO_MAPA + 30f,
-                        SUELO_Y,
-                        ANCHO_MAPA,
-                        JUGADOR,
-                        TEXTURA_METEORITO,
-                        ANIMACION_FUEGO));
+        float x = margen + RANDOM.nextFloat() * Math.max(0f, ANCHO_MAPA - 2f * margen);
+        MeteoritoGrande meteorito = new MeteoritoGrande(
+            x,
+            ALTO_MAPA + 30f,
+            SUELO_Y,
+            ANCHO_MAPA,
+            JUGADOR,
+            TEXTURA_METEORITO,
+            ANIMACION_FUEGO
+        );
+
+        meteorito.setIdRed(siguienteIdMeteorito++);
+
+        METEORITOS_GRANDES.add(meteorito);
+        METEORITOS_GRANDES_NUEVOS.add(meteorito);
     }
 
     private void invocarBichos() {
@@ -323,6 +347,15 @@ public class AtaquesExtraRetumbar {
     public void cancelarAtaques() {
         ataqueActual = TipoAtaque.NINGUNO;
         tiempoCooldown = 0f;
+
+        for (Meteorito meteorito : METEORITOS) {
+            METEORITOS_ELIMINADOS.add(meteorito.getIdRed());
+        }
+
+        for (MeteoritoGrande meteorito : METEORITOS_GRANDES) {
+            METEORITOS_ELIMINADOS.add(meteorito.getIdRed());
+        }
+
         METEORITOS.clear();
         METEORITOS_GRANDES.clear();
         FUEGUITOS.clear();
@@ -702,4 +735,33 @@ public class AtaquesExtraRetumbar {
         return LASERES_ACTIVOS;
     }
 
+    public List<Meteorito> getMeteoritosActivos() {
+        return METEORITOS;
+    }
+
+    public List<MeteoritoGrande> getMeteoritosGrandesActivos() {
+        return METEORITOS_GRANDES;
+    }
+
+    public List<Meteorito> getMeteoritosNuevos() {
+        List<Meteorito> nuevos = new ArrayList<>(METEORITOS_NUEVOS);
+        METEORITOS_NUEVOS.clear();
+        return nuevos;
+    }
+
+    public List<MeteoritoGrande> getMeteoritosGrandesNuevos() {
+        List<MeteoritoGrande> nuevos =
+            new ArrayList<>(METEORITOS_GRANDES_NUEVOS);
+
+        METEORITOS_GRANDES_NUEVOS.clear();
+        return nuevos;
+    }
+
+    public List<Integer> getMeteoritosEliminados() {
+        List<Integer> eliminados =
+            new ArrayList<>(METEORITOS_ELIMINADOS);
+
+        METEORITOS_ELIMINADOS.clear();
+        return eliminados;
+    }
 }

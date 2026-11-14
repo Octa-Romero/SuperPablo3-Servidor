@@ -26,6 +26,7 @@ public class MeteoritoGrande {
     private static final float DURACION_FUEGO_OLA = 0.6f;
     private static final float DANIO = 1f;
 
+    private int id;
     private final float X;
     private final float SUELO_Y;
     private final float ANCHO_MAPA;
@@ -196,5 +197,33 @@ public class MeteoritoGrande {
                     ANCHO_FUEGO_OLA,
                     ALTO_FUEGO_OLA * 0.65f);
         }
+    }
+
+    public int getIdRed() {
+        return id;
+    }
+
+    public void setIdRed(int idRed) {
+        this.id = idRed;
+    }
+
+    public float getX() {
+        return X;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public boolean estaImpactando() {
+        return impacto;
+    }
+
+    public float getTiempoEfecto() {
+        return tiempoTotalOla;
+    }
+
+    public float getRotacion() {
+        return SPRITE.getRotation();
     }
 }

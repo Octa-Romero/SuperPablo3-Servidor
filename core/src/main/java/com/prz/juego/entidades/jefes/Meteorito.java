@@ -23,6 +23,7 @@ public class Meteorito {
     private static final float GRAVEDAD = 250f;
     private static final float DANIO = 1f;
 
+    private int id;
     private final float X;
     private final float SUELO_Y;
     private final Jugador JUGADOR;
@@ -99,6 +100,34 @@ public class Meteorito {
 
     public Rectangle getBounds() {
         return BOUNDS;
+    }
+
+    public int getIdRed() {
+        return id;
+    }
+
+    public void setIdRed(int idRed) {
+        this.id = idRed;
+    }
+
+    public float getX() {
+        return X;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public boolean estaImpactando() {
+        return impacto;
+    }
+
+    public float getRotacion() {
+        return SPRITE.getRotation();
+    }
+
+    public float getTiempoEfecto() {
+        return tiempoFuego;
     }
 
     public List<Rectangle> getBoundsOla() {
