@@ -9,16 +9,17 @@ public class BichoMelee extends EnemigoMelee {
 
     private static final float DURACION_FRAME_IDLE = 0.12f;
 
-    public BichoMelee(float x, float y, Jugador jugador) {
+    public BichoMelee(float x, float y, Jugador jugador, Jugador[] jugadores) {
         this(
                 x,
                 y,
                 jugador,
+                jugadores,
                 GestorRecursos.obtenerTextura("Enemigos/BichoMelee/bichoMelee.png"));
         this.tipo = TipoEnemigo.BICHO_MELEE;
     }
 
-    private BichoMelee(float x, float y, Jugador jugador, Texture spritesheet) {
+    private BichoMelee(float x, float y, Jugador jugador, Jugador[] jugadores, Texture spritesheet) {
         super(
                 x,
                 y,
@@ -28,6 +29,7 @@ public class BichoMelee extends EnemigoMelee {
                 3,
                 0.5,
                 jugador,
+                jugadores,
                 spritesheet);
 
         ANIMACION.configurar(

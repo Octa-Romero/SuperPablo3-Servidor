@@ -75,6 +75,7 @@ public class AtaquesExtraRetumbar {
     }
 
     private final Jugador JUGADOR;
+    private final Jugador[] JUGADORES;
     private final float ANCHO_MAPA;
     private final float ALTO_MAPA;
     private final float SUELO_Y;
@@ -127,12 +128,14 @@ public class AtaquesExtraRetumbar {
 
     public AtaquesExtraRetumbar(
             Jugador jugador,
+            Jugador[] jugadores,
             float anchoMapa,
             float altoMapa,
             float sueloY,
             Consumer<Entidad> agregarEntidad,
             Consumer<Entidad> eliminarEntidad) {
         this.JUGADOR = jugador;
+        this.JUGADORES = jugadores;
         this.ANCHO_MAPA = anchoMapa;
         this.ALTO_MAPA = altoMapa;
         this.SUELO_Y = sueloY;
@@ -331,12 +334,13 @@ public class AtaquesExtraRetumbar {
     private void invocarBichos() {
         float anchoBicho = 70f;
         BichoRango izquierdo =
-                new BichoRango(50f,  ALTO_MAPA + 30f, JUGADOR, EnemigoRango.Modo.MOVIL);
+                new BichoRango(50f,  ALTO_MAPA + 30f, JUGADOR, JUGADORES, EnemigoRango.Modo.MOVIL);
         BichoRango derecho =
                 new BichoRango(
                         Math.max(50f, ANCHO_MAPA - 50f - anchoBicho),
                         ALTO_MAPA + 30f,
                         JUGADOR,
+                        JUGADORES,
                         EnemigoRango.Modo.MOVIL);
         izquierdo.configurarRetrasoInicialAntesDeAtacar(1f);
         derecho.configurarRetrasoInicialAntesDeAtacar(1f);

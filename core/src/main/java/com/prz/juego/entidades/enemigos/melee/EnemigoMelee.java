@@ -29,8 +29,9 @@ public abstract class EnemigoMelee extends Enemigo {
             double vida,
             double danio,
             Jugador jugador,
+            Jugador[] jugadores,
             Texture textura) {
-        super(x, y, ancho, alto, velocidadX, vida, danio, jugador, textura);
+        super(x, y, ancho, alto, velocidadX, vida, danio, jugador, jugadores, textura);
     }
 
     @Override
@@ -55,17 +56,17 @@ public abstract class EnemigoMelee extends Enemigo {
                 tiempoEstado = 0;
             }
 
-            if (detectaJugador(distancia)) {
+            if (detectaJugador(distancia, boundsJugador)) {
                 perseguir(delta, boundsJugador, distanciaAtaque);
             } else {
                 patrullar(delta);
             }
         } else {
-            if (distancia <= distanciaAtaque && detectaJugador(distancia)) {
+            if (distancia <= distanciaAtaque && detectaJugador(distancia, boundsJugador)) {
                 actualizarDireccion(boundsJugador);
                 esperandoAtaque = true;
                 tiempoEstado = 0;
-            } else if (detectaJugador(distancia)) {
+            } else if (detectaJugador(distancia, boundsJugador)) {
                 perseguir(delta, boundsJugador, distanciaAtaque);
             } else {
                 patrullar(delta);
@@ -76,7 +77,8 @@ public abstract class EnemigoMelee extends Enemigo {
     private void actualizarAtaque(float delta) {
         tiempoEstado += delta;
         if (!yaDanio && ataqueTocaJugador()) {
-            jugador.restarVida(danio);
+            Jugador objetivo = obtenerJugadorMasCercano();
+            objetivo.restarVida(danio);
             yaDanio = true;
         }
 
@@ -103,6 +105,14 @@ public abstract class EnemigoMelee extends Enemigo {
 
     private boolean ataqueTocaJugador() {
         Rectangle ataque = getBoundsAtaque();
+        if (jugadores != null) {
+            for (Jugador j : jugadores) {
+                if (!j.estaMuerto() && ataque.overlaps(j.getBounds())) {
+                    return true;
+                }
+            }
+            return false;
+        }
         return ataque.overlaps(jugador.getBounds());
     }
 

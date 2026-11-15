@@ -49,12 +49,13 @@ public abstract class EnemigoRango extends Enemigo {
             double vida,
             double danio,
             Jugador jugador,
+            Jugador[] jugadores,
             Texture textura,
             Texture TEXTURA_PROYECTIL,
             float ANCHO_PROYECTIL,
             float ALTO_PROYECTIL,
             Modo MODO) {
-        super(x, y, ancho, alto, velocidadX, vida, danio, jugador, textura);
+        super(x, y, ancho, alto, velocidadX, vida, danio, jugador, jugadores, textura);
         this.TEXTURA_PROYECTIL = TEXTURA_PROYECTIL;
         this.ANCHO_PROYECTIL = ANCHO_PROYECTIL;
         this.ALTO_PROYECTIL = ALTO_PROYECTIL;
@@ -127,7 +128,7 @@ public abstract class EnemigoRango extends Enemigo {
 
         float distancia = calcularDistanciaHorizontal(boundsJugador);
 
-        if (!detectaJugador(distancia)) {
+        if (!detectaJugador(distancia, boundsJugador)) {
             huyendo = false;
             if (MODO == Modo.MOVIL) {
                 patrullar(delta);
@@ -181,7 +182,8 @@ public abstract class EnemigoRango extends Enemigo {
             return;
         }
 
-        Rectangle boundsJugador = jugador.getBounds();
+        Jugador objetivo = obtenerJugadorMasCercano();
+        Rectangle boundsJugador = objetivo.getBounds();
         float origenX = x + ancho / 2f;
         float origenY = y + alto / 2f;
         float objetivoX = boundsJugador.x + boundsJugador.width / 2f;
@@ -208,7 +210,7 @@ public abstract class EnemigoRango extends Enemigo {
                         distanciaMaximaProyectil,
                         danio,
                         vidaProyectil,
-                        jugador,
+                        objetivo,
                         colisiones,
                         TEXTURA_PROYECTIL);
         proyectiles.add(proyectil);

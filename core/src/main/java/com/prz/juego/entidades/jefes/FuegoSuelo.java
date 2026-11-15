@@ -35,7 +35,7 @@ public class FuegoSuelo extends Enemigo {
     private float tiempoRestante = 0f;
     private float tiempoBajada = 0f;
 
-    public FuegoSuelo(float xMin, float xMax, float ySuelo, Jugador jugador) {
+    public FuegoSuelo(float xMin, float xMax, float ySuelo, Jugador jugador, Jugador[] jugadores) {
         super(
             xMin,
             ySuelo,
@@ -45,6 +45,7 @@ public class FuegoSuelo extends Enemigo {
             1,
             DANIO,
             jugador,
+            jugadores,
             GestorRecursos.obtenerTextura("Jefe/fuegoSuelo.png")
         );
 

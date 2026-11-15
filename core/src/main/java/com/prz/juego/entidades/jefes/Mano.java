@@ -107,7 +107,7 @@ public class Mano extends Enemigo {
     private float tiempoMovimientoIdle;
     private float desfaseMovimientoVertical;
 
-    public Mano(Retumbar RETUMBAR, Lado LADO, Jugador jugador) {
+    public Mano(Retumbar RETUMBAR, Lado LADO, Jugador jugador, Jugador[] jugadores) {
         super(
             0,
             RETUMBAR.getY(),
@@ -117,6 +117,7 @@ public class Mano extends Enemigo {
             VIDA,
             DANIO,
             jugador,
+            jugadores,
             GestorRecursos.obtenerTextura("Jefe/manoAbajo.png"));
         this.RETUMBAR = RETUMBAR;
         this.LADO = LADO;
@@ -274,7 +275,8 @@ public class Mano extends Enemigo {
                         y = RETUMBAR.getY() + ALTURA_REPOSO;
                         estiloAtaque = EstiloAtaque.NORMAL;
                     } else {
-                        x = jugador.getX() + jugador.getAncho() / 2 - ANCHO / 2;
+                        Jugador objetivo = obtenerJugadorAleatorio();
+                        x = objetivo.getX() + objetivo.getAncho() / 2 - ANCHO / 2;
                         y = ALTURA_TELETRANSPORTE;
                         estiloAtaque = EstiloAtaque.PALMA;
                     }
@@ -286,7 +288,8 @@ public class Mano extends Enemigo {
                 break;
             case REAPARECIENDO:
                 if (!volverAIdle) {
-                    x = jugador.getX() + jugador.getAncho() / 2 - ANCHO / 2;
+                    Jugador objetivo = obtenerJugadorAleatorio();
+                    x = objetivo.getX() + objetivo.getAncho() / 2 - ANCHO / 2;
                     y = ALTURA_TELETRANSPORTE;
                 }
                 escalaTeletransporte = Math.min(
@@ -309,7 +312,8 @@ public class Mano extends Enemigo {
                 break;
             case SIGUIENDO_JUGADOR:
                 tiempoEstado -= delta;
-                x = jugador.getX() + jugador.getAncho() / 2 - ANCHO / 2;
+                Jugador objetivo = obtenerJugadorAleatorio();
+                x = objetivo.getX() + objetivo.getAncho() / 2 - ANCHO / 2;
                 if (tiempoEstado <= 0) {
                     estadoAtaque = EstadoAtaque.ESPERANDO_GOLPE;
                     tiempoEstado = teletransporteRapido

@@ -9,7 +9,7 @@ public class BichoRango extends EnemigoRango {
 
     private static final float DURACION_FRAME_IDLE = 0.12f;
 
-    public BichoRango(float x, float y, Jugador jugador, Modo modo) {
+    public BichoRango(float x, float y, Jugador jugador, Jugador[] jugadores, Modo modo) {
         super(
                 x,
                 y,
@@ -19,6 +19,7 @@ public class BichoRango extends EnemigoRango {
                 3,
                 0.5,
                 jugador,
+                jugadores,
                 GestorRecursos.obtenerTextura("Enemigos/BichoRango/bichoRango.png"),
                 GestorRecursos.obtenerTextura("Enemigos/BichoRango/flecha.png"),
                 50,

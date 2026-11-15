@@ -174,6 +174,7 @@ public class Retumbar extends Enemigo {
         float centroX,
         float y,
         Jugador jugador,
+        Jugador[] jugadores,
         float sueloXMin,
         float sueloXMax
     ) {
@@ -186,6 +187,7 @@ public class Retumbar extends Enemigo {
             VIDA,
             DANIO,
             jugador,
+            jugadores,
             GestorRecursos.obtenerTextura("Jefe/retumbar.png")
         );
 
@@ -226,9 +228,9 @@ public class Retumbar extends Enemigo {
         ANIMACION_FUEGUITO = new Animation<>(0.08f, framesFueguito);
         ANIMACION_FUEGUITO.setPlayMode(Animation.PlayMode.LOOP);
 
-        MANO_IZQUIERDA = new Mano(this, Mano.Lado.IZQUIERDA, jugador);
-        MANO_DERECHA = new Mano(this, Mano.Lado.DERECHA, jugador);
-        FUEGO_SUELO = new FuegoSuelo(sueloXMin, sueloXMax, y, jugador);
+        MANO_IZQUIERDA = new Mano(this, Mano.Lado.IZQUIERDA, jugador, jugadores);
+        MANO_DERECHA = new Mano(this, Mano.Lado.DERECHA, jugador, jugadores);
+        FUEGO_SUELO = new FuegoSuelo(sueloXMin, sueloXMax, y, jugador, jugadores);
     }
 
     @Override
@@ -585,11 +587,15 @@ public class Retumbar extends Enemigo {
         return Math.min(anchoMapa - ancho, X_INICIAL + RECORRIDO);
     }
 
+    private Jugador jugadorLaserSeguidor;
+
     private void actualizarAnguloHaciaJugador() {
-        float dx = jugador.getBounds().x + jugador.getBounds().width / 2f - (x + ancho / 2f);
+        Jugador objetivo = obtenerJugadorAleatorio();
+        jugadorLaserSeguidor = objetivo;
+        float dx = objetivo.getBounds().x + objetivo.getBounds().width / 2f - (x + ancho / 2f);
         float dy =
-            jugador.getBounds().y
-                + jugador.getBounds().height / 2f
+            objetivo.getBounds().y
+                + objetivo.getBounds().height / 2f
                 - obtenerPechoY();
         anguloLaserSegundaFase = (float) Math.toDegrees(Math.atan2(dy, dx));
     }
@@ -610,7 +616,9 @@ public class Retumbar extends Enemigo {
             return;
         }
 
-        Rectangle boundsJugador = jugador.getBounds();
+        Jugador objetivo = (ataqueSegundaFase == AtaqueSegundaFase.LASER_SEGUIDOR && jugadorLaserSeguidor != null)
+            ? jugadorLaserSeguidor : jugador;
+        Rectangle boundsJugador = objetivo.getBounds();
         actualizarHitboxLaser();
         HITBOX_JUGADOR_LASER.setVertices(
             new float[]{
@@ -1081,7 +1089,7 @@ public class Retumbar extends Enemigo {
         this.altoMapa = altoMapa;
         ataquesExtra =
             new AtaquesExtraRetumbar(
-                jugador, anchoMapa, altoMapa, y, agregarEntidad, eliminarEntidad);
+                jugador, jugadores, anchoMapa, altoMapa, y, agregarEntidad, eliminarEntidad);
     }
 
     @Override
