@@ -38,7 +38,6 @@ public class Fueguito {
     private float y;
     private float tiempoAnimacion;
 
-    // Constructor para fueguito de lluvia
     public Fueguito(
             float x,
             float y,
@@ -70,7 +69,6 @@ public class Fueguito {
         HITBOX.set(x, y + tamano / 2f, tamano / 2f);
     }
 
-    // Constructor para fueguitos en 8 direcciones
     public Fueguito(
             float x,
             float y,
@@ -153,8 +151,8 @@ public class Fueguito {
         return id;
     }
 
-    public void setIdRed(int idRed) {
-        this.id = idRed;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public boolean esRadial() {

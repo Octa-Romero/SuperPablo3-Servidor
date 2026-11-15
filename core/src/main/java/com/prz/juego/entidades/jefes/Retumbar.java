@@ -73,7 +73,10 @@ public class Retumbar extends Enemigo {
     private final TextureRegion REGION_PIXEL;
     private final Animation<TextureRegion> ANIMACION_LASER;
     private final Animation<TextureRegion> ANIMACION_FUEGUITO;
+    private int idFueguitoRadial = 1;
+    private final ArrayList<Fueguito> FUEGUITOS_RADIALES_NUEVOS = new ArrayList<>();
     private final List<Fueguito> FUEGUITOS_DIRECCIONADOS = new ArrayList<>();
+    private final ArrayList<Integer> FUEGUITOS_RADIALES_ELIMINADOS = new ArrayList<>();
     private final Polygon HITBOX_LASER =
         new Polygon(
             new float[]{
@@ -257,8 +260,14 @@ public class Retumbar extends Enemigo {
         }
 
         if (faseEspecial == FaseEspecial.COMPLETADA) {
-            FUEGUITOS_DIRECCIONADOS.removeIf(fueguito -> !fueguito.update(delta));
-            if (ataquesExtra != null) {
+            FUEGUITOS_DIRECCIONADOS.removeIf(fueguito -> {
+                if (!fueguito.update(delta)) {
+                    FUEGUITOS_RADIALES_ELIMINADOS.add(fueguito.getId());
+                    return true;
+                }
+
+                return false;
+            });           if (ataquesExtra != null) {
                 ataquesExtra.update(delta, true);
             }
 
@@ -565,18 +574,27 @@ public class Retumbar extends Enemigo {
     private void dispararRafagaRadial() {
         float centroX = x + ancho / 2f;
         float pechoY = obtenerPechoY();
+
         for (int i = 0; i < CANTIDAD_DIRECCIONES_FUEGUITOS; i++) {
-            float angulo = i * MathUtils.PI2 / CANTIDAD_DIRECCIONES_FUEGUITOS;
-            FUEGUITOS_DIRECCIONADOS.add(
-                new Fueguito(
-                    centroX,
-                    pechoY,
-                    angulo,
-                    anchoMapa,
-                    altoMapa,
-                    jugador,
-                    ANIMACION_FUEGUITO));
+            float angulo =
+                i * MathUtils.PI2 / CANTIDAD_DIRECCIONES_FUEGUITOS;
+
+            Fueguito fueguito = new Fueguito(
+                centroX,
+                pechoY,
+                angulo,
+                anchoMapa,
+                altoMapa,
+                jugador,
+                ANIMACION_FUEGUITO
+            );
+
+            fueguito.setId(idFueguitoRadial++);
+
+            FUEGUITOS_DIRECCIONADOS.add(fueguito);
+            FUEGUITOS_RADIALES_NUEVOS.add(fueguito);
         }
+
         Sonido.FUEGUITO.sonar();
     }
 
@@ -1080,6 +1098,22 @@ public class Retumbar extends Enemigo {
         return FUEGO_SUELO;
     }
 
+    public boolean estaLaserJefeVisible() {
+        return laserVisible();
+    }
+
+    public boolean debeMostrarAvisoLaserJefe() {
+        return mostrarAvisoLaser();
+    }
+
+    public float getAnguloLaserSegundaFase() {
+        return anguloLaserSegundaFase;
+    }
+
+    public float getTiempoAnimacionLaserSegundaFase() {
+        return tiempoFaseAtaqueSegundaFase;
+    }
+
     public void configurarAtaquesExtra(
         float anchoMapa,
         float altoMapa,
@@ -1122,6 +1156,24 @@ public class Retumbar extends Enemigo {
     public AtaquesExtraRetumbar getAtaquesExtra()
     {
         return this.ataquesExtra;
+    }
+
+    public ArrayList<Fueguito> getFueguitosRadialesNuevos() {
+        ArrayList<Fueguito> nuevos = new ArrayList<>(FUEGUITOS_RADIALES_NUEVOS);
+
+        FUEGUITOS_RADIALES_NUEVOS.clear();
+        return nuevos;
+    }
+
+    public List<Fueguito> getFueguitosRadialesActivos() {
+        return FUEGUITOS_DIRECCIONADOS;
+    }
+
+    public ArrayList<Integer> getFueguitosRadialesEliminados() {
+        ArrayList<Integer> eliminados = new ArrayList<>(FUEGUITOS_RADIALES_ELIMINADOS);
+
+        FUEGUITOS_RADIALES_ELIMINADOS.clear();
+        return eliminados;
     }
 
     public void dibujarAtaquesExtra() {
@@ -1169,6 +1221,11 @@ public class Retumbar extends Enemigo {
         super.morir();
         Sonido.FUEGO_SOSTENIDO.detenerLoop();
         Sonido.RETUMBAR_MUERTE.sonar();
+
+        for (Fueguito fueguito : FUEGUITOS_DIRECCIONADOS) {
+            FUEGUITOS_RADIALES_ELIMINADOS.add(fueguito.getId());
+        }
+
         FUEGUITOS_DIRECCIONADOS.clear();
         FUEGO_SUELO.desactivar();
         ataqueSegundaFase = AtaqueSegundaFase.NINGUNO;

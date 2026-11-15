@@ -175,7 +175,7 @@ public class AtaquesExtraRetumbar {
 
         METEORITOS.removeIf(meteorito -> {
             if (!meteorito.update(delta)) {
-                METEORITOS_ELIMINADOS.add(meteorito.getIdRed());
+                METEORITOS_ELIMINADOS.add(meteorito.getId());
                 return true;
             }
             return false;
@@ -183,7 +183,7 @@ public class AtaquesExtraRetumbar {
 
         METEORITOS_GRANDES.removeIf(meteorito -> {
             if (!meteorito.update(delta)) {
-                METEORITOS_ELIMINADOS.add(meteorito.getIdRed());
+                METEORITOS_ELIMINADOS.add(meteorito.getId());
                 return true;
             }
             return false;
@@ -290,7 +290,7 @@ public class AtaquesExtraRetumbar {
             ANIMACION_FUEGO
         );
 
-        meteorito.setIdRed(siguienteIdMeteorito++);
+        meteorito.setId(siguienteIdMeteorito++);
 
         METEORITOS.add(meteorito);
         METEORITOS_NUEVOS.add(meteorito);
@@ -325,7 +325,7 @@ public class AtaquesExtraRetumbar {
             ANIMACION_FUEGO
         );
 
-        meteorito.setIdRed(siguienteIdMeteorito++);
+        meteorito.setId(siguienteIdMeteorito++);
 
         METEORITOS_GRANDES.add(meteorito);
         METEORITOS_GRANDES_NUEVOS.add(meteorito);
@@ -356,11 +356,11 @@ public class AtaquesExtraRetumbar {
         tiempoCooldown = 0f;
 
         for (Meteorito meteorito : METEORITOS) {
-            METEORITOS_ELIMINADOS.add(meteorito.getIdRed());
+            METEORITOS_ELIMINADOS.add(meteorito.getId());
         }
 
         for (MeteoritoGrande meteorito : METEORITOS_GRANDES) {
-            METEORITOS_ELIMINADOS.add(meteorito.getIdRed());
+            METEORITOS_ELIMINADOS.add(meteorito.getId());
         }
 
         METEORITOS.clear();
@@ -370,8 +370,7 @@ public class AtaquesExtraRetumbar {
             FUEGUITOS_ELIMINADOS.add(fueguito.getId());
         }
 
-        FUEGUITOS.clear();
-        FUEGUITOS.clear();
+        limpiarFueguitos();
         lluviaFueguitosActiva = false;
         lluviaEsAtaque = false;
         faseRayos = null;
@@ -386,7 +385,7 @@ public class AtaquesExtraRetumbar {
     }
 
     private void agregarFueguito(Fueguito fueguito) {
-        fueguito.setIdRed(siguienteIdFueguito++);
+        fueguito.setId(siguienteIdFueguito++);
 
         FUEGUITOS.add(fueguito);
         FUEGUITOS_NUEVOS.add(fueguito);
@@ -404,7 +403,7 @@ public class AtaquesExtraRetumbar {
         intervaloFueguitos = intervalo;
         tiempoLluviaFueguitos = duracion + TIEMPO_DESPEJE_FUEGUITOS;
         tiempoSiguienteFueguito = 0f;
-        FUEGUITOS.clear();
+        limpiarFueguitos();
     }
 
     public boolean estaLluviaFueguitosActiva() {
@@ -428,9 +427,11 @@ public class AtaquesExtraRetumbar {
             }
 
             return false;
-        });        if (tiempoLluviaFueguitos <= 0f) {
+        });
+        if (tiempoLluviaFueguitos <= 0f) {
             lluviaFueguitosActiva = false;
-            FUEGUITOS.clear();
+            limpiarFueguitos();
+
             if (lluviaEsAtaque) {
                 terminarAtaque();
             }
@@ -813,5 +814,13 @@ public class AtaquesExtraRetumbar {
 
         FUEGUITOS_ELIMINADOS.clear();
         return eliminados;
+    }
+
+    private void limpiarFueguitos() {
+        for (Fueguito fueguito : FUEGUITOS) {
+            FUEGUITOS_ELIMINADOS.add(fueguito.getId());
+        }
+
+        FUEGUITOS.clear();
     }
 }
