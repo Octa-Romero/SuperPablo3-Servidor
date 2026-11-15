@@ -211,7 +211,6 @@ public class PantallaJuego implements Screen {
                         );
 
                         FuegoSuelo fuego = jefe.getFuegoSuelo();
-
                         servidor.enviarEstadoFuegoSuelo(
                             fuego.getX(),
                             fuego.getY(),
@@ -236,7 +235,7 @@ public class PantallaJuego implements Screen {
 
                             for (Meteorito meteorito : ataques.getMeteoritosNuevos()) {
                                 servidor.enviarCreacionMeteorito(
-                                    meteorito.getIdRed(),
+                                    meteorito.getId(),
                                     "NORMAL",
                                     meteorito.getX(),
                                     meteorito.getY()
@@ -245,7 +244,7 @@ public class PantallaJuego implements Screen {
 
                             for (MeteoritoGrande meteorito : ataques.getMeteoritosGrandesNuevos()) {
                                 servidor.enviarCreacionMeteorito(
-                                    meteorito.getIdRed(),
+                                    meteorito.getId(),
                                     "GRANDE",
                                     meteorito.getX(),
                                     meteorito.getY()
@@ -254,7 +253,7 @@ public class PantallaJuego implements Screen {
 
                             for (Meteorito meteorito : ataques.getMeteoritosActivos()) {
                                 servidor.enviarEstadoMeteorito(
-                                    meteorito.getIdRed(),
+                                    meteorito.getId(),
                                     "NORMAL",
                                     meteorito.getX(),
                                     meteorito.getY(),
@@ -266,7 +265,7 @@ public class PantallaJuego implements Screen {
 
                             for (MeteoritoGrande meteorito : ataques.getMeteoritosGrandesActivos()) {
                                 servidor.enviarEstadoMeteorito(
-                                    meteorito.getIdRed(),
+                                    meteorito.getId(),
                                     "GRANDE",
                                     meteorito.getX(),
                                     meteorito.getY(),
@@ -280,18 +279,17 @@ public class PantallaJuego implements Screen {
                                 servidor.enviarEliminacionMeteorito(id);
                             }
 
+                            servidor.enviarEstadoLaserJefe(
+                                jefe.estaLaserJefeVisible(),
+                                jefe.debeMostrarAvisoLaserJefe(),
+                                jefe.getAnguloLaserSegundaFase(),
+                                jefe.getTiempoAnimacionLaserSegundaFase()
+                            );
+
                             for (Fueguito fueguito : ataques.getFueguitosNuevos()) {
-                                String tipo;
-
-                                if (fueguito.esRadial()) {
-                                    tipo = "RADIAL";
-                                } else {
-                                    tipo = "LLUVIA";
-                                }
-
                                 servidor.enviarCreacionFueguito(
                                     fueguito.getId(),
-                                    tipo,
+                                    "LLUVIA",
                                     fueguito.getXSprite(),
                                     fueguito.getYSprite(),
                                     fueguito.getTamano(),
@@ -300,17 +298,9 @@ public class PantallaJuego implements Screen {
                             }
 
                             for (Fueguito fueguito : ataques.getFueguitosActivos()) {
-                                String tipo;
-
-                                if (fueguito.esRadial()) {
-                                    tipo = "RADIAL";
-                                } else {
-                                    tipo = "LLUVIA";
-                                }
-
                                 servidor.enviarEstadoFueguito(
                                     fueguito.getId(),
-                                    tipo,
+                                    "LLUVIA",
                                     fueguito.getXSprite(),
                                     fueguito.getYSprite(),
                                     fueguito.getTamano(),
@@ -319,10 +309,35 @@ public class PantallaJuego implements Screen {
                             }
 
                             for (int id : ataques.getFueguitosEliminados()) {
-                                servidor.enviarEliminacionFueguito(id);
+                                servidor.enviarEliminacionFueguito(id, "LLUVIA");
+                            }
+
+                            for (Fueguito fueguito : jefe.getFueguitosRadialesNuevos()) {
+                                servidor.enviarCreacionFueguito(
+                                    fueguito.getId(),
+                                    "RADIAL",
+                                    fueguito.getXSprite(),
+                                    fueguito.getYSprite(),
+                                    fueguito.getTamano(),
+                                    fueguito.getRotacion()
+                                );
+                            }
+
+                            for (Fueguito fueguito : jefe.getFueguitosRadialesActivos()) {
+                                servidor.enviarEstadoFueguito(
+                                    fueguito.getId(),
+                                    "RADIAL",
+                                    fueguito.getXSprite(),
+                                    fueguito.getYSprite(),
+                                    fueguito.getTamano(),
+                                    fueguito.getRotacion()
+                                );
+                            }
+
+                            for (int id : jefe.getFueguitosRadialesEliminados()) {
+                                servidor.enviarEliminacionFueguito(id, "RADIAL");
                             }
                         }
-
                     } else if (!jefeEliminado) {
                         jefeEliminado = true;
                         servidor.enviarEliminacionJefe();

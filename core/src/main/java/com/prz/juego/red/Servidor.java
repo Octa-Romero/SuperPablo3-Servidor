@@ -218,8 +218,17 @@ public class Servidor {
         hilo.enviarMensajeATodos(msj);
     }
 
-    public void enviarEliminacionFueguito(int id) {
-        hilo.enviarMensajeATodos("ELIMINAR_FUEGUITO;" + id);
+    public void enviarEliminacionFueguito(int id, String tipo) {
+        String msj = "ELIMINAR_FUEGUITO;" + id + ";" + tipo;
+
+        hilo.enviarMensajeATodos(msj);
+    }
+
+    public void enviarEstadoLaserJefe(boolean visible, boolean aviso, float angulo, float tiempoAnimacion) {
+
+        String msj = "ESTADO_LASER_JEFE;" + visible + ";" + aviso + ";" + angulo + ";" + tiempoAnimacion;
+
+        hilo.enviarMensajeATodos(msj);
     }
 
     public JugadorRed[] getJugadoresRed()
