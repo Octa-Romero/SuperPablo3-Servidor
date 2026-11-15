@@ -102,12 +102,12 @@ public class Meteorito {
         return BOUNDS;
     }
 
-    public int getIdRed() {
+    public int getId() {
         return id;
     }
 
-    public void setIdRed(int idRed) {
-        this.id = idRed;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public float getX() {
