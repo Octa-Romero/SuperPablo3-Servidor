@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.prz.juego.entidades.jugadores.Jugador;
 import com.prz.juego.utilidades.Render;
+import com.prz.juego.red.Servidor;
 import com.prz.juego.utilidades.Sonido;
 
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class Meteorito {
     private int id;
     private final float X;
     private final float SUELO_Y;
-    private final Jugador JUGADOR;
+    private final Jugador[] JUGADORES;
     private final Animation<TextureRegion> ANIMACION_FUEGO;
     private final Sprite SPRITE;
     private final Rectangle BOUNDS = new Rectangle();
@@ -44,12 +45,13 @@ public class Meteorito {
             float y,
             float sueloY,
             Jugador jugador,
+            Jugador[] jugadores,
             Texture textura,
             Animation<TextureRegion> animacionFuego) {
         this.X = x;
         this.y = y;
         this.SUELO_Y = sueloY;
-        this.JUGADOR = jugador;
+        this.JUGADORES = jugadores;
         this.ANIMACION_FUEGO = animacionFuego;
         TextureRegion frameFuego = animacionFuego.getKeyFrame(0f);
         ANCHO_FUEGO = TAMANO * ESCALA_ANCHO_FUEGO;
@@ -72,7 +74,7 @@ public class Meteorito {
 
             if (y <= SUELO_Y) {
                 impacto = true;
-                Sonido.METEORITO.sonar();
+                Servidor.instancia.enviarSonidoConPosicion("METEORITO", X, y);
                 tiempoFuego = 0f;
                 y = SUELO_Y;
                 BOUNDS.set(
@@ -80,8 +82,12 @@ public class Meteorito {
                         SUELO_Y,
                         ANCHO_BOUNDS_FUEGO,
                         ALTO_BOUNDS_FUEGO);
-            } else if (BOUNDS.overlaps(JUGADOR.getBounds())) {
-                JUGADOR.restarVida(DANIO);
+            } else {
+                for (Jugador j : JUGADORES) {
+                    if (!j.estaMuerto() && BOUNDS.overlaps(j.getBounds())) {
+                        j.restarVida(DANIO);
+                    }
+                }
             }
             return true;
         }
@@ -92,8 +98,10 @@ public class Meteorito {
         SPRITE.setRotation(0f);
         SPRITE.setPosition(X - ANCHO_FUEGO / 2f, SUELO_Y);
 
-        if (BOUNDS.overlaps(JUGADOR.getBounds())) {
-            JUGADOR.restarVida(DANIO);
+        for (Jugador j : JUGADORES) {
+            if (!j.estaMuerto() && BOUNDS.overlaps(j.getBounds())) {
+                j.restarVida(DANIO);
+            }
         }
         return tiempoFuego < DURACION_FUEGO;
     }
@@ -138,3 +146,8 @@ public class Meteorito {
         SPRITE.draw(Render.batch);
     }
 }
+
+
+
+
+

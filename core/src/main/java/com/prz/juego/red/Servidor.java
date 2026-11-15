@@ -8,6 +8,8 @@ import com.prz.juego.hilos.JugadorRed;
 
 public class Servidor {
 
+    public static Servidor instancia;
+
     private HiloServidor hilo;
 
     public void iniciar() {
@@ -115,9 +117,9 @@ public class Servidor {
         hilo.enviarMensajeATodos(mensaje);
     }
 
-    public void enviarEstadoJefe(float x, float y, double vida, boolean visible, float escala) {
+    public void enviarEstadoJefe(float x, float y, double vida, boolean visible, float escala, String faseEspecial) {
 
-        String mensaje = "ESTADO_JEFE;" + x + ";" + y + ";" + vida + ";" + visible + ";" + escala;
+        String mensaje = "ESTADO_JEFE;" + x + ";" + y + ";" + vida + ";" + visible + ";" + escala + ";" + faseEspecial;
 
         hilo.enviarMensajeATodos(mensaje);
     }
@@ -229,6 +231,38 @@ public class Servidor {
         String msj = "ESTADO_LASER_JEFE;" + visible + ";" + aviso + ";" + angulo + ";" + tiempoAnimacion;
 
         hilo.enviarMensajeATodos(msj);
+    }
+
+    public void enviarSonido(String nombreSonido) {
+        hilo.enviarMensajeATodos("SONIDO;" + nombreSonido);
+    }
+
+    public void enviarSonidoConPosicion(String nombreSonido, float x, float y) {
+        hilo.enviarMensajeATodos("SONIDO;" + nombreSonido + ";" + x + ";" + y);
+    }
+
+    public void enviarSonidoLoop(String nombreSonido) {
+        hilo.enviarMensajeATodos("SONIDO;" + nombreSonido + ";LOOP");
+    }
+
+    public void enviarSonidoLoopConPosicion(String nombreSonido, float x, float y) {
+        hilo.enviarMensajeATodos("SONIDO;" + nombreSonido + ";LOOP;" + x + ";" + y);
+    }
+
+    public void enviarDetenerSonidoLoop(String nombreSonido) {
+        hilo.enviarMensajeATodos("SONIDO;" + nombreSonido + ";DETENER_LOOP");
+    }
+
+    public void enviarDetenerSonidoLoopConPosicion(String nombreSonido, float x, float y) {
+        hilo.enviarMensajeATodos("SONIDO;" + nombreSonido + ";DETENER_LOOP;" + x + ";" + y);
+    }
+
+    public void enviarMusica(String nombreMusica) {
+        hilo.enviarMensajeATodos("MUSICA;" + nombreMusica);
+    }
+
+    public void enviarDetenerMusica() {
+        hilo.enviarMensajeATodos("MUSICA;PARAR");
     }
 
     public JugadorRed[] getJugadoresRed()

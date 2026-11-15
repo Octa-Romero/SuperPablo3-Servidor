@@ -56,7 +56,9 @@ public class PantallaJuego implements Screen {
 
             Personajes personaje = Personajes.valueOf(estado.getPersonaje());
 
-            jugadores[i] = personaje.crear(50 + i * 100, 150);
+            float spawnX = NIVEL != null ? NIVEL.getPosicionInicialX() : 50;
+            float spawnY = NIVEL != null ? NIVEL.getPosicionInicialY() : 150;
+            jugadores[i] = personaje.crear((int) (spawnX + i * 100), (int) spawnY);
             jugadores[i].setEstadoRed(estado);
         }
 
@@ -181,7 +183,7 @@ public class PantallaJuego implements Screen {
                     }
 
                     if (!jefe.estaMuerto()) {
-                        servidor.enviarEstadoJefe(jefe.getX(), jefe.getY(), jefe.getVida(), jefe.estaVisible(), jefe.getEscalaSprite());
+                        servidor.enviarEstadoJefe(jefe.getX(), jefe.getY(), jefe.getVida(), jefe.estaVisible(), jefe.getEscalaSprite(), jefe.getFaseEspecial());
 
                         Mano izquierda = jefe.getManoIzquierda();
                         Mano derecha = jefe.getManoDerecha();
@@ -450,7 +452,12 @@ public class PantallaJuego implements Screen {
     @Override
     public void hide() {
         Gdx.input.setCursorCatched(false);
-        Sonido.FUEGO_SOSTENIDO.detenerLoop();
+        Retumbar jefe = NIVEL != null ? NIVEL.getJefe() : null;
+        if (jefe != null) {
+            Servidor.instancia.enviarDetenerSonidoLoopConPosicion("FUEGO_SOSTENIDO", jefe.getX(), jefe.getY());
+        } else {
+            Servidor.instancia.enviarDetenerSonidoLoop("FUEGO_SOSTENIDO");
+        }
     }
 
     @Override

@@ -20,6 +20,7 @@ public class Principal extends Game implements Navegable {
     public void create() {
         Render.batch = new SpriteBatch();
         servidor = new Servidor();
+        Servidor.instancia = servidor;
         servidor.iniciar();
         this.setScreen(new PantallaMenu(this));
     }

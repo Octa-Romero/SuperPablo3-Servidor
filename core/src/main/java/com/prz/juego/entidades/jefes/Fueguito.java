@@ -23,7 +23,7 @@ public class Fueguito {
     private final Sprite SPRITE;
     private final Animation<TextureRegion> ANIMACION;
     private final Circle HITBOX = new Circle();
-    private final Jugador JUGADOR;
+    private final Jugador[] JUGADORES;
     private final boolean ES_RADIAL;
     private final float TAMANO;
     private final float VELOCIDAD;
@@ -45,13 +45,14 @@ public class Fueguito {
             float velocidad,
             float sueloY,
             Jugador jugador,
+            Jugador[] jugadores,
             Texture textura) {
         this.x = x;
         this.y = y;
         this.TAMANO = tamano;
         this.VELOCIDAD = velocidad;
         this.SUELO_Y = sueloY;
-        this.JUGADOR = jugador;
+        this.JUGADORES = jugadores;
         this.ES_RADIAL = false;
         this.VELOCIDAD_X = 0f;
         this.VELOCIDAD_Y = 0f;
@@ -76,10 +77,11 @@ public class Fueguito {
             float anchoMapa,
             float altoMapa,
             Jugador jugador,
+            Jugador[] jugadores,
             Animation<TextureRegion> animacion) {
         this.x = x;
         this.y = y;
-        this.JUGADOR = jugador;
+        this.JUGADORES = jugadores;
         this.ES_RADIAL = true;
         this.TAMANO = 0f;
         this.VELOCIDAD = 0f;
@@ -115,9 +117,11 @@ public class Fueguito {
             return false;
         }
 
-        if (Intersector.overlaps(HITBOX, JUGADOR.getBounds())) {
-            JUGADOR.restarVida(DANIO);
-            return false;
+        for (Jugador j : JUGADORES) {
+            if (!j.estaMuerto() && Intersector.overlaps(HITBOX, j.getBounds())) {
+                j.restarVida(DANIO);
+                return false;
+            }
         }
         return true;
     }
@@ -127,9 +131,11 @@ public class Fueguito {
         y += VELOCIDAD_Y * delta;
         actualizarPosicionRadial();
 
-        if (Intersector.overlaps(HITBOX, JUGADOR.getBounds())) {
-            JUGADOR.restarVida(DANIO);
-            return false;
+        for (Jugador j : JUGADORES) {
+            if (!j.estaMuerto() && Intersector.overlaps(HITBOX, j.getBounds())) {
+                j.restarVida(DANIO);
+                return false;
+            }
         }
 
         return x >= -ALTO_RADIAL
@@ -183,3 +189,9 @@ public class Fueguito {
         SPRITE.draw(Render.batch);
     }
 }
+
+
+
+
+
+

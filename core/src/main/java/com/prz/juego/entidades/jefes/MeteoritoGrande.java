@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.prz.juego.entidades.jugadores.Jugador;
 import com.prz.juego.utilidades.Render;
+import com.prz.juego.red.Servidor;
 import com.prz.juego.utilidades.Sonido;
 
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ public class MeteoritoGrande {
     private final float X;
     private final float SUELO_Y;
     private final float ANCHO_MAPA;
-    private final Jugador JUGADOR;
+    private final Jugador[] JUGADORES;
     private final Animation<TextureRegion> ANIMACION_FUEGO;
     private final Sprite SPRITE;
     private final Rectangle BOUNDS = new Rectangle();
@@ -53,13 +54,14 @@ public class MeteoritoGrande {
             float sueloY,
             float anchoMapa,
             Jugador jugador,
+            Jugador[] jugadores,
             Texture textura,
             Animation<TextureRegion> animacionFuego) {
         this.X = x;
         this.y = y;
         this.SUELO_Y = sueloY;
         this.ANCHO_MAPA = anchoMapa;
-        this.JUGADOR = jugador;
+        this.JUGADORES = jugadores;
         this.ANIMACION_FUEGO = animacionFuego;
         this.CANTIDAD_PASOS_OLA =
                 (int) Math.ceil(Math.max(x, anchoMapa - x) / VELOCIDAD_EXPANSION);
@@ -88,12 +90,16 @@ public class MeteoritoGrande {
 
             if (y <= SUELO_Y) {
                 impacto = true;
-                Sonido.METEORITO.sonar();
+                Servidor.instancia.enviarSonidoConPosicion("METEORITO", X, y);
                 crearOlaFuego();
                 return updateOlaFuego(0f);
-            } else if (BOUNDS.overlaps(JUGADOR.getBounds())) {
+            } else {
                 if (!danioAplicado) {
-                    JUGADOR.restarVida(DANIO);
+                    for (Jugador j : JUGADORES) {
+                        if (!j.estaMuerto() && BOUNDS.overlaps(j.getBounds())) {
+                            j.restarVida(DANIO);
+                        }
+                    }
                     danioAplicado = true;
                 }
             }
@@ -176,8 +182,12 @@ public class MeteoritoGrande {
         private boolean update(float delta) {
             tiempo += delta;
             actualizarBounds();
-            if (!danioAplicado && bounds.overlaps(JUGADOR.getBounds())) {
-                JUGADOR.restarVida(DANIO);
+            if (!danioAplicado) {
+                for (Jugador j : JUGADORES) {
+                    if (!j.estaMuerto() && bounds.overlaps(j.getBounds())) {
+                        j.restarVida(DANIO);
+                    }
+                }
                 danioAplicado = true;
             }
             return tiempo < DURACION_FUEGO_OLA;
@@ -227,3 +237,8 @@ public class MeteoritoGrande {
         return SPRITE.getRotation();
     }
 }
+
+
+
+
+

@@ -105,8 +105,10 @@ public class FuegoSuelo extends Enemigo {
         float progreso = Math.min(1f, tiempoActiva / TIEMPO_EMERGER);
         aplicarAlto(Math.max(ALTO_MINIMO, ALTO * progreso));
 
-        if (bounds.overlaps(boundsJugador)) {
-            jugador.restarVida(danio);
+        for (Jugador j : jugadores) {
+            if (!j.estaMuerto() && bounds.overlaps(j.getBounds())) {
+                j.restarVida(danio);
+            }
         }
 
         if (tiempoRestante <= 0f) {
@@ -197,3 +199,4 @@ public class FuegoSuelo extends Enemigo {
     @Override
     public void saltar() {}
 }
+

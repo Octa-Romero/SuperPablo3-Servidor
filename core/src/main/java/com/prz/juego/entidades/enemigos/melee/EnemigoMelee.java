@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.prz.juego.entidades.enemigos.Enemigo;
 import com.prz.juego.entidades.jugadores.Jugador;
+import com.prz.juego.red.Servidor;
 import com.prz.juego.utilidades.Sonido;
 
 public abstract class EnemigoMelee extends Enemigo {
@@ -47,7 +48,7 @@ public abstract class EnemigoMelee extends Enemigo {
                 atacando = true;
                 tiempoEstado = 0;
                 yaDanio = false;
-                Sonido.ESPADA.sonar();
+                Servidor.instancia.enviarSonido("ESPADA");
             }
         } else if (cooldownAtaque) {
             tiempoEstado += delta;

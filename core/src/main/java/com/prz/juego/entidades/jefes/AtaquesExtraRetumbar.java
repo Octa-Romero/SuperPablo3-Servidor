@@ -12,6 +12,7 @@ import com.prz.juego.entidades.enemigos.rango.EnemigoRango;
 import com.prz.juego.entidades.jugadores.Jugador;
 import com.prz.juego.recursos.GestorRecursos;
 import com.prz.juego.utilidades.Render;
+import com.prz.juego.red.Servidor;
 import com.prz.juego.utilidades.Sonido;
 
 import java.util.ArrayList;
@@ -286,6 +287,7 @@ public class AtaquesExtraRetumbar {
             ALTO_MAPA + 30f,
             SUELO_Y,
             JUGADOR,
+            JUGADORES,
             TEXTURA_METEORITO,
             ANIMACION_FUEGO
         );
@@ -321,6 +323,7 @@ public class AtaquesExtraRetumbar {
             SUELO_Y,
             ANCHO_MAPA,
             JUGADOR,
+            JUGADORES,
             TEXTURA_METEORITO,
             ANIMACION_FUEGO
         );
@@ -445,7 +448,7 @@ public class AtaquesExtraRetumbar {
         float velocidad = 300f + RANDOM.nextFloat() * 250f;
         Fueguito fueguito = new Fueguito(
             x, y, tamano, velocidad, SUELO_Y,
-            JUGADOR, TEXTURA_FUEGUITO
+            JUGADOR, JUGADORES, TEXTURA_FUEGUITO
         );
 
         agregarFueguito(fueguito);
@@ -530,24 +533,28 @@ public class AtaquesExtraRetumbar {
     }
 
     private void daniarJugadorPorLasers() {
-        Rectangle boundsJugador = JUGADOR.getBounds();
         float alturaLaser = ALTO_MAPA - SUELO_Y;
-        for (int i = 0; i < POSICIONES_LASERES.length; i++) {
-            if (!LASERES_ACTIVOS[i]) {
+        for (Jugador j : JUGADORES) {
+            if (j.estaMuerto()) {
                 continue;
             }
-
-            Rectangle boundsLaser =
-                    new Rectangle(
-                            POSICIONES_LASERES[i] - ANCHO_LASER / 2f,
-                            SUELO_Y,
-                            ANCHO_LASER,
-                            alturaLaser);
-            if (boundsJugador.overlaps(boundsLaser)) {
-                JUGADOR.restarVida(DANIO);
+            Rectangle boundsJ = j.getBounds();
+            for (int i = 0; i < POSICIONES_LASERES.length; i++) {
+                if (!LASERES_ACTIVOS[i]) {
+                    continue;
+                }
+                Rectangle boundsLaser =
+                        new Rectangle(
+                                POSICIONES_LASERES[i] - ANCHO_LASER / 2f,
+                                SUELO_Y,
+                                ANCHO_LASER,
+                                alturaLaser);
+                if (boundsJ.overlaps(boundsLaser)) {
+                    j.restarVida(DANIO);
+                }
             }
         }
-        Sonido.RELAMPAGO.sonar();
+        Servidor.instancia.enviarSonidoConPosicion("RELAMPAGO", ANCHO_MAPA / 2f, SUELO_Y);
     }
 
     private void actualizarAtaqueRayos(float delta) {
@@ -581,16 +588,21 @@ public class AtaquesExtraRetumbar {
     }
 
     private void daniarJugadorPorRayos() {
-        Rectangle boundsJugador = JUGADOR.getBounds();
         float alturaRayo = ALTO_MAPA - SUELO_Y;
-        for (float x : POSICIONES_RAYOS) {
-            Rectangle boundsRayo =
-                    new Rectangle(x - ANCHO_RAYO / 2f, SUELO_Y, ANCHO_RAYO, alturaRayo);
-            if (boundsJugador.overlaps(boundsRayo)) {
-                JUGADOR.restarVida(DANIO);
+        for (Jugador j : JUGADORES) {
+            if (j.estaMuerto()) {
+                continue;
+            }
+            Rectangle boundsJ = j.getBounds();
+            for (float xPos : POSICIONES_RAYOS) {
+                Rectangle boundsRayo =
+                        new Rectangle(xPos - ANCHO_RAYO / 2f, SUELO_Y, ANCHO_RAYO, alturaRayo);
+                if (boundsJ.overlaps(boundsRayo)) {
+                    j.restarVida(DANIO);
+                }
             }
         }
-        Sonido.RELAMPAGO.sonar();
+        Servidor.instancia.enviarSonidoConPosicion("RELAMPAGO", ANCHO_MAPA / 2f, SUELO_Y);
     }
 
     private void terminarAtaque() {
@@ -824,3 +836,8 @@ public class AtaquesExtraRetumbar {
         FUEGUITOS.clear();
     }
 }
+
+
+
+
+

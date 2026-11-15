@@ -14,6 +14,7 @@ import com.prz.juego.entidades.enemigos.TipoEnemigo;
 import com.prz.juego.entidades.enemigos.rango.EnemigoRango;
 import com.prz.juego.entidades.jefes.Retumbar;
 import com.prz.juego.entidades.jugadores.*;
+import com.prz.juego.red.Servidor;
 import com.prz.juego.sistemas.Camara;
 import com.prz.juego.sistemas.Colisiones;
 import com.prz.juego.utilidades.Debug;
@@ -123,18 +124,18 @@ public abstract class Nivel {
 
         mapRenderer = new OrthogonalTiledMapRenderer(mapa, 1f);
 
-        musica.sonar();
+        Servidor.instancia.enviarMusica(musica.name());
     }
 
     protected abstract String getRutaMapa();
 
     protected abstract void configurarContenidoEspecifico(Jugador[] jugadores);
 
-    protected float getPosicionInicialX() {
+    public float getPosicionInicialX() {
         return 50;
     }
 
-    protected float getPosicionInicialY() {
+    public float getPosicionInicialY() {
         return 150;
     }
 

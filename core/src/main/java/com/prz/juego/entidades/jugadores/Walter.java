@@ -5,6 +5,7 @@ import com.prz.juego.entidades.Entidad;
 import com.prz.juego.entidades.Lanzable;
 import com.prz.juego.recursos.GestorRecursos;
 import com.prz.juego.sistemas.Colisiones;
+import com.prz.juego.red.Servidor;
 import com.prz.juego.utilidades.Sonido;
 
 import java.util.ArrayList;
@@ -100,7 +101,7 @@ public class Walter extends Jugador {
 
         float posicionY = y + alto / 2f - 10f;
 
-        Sonido.BOLA_FUEGO.sonar();
+        Servidor.instancia.enviarSonidoConPosicion("BOLA_FUEGO", x, y);
 
         BolaFuego bola = new BolaFuego(
             posicionX,
