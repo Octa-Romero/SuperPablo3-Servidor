@@ -101,6 +101,7 @@ public class PantallaJuego implements Screen {
                 for(Jugador jugador : jugadores)
                 {
                     servidor.enviarPosicion(jugador);
+                    servidor.enviarEstadoAtaque(jugador);
                 }
 
                 tiempoEstadoHub += delta;
@@ -134,6 +135,7 @@ public class PantallaJuego implements Screen {
                     servidor.enviarPosicion(jugador);
                     servidor.enviarEstadoAtaque(jugador);
                     servidor.enviarEstadoVida(jugador);
+                    servidor.enviarEstadoInvencibilidad(jugador);
                 }
 
                 for (Enemigo e : NIVEL.getEnemigosNuevos()) {
@@ -141,7 +143,7 @@ public class PantallaJuego implements Screen {
                 }
 
                 for (Enemigo e : NIVEL.getEnemigosActivos()) {
-                    servidor.enviarEstadoEnemigo(e.getId(), e.getX(), e.getY(), e.getDireccion(), e.estaAtacando(), e.getVida());
+                    servidor.enviarEstadoEnemigo(e.getId(), e.getX(), e.getY(), e.getDireccion(), e.estaAtacando(), e.getVida(), e.estaSpriteVisible(), e.getTipoAnimacion(), e.getTiempoAnimacion());
                 }
 
                 for (Integer id : NIVEL.getEnemigosEliminados()) {

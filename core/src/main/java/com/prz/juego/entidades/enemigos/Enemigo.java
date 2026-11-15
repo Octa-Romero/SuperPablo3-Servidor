@@ -265,4 +265,12 @@ public abstract class Enemigo extends Entidad {
     public boolean sueltaReliquia() {
         return sueltaReliquia;
     }
+
+    public int getTipoAnimacion() {
+        return ANIMACION.getTipoActual();
+    }
+
+    public float getTiempoAnimacion() {
+        return ANIMACION.getTiempo();
+    }
 }

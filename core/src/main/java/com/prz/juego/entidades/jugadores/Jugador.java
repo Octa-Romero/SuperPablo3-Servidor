@@ -170,4 +170,12 @@ public abstract class Jugador extends Entidad {
     public boolean estaTrepando() {
         return trepando;
     }
+
+    public int getTipoAnimacion() {
+        return ANIMACION.getTipoActual();
+    }
+
+    public float getTiempoAnimacion() {
+        return ANIMACION.getTiempo();
+    }
 }

@@ -28,7 +28,7 @@ public class Servidor {
 
     public void enviarEstadoAtaque(Jugador jugador)
     {
-        String msj = "ATAQUE;" + jugador.getPersonaje().name() + ";" + jugador.estaAtacando();
+        String msj = "ATAQUE;" + jugador.getPersonaje().name() + ";" + jugador.estaAtacando() + ";" + jugador.getTipoAnimacion() + ";" + jugador.getTiempoAnimacion();
 
         hilo.enviarMensajeATodos(msj);
     }
@@ -40,6 +40,13 @@ public class Servidor {
         hilo.enviarMensajeATodos(msj);
     }
 
+    public void enviarEstadoInvencibilidad(Jugador jugador)
+    {
+        String msj = "INVENCIBILIDAD;" + jugador.getPersonaje().name() + ";" + jugador.estaInvencible() + ";" + jugador.estaSpriteVisible();
+
+        hilo.enviarMensajeATodos(msj);
+    }
+
     public void enviarCreacionEnemigos(int id, TipoEnemigo tipo, float x, float y, double vida)
     {
         String msj = "CREAR_ENEMIGO;" + id + ";" + tipo + ";" + x + ";" + y + ";" + vida;
@@ -47,9 +54,9 @@ public class Servidor {
         hilo.enviarMensajeATodos(msj);
     }
 
-    public void enviarEstadoEnemigo(int id, float x, float y, int direccion, boolean estaAtacando, double vida)
+    public void enviarEstadoEnemigo(int id, float x, float y, int direccion, boolean estaAtacando, double vida, boolean spriteVisible, int tipoAnimacion, float tiempoAnimacion)
     {
-        String msj = "ESTADO_ENEMIGO;" + id + ";" + x + ";" + y + ";" + direccion + ";" + estaAtacando + ";" + vida;
+        String msj = "ESTADO_ENEMIGO;" + id + ";" + x + ";" + y + ";" + direccion + ";" + estaAtacando + ";" + vida + ";" + spriteVisible + ";" + tipoAnimacion + ";" + tiempoAnimacion;
         hilo.enviarMensajeATodos(msj);
     }
 

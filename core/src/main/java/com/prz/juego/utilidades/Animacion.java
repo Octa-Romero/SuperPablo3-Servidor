@@ -80,6 +80,17 @@ public class Animacion {
         sprite.setRegion(actual.getKeyFrame(tiempo));
     }
 
+    public float getTiempo() {
+        return tiempo;
+    }
+
+    public int getTipoActual() {
+        if (actual == ataque) return 3;
+        if (actual == salto) return 2;
+        if (actual == caminar) return 1;
+        return 0; // reposo
+    }
+
     public void dispose() {
         reposo = null;
         caminar = null;
