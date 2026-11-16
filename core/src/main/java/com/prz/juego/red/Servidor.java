@@ -8,6 +8,8 @@ import com.prz.juego.hilos.JugadorRed;
 
 public class Servidor {
 
+    public static Servidor instancia;
+
     private HiloServidor hilo;
 
     public void iniciar() {
@@ -26,7 +28,7 @@ public class Servidor {
 
     public void enviarEstadoAtaque(Jugador jugador)
     {
-        String msj = "ATAQUE;" + jugador.getPersonaje().name() + ";" + jugador.estaAtacando();
+        String msj = "ATAQUE;" + jugador.getPersonaje().name() + ";" + jugador.estaAtacando() + ";" + jugador.getTipoAnimacion() + ";" + jugador.getTiempoAnimacion();
 
         hilo.enviarMensajeATodos(msj);
     }
@@ -38,6 +40,13 @@ public class Servidor {
         hilo.enviarMensajeATodos(msj);
     }
 
+    public void enviarEstadoInvencibilidad(Jugador jugador)
+    {
+        String msj = "INVENCIBILIDAD;" + jugador.getPersonaje().name() + ";" + jugador.estaInvencible() + ";" + jugador.estaSpriteVisible();
+
+        hilo.enviarMensajeATodos(msj);
+    }
+
     public void enviarCreacionEnemigos(int id, TipoEnemigo tipo, float x, float y, double vida)
     {
         String msj = "CREAR_ENEMIGO;" + id + ";" + tipo + ";" + x + ";" + y + ";" + vida;
@@ -45,9 +54,9 @@ public class Servidor {
         hilo.enviarMensajeATodos(msj);
     }
 
-    public void enviarEstadoEnemigo(int id, float x, float y, int direccion, boolean estaAtacando, double vida)
+    public void enviarEstadoEnemigo(int id, float x, float y, int direccion, boolean estaAtacando, double vida, boolean spriteVisible, int tipoAnimacion, float tiempoAnimacion)
     {
-        String msj = "ESTADO_ENEMIGO;" + id + ";" + x + ";" + y + ";" + direccion + ";" + estaAtacando + ";" + vida;
+        String msj = "ESTADO_ENEMIGO;" + id + ";" + x + ";" + y + ";" + direccion + ";" + estaAtacando + ";" + vida + ";" + spriteVisible + ";" + tipoAnimacion + ";" + tiempoAnimacion;
         hilo.enviarMensajeATodos(msj);
     }
 
@@ -115,9 +124,9 @@ public class Servidor {
         hilo.enviarMensajeATodos(mensaje);
     }
 
-    public void enviarEstadoJefe(float x, float y, double vida, boolean visible, float escala) {
+    public void enviarEstadoJefe(float x, float y, double vida, boolean visible, float escala, String faseEspecial) {
 
-        String mensaje = "ESTADO_JEFE;" + x + ";" + y + ";" + vida + ";" + visible + ";" + escala;
+        String mensaje = "ESTADO_JEFE;" + x + ";" + y + ";" + vida + ";" + visible + ";" + escala + ";" + faseEspecial;
 
         hilo.enviarMensajeATodos(mensaje);
     }
@@ -229,6 +238,38 @@ public class Servidor {
         String msj = "ESTADO_LASER_JEFE;" + visible + ";" + aviso + ";" + angulo + ";" + tiempoAnimacion;
 
         hilo.enviarMensajeATodos(msj);
+    }
+
+    public void enviarSonido(String nombreSonido) {
+        hilo.enviarMensajeATodos("SONIDO;" + nombreSonido);
+    }
+
+    public void enviarSonidoConPosicion(String nombreSonido, float x, float y) {
+        hilo.enviarMensajeATodos("SONIDO;" + nombreSonido + ";" + x + ";" + y);
+    }
+
+    public void enviarSonidoLoop(String nombreSonido) {
+        hilo.enviarMensajeATodos("SONIDO;" + nombreSonido + ";LOOP");
+    }
+
+    public void enviarSonidoLoopConPosicion(String nombreSonido, float x, float y) {
+        hilo.enviarMensajeATodos("SONIDO;" + nombreSonido + ";LOOP;" + x + ";" + y);
+    }
+
+    public void enviarDetenerSonidoLoop(String nombreSonido) {
+        hilo.enviarMensajeATodos("SONIDO;" + nombreSonido + ";DETENER_LOOP");
+    }
+
+    public void enviarDetenerSonidoLoopConPosicion(String nombreSonido, float x, float y) {
+        hilo.enviarMensajeATodos("SONIDO;" + nombreSonido + ";DETENER_LOOP;" + x + ";" + y);
+    }
+
+    public void enviarMusica(String nombreMusica) {
+        hilo.enviarMensajeATodos("MUSICA;" + nombreMusica);
+    }
+
+    public void enviarDetenerMusica() {
+        hilo.enviarMensajeATodos("MUSICA;PARAR");
     }
 
     public JugadorRed[] getJugadoresRed()

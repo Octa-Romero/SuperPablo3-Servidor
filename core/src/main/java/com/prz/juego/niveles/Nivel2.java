@@ -14,8 +14,13 @@ public class Nivel2 extends Nivel {
     }
 
     @Override
-    protected float getPosicionInicialX() {
+    public float getPosicionInicialX() {
         return 500;
+    }
+
+    @Override
+    public float getPosicionInicialY() {
+        return 150;
     }
 
     @Override

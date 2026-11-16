@@ -6,6 +6,7 @@ import com.prz.juego.hilos.JugadorRed;
 import com.prz.juego.sistemas.Colisiones;
 import com.prz.juego.utilidades.Entrada;
 import com.prz.juego.utilidades.Render;
+import com.prz.juego.red.Servidor;
 import com.prz.juego.utilidades.Sonido;
 
 public abstract class Jugador extends Entidad {
@@ -133,7 +134,7 @@ public abstract class Jugador extends Entidad {
         velocidadY = 300;
         enSuelo = false;
         cooldownSaltoRestante = TIEMPO_COOLDOWN_SALTO;
-        Sonido.SALTO.sonar();
+        Servidor.instancia.enviarSonidoConPosicion("SALTO", x, y);
     }
 
     public void dibujar() {
@@ -168,5 +169,13 @@ public abstract class Jugador extends Entidad {
 
     public boolean estaTrepando() {
         return trepando;
+    }
+
+    public int getTipoAnimacion() {
+        return ANIMACION.getTipoActual();
+    }
+
+    public float getTiempoAnimacion() {
+        return ANIMACION.getTiempo();
     }
 }

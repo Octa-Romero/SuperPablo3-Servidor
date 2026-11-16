@@ -8,6 +8,7 @@ import com.prz.juego.entidades.Lanzable;
 import com.prz.juego.entidades.enemigos.Enemigo;
 import com.prz.juego.entidades.enemigos.rango.Proyectil;
 import com.prz.juego.recursos.GestorRecursos;
+import com.prz.juego.red.Servidor;
 import com.prz.juego.utilidades.Sonido;
 
 import java.util.ArrayList;
@@ -69,7 +70,7 @@ public class Pablo extends Jugador {
             tiempoAtaque = 0;
             yaDanio = false;
             PROYECTILES_GOLPEADOS.clear();
-            Sonido.ESPADA.sonar();
+            Servidor.instancia.enviarSonidoConPosicion("ESPADA", x, y);
         }
     }
 

@@ -15,9 +15,10 @@ import com.prz.juego.entidades.enemigos.TipoEnemigo;
 import com.prz.juego.entidades.jugadores.Jugador;
 import com.prz.juego.recursos.GestorRecursos;
 import com.prz.juego.utilidades.Render;
+import com.prz.juego.red.Servidor;
+import java.util.ArrayList;
 import com.prz.juego.utilidades.Sonido;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -345,6 +346,8 @@ public class Retumbar extends Enemigo {
         tiempoFaseAtaqueSegundaFase = 0f;
         disparosLaserSeguidor = 0;
         laserDaniadoJugador = false;
+        jugadorLaserSeguidor = null;
+        jugadoresDanadosLaser.clear();
         actualizarAnguloHaciaJugador();
     }
 
@@ -360,8 +363,8 @@ public class Retumbar extends Enemigo {
         tiempoFaseAtaqueSegundaFase += delta;
         switch (faseAtaqueSegundaFase) {
             case LASER_GIRATORIO_INICIAL:
-                if (!Sonido.FUEGO_SOSTENIDO.estaSonandoLoop()) {
-                    Sonido.FUEGO_SOSTENIDO.sonarConLoop();
+                if (!false) {
+                    Servidor.instancia.enviarSonidoLoopConPosicion("FUEGO_SOSTENIDO", x, y);
                 }
                 daniarJugadorPorLaser();
                 if (tiempoFaseAtaqueSegundaFase >= DURACION_LASER_GIRATORIO) {
@@ -392,7 +395,7 @@ public class Retumbar extends Enemigo {
             case LASER_CENTRO_ESPERA:
                 daniarJugadorPorLaser();
                 if (tiempoFaseAtaqueSegundaFase >= DURACION_LASER_GIRATORIO) {
-                    Sonido.FUEGO_SOSTENIDO.detenerLoop();
+                    Servidor.instancia.enviarDetenerSonidoLoopConPosicion("FUEGO_SOSTENIDO", x, y);
                     faseAtaqueSegundaFase = FaseAtaqueSegundaFase.ESPERA_LASER_OPUESTO;
                     tiempoFaseAtaqueSegundaFase = 0f;
                 }
@@ -400,8 +403,8 @@ public class Retumbar extends Enemigo {
 
             case ESPERA_LASER_OPUESTO:
                 if (tiempoFaseAtaqueSegundaFase >= PAUSA_LASER_GIRATORIO) {
-                    if (!Sonido.FUEGO_SOSTENIDO.estaSonandoLoop()) {
-                        Sonido.FUEGO_SOSTENIDO.sonarConLoop();
+                    if (!false) {
+                        Servidor.instancia.enviarSonidoLoopConPosicion("FUEGO_SOSTENIDO", x, y);
                     }
                     faseAtaqueSegundaFase =
                         FaseAtaqueSegundaFase.LASER_GIRATORIO_OPUESTO;
@@ -442,7 +445,7 @@ public class Retumbar extends Enemigo {
             case LASER_OPUESTO_CENTRO_ESPERA:
                 daniarJugadorPorLaser();
                 if (tiempoFaseAtaqueSegundaFase >= DURACION_LASER_GIRATORIO) {
-                    Sonido.FUEGO_SOSTENIDO.detenerLoop();
+                    Servidor.instancia.enviarDetenerSonidoLoopConPosicion("FUEGO_SOSTENIDO", x, y);
                     terminarAtaqueSegundaFase();
                 }
                 break;
@@ -481,8 +484,8 @@ public class Retumbar extends Enemigo {
                     faseAtaqueSegundaFase =
                         FaseAtaqueSegundaFase.LASER_SEGUIDOR_DISPARO;
                     tiempoFaseAtaqueSegundaFase = 0f;
-                    laserDaniadoJugador = false;
-                    Sonido.RELAMPAGO.sonar();
+                    jugadoresDanadosLaser.clear();
+                    Servidor.instancia.enviarSonidoConPosicion("RELAMPAGO", x, y);
                 }
                 break;
 
@@ -502,6 +505,7 @@ public class Retumbar extends Enemigo {
 
             case LASER_SEGUIDOR_PAUSA:
                 if (tiempoFaseAtaqueSegundaFase >= PAUSA_LASER_SEGUIDOR) {
+                    jugadorLaserSeguidor = null;
                     faseAtaqueSegundaFase =
                         FaseAtaqueSegundaFase.LASER_SEGUIDOR_AVISO;
                     tiempoFaseAtaqueSegundaFase = 0f;
@@ -516,7 +520,7 @@ public class Retumbar extends Enemigo {
             MathUtils.clamp(destinoX, 0f, Math.max(0f, anchoMapa - ancho));
         estadoTeletransporteAtaque = EstadoTeletransporteAtaque.ENCOGIENDO;
         tiempoTeletransporteAtaque = 0f;
-        Sonido.TP1.sonar();
+        Servidor.instancia.enviarSonidoConPosicion("TP1", x, y);
     }
 
     private boolean actualizarTeletransporteAtaque(float delta) {
@@ -547,7 +551,7 @@ public class Retumbar extends Enemigo {
                     actualizarSpriteVisual();
                     estadoTeletransporteAtaque = EstadoTeletransporteAtaque.AGRANDANDO;
                     tiempoTeletransporteAtaque = 0f;
-                    Sonido.TP2.sonar();
+                    Servidor.instancia.enviarSonidoConPosicion("TP2", x, y);
                 }
                 break;
 
@@ -586,6 +590,7 @@ public class Retumbar extends Enemigo {
                 anchoMapa,
                 altoMapa,
                 jugador,
+                jugadores,
                 ANIMACION_FUEGUITO
             );
 
@@ -595,7 +600,7 @@ public class Retumbar extends Enemigo {
             FUEGUITOS_RADIALES_NUEVOS.add(fueguito);
         }
 
-        Sonido.FUEGUITO.sonar();
+        Servidor.instancia.enviarSonidoConPosicion("FUEGUITO", x, y);
     }
 
     private float obtenerPosicionRafaga() {
@@ -606,10 +611,13 @@ public class Retumbar extends Enemigo {
     }
 
     private Jugador jugadorLaserSeguidor;
+    private ArrayList<Jugador> jugadoresDanadosLaser = new ArrayList<>();
 
     private void actualizarAnguloHaciaJugador() {
-        Jugador objetivo = obtenerJugadorAleatorio();
-        jugadorLaserSeguidor = objetivo;
+        if (jugadorLaserSeguidor == null || jugadorLaserSeguidor.estaMuerto()) {
+            jugadorLaserSeguidor = obtenerJugadorAleatorio();
+        }
+        Jugador objetivo = jugadorLaserSeguidor;
         float dx = objetivo.getBounds().x + objetivo.getBounds().width / 2f - (x + ancho / 2f);
         float dy =
             objetivo.getBounds().y
@@ -630,30 +638,35 @@ public class Retumbar extends Enemigo {
     }
 
     private void daniarJugadorPorLaser() {
-        if (laserDaniadoJugador) {
+        if (ataqueSegundaFase != AtaqueSegundaFase.LASER_SEGUIDOR && laserDaniadoJugador) {
             return;
         }
-
-        Jugador objetivo = (ataqueSegundaFase == AtaqueSegundaFase.LASER_SEGUIDOR && jugadorLaserSeguidor != null)
-            ? jugadorLaserSeguidor : jugador;
-        Rectangle boundsJugador = objetivo.getBounds();
         actualizarHitboxLaser();
-        HITBOX_JUGADOR_LASER.setVertices(
-            new float[]{
-                0f,
-                0f,
-                boundsJugador.width,
-                0f,
-                boundsJugador.width,
-                boundsJugador.height,
-                0f,
-                boundsJugador.height
-            });
-        HITBOX_JUGADOR_LASER.setPosition(boundsJugador.x, boundsJugador.y);
+        for (Jugador j : jugadores) {
+            if (j.estaMuerto() || jugadoresDanadosLaser.contains(j)) {
+                continue;
+            }
+            Rectangle boundsJ = j.getBounds();
+            HITBOX_JUGADOR_LASER.setVertices(
+                new float[]{
+                    0f,
+                    0f,
+                    boundsJ.width,
+                    0f,
+                    boundsJ.width,
+                    boundsJ.height,
+                    0f,
+                    boundsJ.height
+                });
+            HITBOX_JUGADOR_LASER.setPosition(boundsJ.x, boundsJ.y);
 
-        if (Intersector.overlapConvexPolygons(HITBOX_LASER, HITBOX_JUGADOR_LASER)) {
-            jugador.restarVida(DANIO);
-            laserDaniadoJugador = true;
+            if (Intersector.overlapConvexPolygons(HITBOX_LASER, HITBOX_JUGADOR_LASER)) {
+                j.restarVida(DANIO);
+                jugadoresDanadosLaser.add(j);
+                if (ataqueSegundaFase != AtaqueSegundaFase.LASER_SEGUIDOR) {
+                    laserDaniadoJugador = true;
+                }
+            }
         }
     }
 
@@ -767,7 +780,7 @@ public class Retumbar extends Enemigo {
         }
         spriteVisible = true;
         sprite.setScale(1f);
-        Sonido.TP1.sonar();
+        Servidor.instancia.enviarSonidoConPosicion("TP1", x, y);
     }
 
     private void actualizarFaseEspecial(float delta) {
@@ -819,7 +832,7 @@ public class Retumbar extends Enemigo {
         tiempoFaseEspecial = 0f;
         spriteVisible = true;
         sprite.setScale(0f);
-        Sonido.TP2.sonar();
+        Servidor.instancia.enviarSonidoConPosicion("TP2", x, y);
     }
 
     @Override
@@ -876,7 +889,7 @@ public class Retumbar extends Enemigo {
         MANO_DERECHA.restablecerPosicionInicial();
 
         if (faseEspecial == FaseEspecial.NORMAL) {
-            Sonido.RETUMBAR_ATAQUE.sonar();
+            Servidor.instancia.enviarSonidoConPosicion("RETUMBAR_ATAQUE", x, y);
         }
 
         switch (ataqueActual) {
@@ -1026,7 +1039,7 @@ public class Retumbar extends Enemigo {
                     );
 
                     FUEGO_SUELO.activar(DURACION_FUEGO_SUELO);
-                    Sonido.FUEGO_SUELO.sonar();
+                    Servidor.instancia.enviarSonidoConPosicion("FUEGO_SUELO", x, y);
                 }
                 break;
 
@@ -1077,7 +1090,7 @@ public class Retumbar extends Enemigo {
     @Override
     public void restarVida(double cantidad) {
         if (puedeRecibirDanio()) {
-            Sonido.RETUMBAR_GOLPE_RECIBIDO.sonar();
+            Servidor.instancia.enviarSonidoConPosicion("RETUMBAR_GOLPE_RECIBIDO", x, y);
             super.restarVida(cantidad);
         }
     }
@@ -1216,11 +1229,15 @@ public class Retumbar extends Enemigo {
         }
     }
 
+    public String getFaseEspecial() {
+        return faseEspecial.name();
+    }
+
     @Override
     protected void morir() {
         super.morir();
-        Sonido.FUEGO_SOSTENIDO.detenerLoop();
-        Sonido.RETUMBAR_MUERTE.sonar();
+        Servidor.instancia.enviarDetenerSonidoLoopConPosicion("FUEGO_SOSTENIDO", x, y);
+        Servidor.instancia.enviarSonidoConPosicion("RETUMBAR_MUERTE", x, y);
 
         for (Fueguito fueguito : FUEGUITOS_DIRECCIONADOS) {
             FUEGUITOS_RADIALES_ELIMINADOS.add(fueguito.getId());
@@ -1238,3 +1255,15 @@ public class Retumbar extends Enemigo {
         MANO_DERECHA.desactivarPorMuerteJefe();
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+

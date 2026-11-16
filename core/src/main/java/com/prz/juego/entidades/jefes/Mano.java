@@ -12,6 +12,7 @@ import com.prz.juego.entidades.jugadores.Jugador;
 import com.prz.juego.recursos.GestorRecursos;
 import com.prz.juego.utilidades.Animacion;
 import com.prz.juego.utilidades.Render;
+import com.prz.juego.red.Servidor;
 import com.prz.juego.utilidades.Sonido;
 
 public class Mano extends Enemigo {
@@ -106,6 +107,7 @@ public class Mano extends Enemigo {
     private float velocidadMovimiento;
     private float tiempoMovimientoIdle;
     private float desfaseMovimientoVertical;
+    private Jugador objetivoMano;
 
     public Mano(Retumbar RETUMBAR, Lado LADO, Jugador jugador, Jugador[] jugadores) {
         super(
@@ -233,7 +235,7 @@ public class Mano extends Enemigo {
                     y = yObjetivo;
                     haciendoDanio = false;
                     tiempoHitboxExtendida = DURACION_HITBOX_EXTENDIDA;
-                    Sonido.GOLPE.sonar();
+                    Servidor.instancia.enviarSonidoConPosicion("GOLPE", x, y);
                     estadoAtaque = EstadoAtaque.RECUPERANDO;
                     tiempoEstado = teletransporteRapido
                         ? TIEMPO_RAPIDO_RECUPERACION
@@ -259,7 +261,7 @@ public class Mano extends Enemigo {
                 if (escalaTeletransporte <= 0f) {
                     visible = false;
                     estadoAtaque = EstadoAtaque.ESPERANDO_REAPARICION;
-                    Sonido.TP1.sonar();
+                    Servidor.instancia.enviarSonidoConPosicion("TP1", x, y);
                     tiempoEstado = teletransporteRapido
                         ? (volverAIdle
                         ? TIEMPO_RETORNO_IDLE_DESAPARECIDO
@@ -275,21 +277,20 @@ public class Mano extends Enemigo {
                         y = RETUMBAR.getY() + ALTURA_REPOSO;
                         estiloAtaque = EstiloAtaque.NORMAL;
                     } else {
-                        Jugador objetivo = obtenerJugadorAleatorio();
-                        x = objetivo.getX() + objetivo.getAncho() / 2 - ANCHO / 2;
+                        objetivoMano = obtenerJugadorAleatorio();
+                        x = objetivoMano.getX() + objetivoMano.getAncho() / 2 - ANCHO / 2;
                         y = ALTURA_TELETRANSPORTE;
                         estiloAtaque = EstiloAtaque.PALMA;
                     }
                     escalaTeletransporte = 0f;
                     visible = true;
-                    Sonido.TP2.sonar();
+                    Servidor.instancia.enviarSonidoConPosicion("TP2", x, y);
                     estadoAtaque = EstadoAtaque.REAPARECIENDO;
                 }
                 break;
             case REAPARECIENDO:
-                if (!volverAIdle) {
-                    Jugador objetivo = obtenerJugadorAleatorio();
-                    x = objetivo.getX() + objetivo.getAncho() / 2 - ANCHO / 2;
+                if (!volverAIdle && objetivoMano != null) {
+                    x = objetivoMano.getX() + objetivoMano.getAncho() / 2 - ANCHO / 2;
                     y = ALTURA_TELETRANSPORTE;
                 }
                 escalaTeletransporte = Math.min(
@@ -312,8 +313,9 @@ public class Mano extends Enemigo {
                 break;
             case SIGUIENDO_JUGADOR:
                 tiempoEstado -= delta;
-                Jugador objetivo = obtenerJugadorAleatorio();
-                x = objetivo.getX() + objetivo.getAncho() / 2 - ANCHO / 2;
+                if (objetivoMano != null) {
+                    x = objetivoMano.getX() + objetivoMano.getAncho() / 2 - ANCHO / 2;
+                }
                 if (tiempoEstado <= 0) {
                     estadoAtaque = EstadoAtaque.ESPERANDO_GOLPE;
                     tiempoEstado = teletransporteRapido
@@ -481,12 +483,17 @@ public class Mano extends Enemigo {
     }
 
     private void verificarColisionJugador() {
-        boolean golpeaConMano = haciendoDanio && bounds.overlaps(jugador.getBounds());
-        boolean golpeaConFuego =
-            tiempoHitboxExtendida > 0
-                && BOUNDS_FUEGO_GOLPE.overlaps(jugador.getBounds());
-        if (golpeaConMano || golpeaConFuego) {
-            jugador.restarVida(danio);
+        for (Jugador j : jugadores) {
+            if (j.estaMuerto()) {
+                continue;
+            }
+            boolean golpeaConMano = haciendoDanio && bounds.overlaps(j.getBounds());
+            boolean golpeaConFuego =
+                tiempoHitboxExtendida > 0
+                    && BOUNDS_FUEGO_GOLPE.overlaps(j.getBounds());
+            if (golpeaConMano || golpeaConFuego) {
+                j.restarVida(danio);
+            }
         }
     }
 
@@ -537,7 +544,7 @@ public class Mano extends Enemigo {
             return;
         }
         if (vida - cantidad > 0) {
-            Sonido.RETUMBAR_GOLPE_RECIBIDO.sonar();
+            Servidor.instancia.enviarSonidoConPosicion("RETUMBAR_GOLPE_RECIBIDO", x, y);
         }
         super.restarVida(cantidad);
     }
@@ -637,7 +644,7 @@ public class Mano extends Enemigo {
     @Override
     protected void morir() {
         super.morir();
-        Sonido.RETUMBAR_MANO_ROTA.sonar();
+        Servidor.instancia.enviarSonidoConPosicion("RETUMBAR_MANO_ROTA", x, y);
     }
 
     @Override
@@ -658,3 +665,7 @@ public class Mano extends Enemigo {
         super.dispose();
     }
 }
+
+
+
+

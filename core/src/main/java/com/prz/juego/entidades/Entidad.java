@@ -236,6 +236,14 @@ public abstract class Entidad {
         return muerto;
     }
 
+    public boolean estaInvencible() {
+        return tiempoInvencibilidad > 0;
+    }
+
+    public boolean estaSpriteVisible() {
+        return spriteVisible;
+    }
+
     public abstract void dibujar();
 
     public void dibujarHitbox(ShapeRenderer shapeRenderer) {
