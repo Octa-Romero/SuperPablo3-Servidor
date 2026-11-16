@@ -78,7 +78,9 @@ public abstract class EnemigoMelee extends Enemigo {
         tiempoEstado += delta;
         if (!yaDanio && ataqueTocaJugador()) {
             Jugador objetivo = obtenerJugadorMasCercano();
-            objetivo.restarVida(danio);
+            if (objetivo != null) {
+                objetivo.restarVida(danio);
+            }
             yaDanio = true;
         }
 
@@ -113,7 +115,7 @@ public abstract class EnemigoMelee extends Enemigo {
             }
             return false;
         }
-        return ataque.overlaps(jugador.getBounds());
+        return !jugador.estaMuerto() && ataque.overlaps(jugador.getBounds());
     }
 
     @Override

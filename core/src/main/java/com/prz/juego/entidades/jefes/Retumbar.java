@@ -29,7 +29,7 @@ public class Retumbar extends Enemigo {
     private static final float ALTURA_PECHO = ALTO * 0.77f;
     private static final int VELOCIDAD = 45;
     private static final float RECORRIDO = 250;
-    private static final double VIDA = 40;
+    private static final double VIDA = 2;
     private static final double DANIO = 1;
     private static final float TIEMPO_ENTRE_ATAQUES = 3f;
     private static final int REPETICIONES_LEVANTAR_BAJAR = 5;
@@ -169,7 +169,6 @@ public class Retumbar extends Enemigo {
     private float anguloLaserInicial;
     private float anguloLaserObjetivo;
     private float direccionLaserInicial;
-    private boolean laserDaniadoJugador;
     private int posicionFueguitos;
     private int disparosLaserSeguidor;
 
@@ -311,13 +310,24 @@ public class Retumbar extends Enemigo {
         }
 
         tiempoAtaqueSegundaFase = 0f;
-        int ataqueElegido = MathUtils.random(2);
-        if (ataqueElegido == 0) {
-            iniciarLaserLateral();
-        } else if (ataqueElegido == 1) {
-            iniciarRafagaRadial();
+
+        // Si ambos jugadores muertos, no hacer laser seguidor
+        if (ambosJugadoresMuertos()) {
+            int ataqueElegido = MathUtils.random(1);
+            if (ataqueElegido == 0) {
+                iniciarLaserLateral();
+            } else {
+                iniciarRafagaRadial();
+            }
         } else {
-            iniciarLaserApuntado();
+            int ataqueElegido = MathUtils.random(2);
+            if (ataqueElegido == 0) {
+                iniciarLaserLateral();
+            } else if (ataqueElegido == 1) {
+                iniciarRafagaRadial();
+            } else {
+                iniciarLaserApuntado();
+            }
         }
         ejecutarAtaqueSegundaFase(0f);
     }
@@ -329,7 +339,6 @@ public class Retumbar extends Enemigo {
         iniciarTeletransporteAtaque(X_INICIAL);
         direccionLaserInicial = Math.random() < 0.5 ? 1f : -1f;
         anguloLaserSegundaFase = direccionLaserInicial > 0f ? 0f : 180f;
-        laserDaniadoJugador = false;
     }
 
     private void iniciarRafagaRadial() {
@@ -345,7 +354,6 @@ public class Retumbar extends Enemigo {
         faseAtaqueSegundaFase = FaseAtaqueSegundaFase.LASER_SEGUIDOR_AVISO;
         tiempoFaseAtaqueSegundaFase = 0f;
         disparosLaserSeguidor = 0;
-        laserDaniadoJugador = false;
         jugadorLaserSeguidor = null;
         jugadoresDanadosLaser.clear();
         actualizarAnguloHaciaJugador();
@@ -410,7 +418,6 @@ public class Retumbar extends Enemigo {
                         FaseAtaqueSegundaFase.LASER_GIRATORIO_OPUESTO;
                     tiempoFaseAtaqueSegundaFase = 0f;
                     anguloLaserSegundaFase = direccionLaserInicial > 0f ? 180f : 0f;
-                    laserDaniadoJugador = false;
                 }
                 break;
 
@@ -618,6 +625,9 @@ public class Retumbar extends Enemigo {
             jugadorLaserSeguidor = obtenerJugadorAleatorio();
         }
         Jugador objetivo = jugadorLaserSeguidor;
+        if (objetivo == null) {
+            return;
+        }
         float dx = objetivo.getBounds().x + objetivo.getBounds().width / 2f - (x + ancho / 2f);
         float dy =
             objetivo.getBounds().y
@@ -638,12 +648,13 @@ public class Retumbar extends Enemigo {
     }
 
     private void daniarJugadorPorLaser() {
-        if (ataqueSegundaFase != AtaqueSegundaFase.LASER_SEGUIDOR && laserDaniadoJugador) {
-            return;
-        }
         actualizarHitboxLaser();
+        boolean esLaserSeguidor = ataqueSegundaFase == AtaqueSegundaFase.LASER_SEGUIDOR;
         for (Jugador j : jugadores) {
-            if (j.estaMuerto() || jugadoresDanadosLaser.contains(j)) {
+            if (j.estaMuerto()) {
+                continue;
+            }
+            if (esLaserSeguidor && jugadoresDanadosLaser.contains(j)) {
                 continue;
             }
             Rectangle boundsJ = j.getBounds();
@@ -662,9 +673,8 @@ public class Retumbar extends Enemigo {
 
             if (Intersector.overlapConvexPolygons(HITBOX_LASER, HITBOX_JUGADOR_LASER)) {
                 j.restarVida(DANIO);
-                jugadoresDanadosLaser.add(j);
-                if (ataqueSegundaFase != AtaqueSegundaFase.LASER_SEGUIDOR) {
-                    laserDaniadoJugador = true;
+                if (esLaserSeguidor) {
+                    jugadoresDanadosLaser.add(j);
                 }
             }
         }
@@ -866,6 +876,15 @@ public class Retumbar extends Enemigo {
         }
     }
 
+    private boolean ambosJugadoresMuertos() {
+        for (Jugador j : jugadores) {
+            if (j != null && !j.estaMuerto()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private void iniciarAtaqueAleatorio() {
         boolean izquierdaViva = !MANO_IZQUIERDA.estaMuerto();
         boolean derechaViva = !MANO_DERECHA.estaMuerto();
@@ -875,7 +894,13 @@ public class Retumbar extends Enemigo {
             return;
         }
 
-        TipoAtaque[] ataques = TipoAtaque.values();
+        // Si ambos jugadores muertos, no hacer ataques de mano que se teletransporta
+        TipoAtaque[] ataques;
+        if (ambosJugadoresMuertos()) {
+            ataques = new TipoAtaque[]{TipoAtaque.LEVANTAR_BAJAR_MANOS, TipoAtaque.ATAQUE_SUELO};
+        } else {
+            ataques = TipoAtaque.values();
+        }
         ataqueActual = ataques[(int) (Math.random() * ataques.length)];
 
         atacando = true;
@@ -1163,6 +1188,9 @@ public class Retumbar extends Enemigo {
 
     public float getEscalaSprite()
     {
+        if (this.sprite == null) {
+            return 1f;
+        }
         return this.sprite.getScaleX();
     }
 

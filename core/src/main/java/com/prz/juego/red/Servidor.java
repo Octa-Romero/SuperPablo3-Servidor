@@ -11,6 +11,7 @@ public class Servidor {
     public static Servidor instancia;
 
     private HiloServidor hilo;
+    private Runnable callbackVolverHub;
 
     public void iniciar() {
         if (hilo == null) {
@@ -268,6 +269,14 @@ public class Servidor {
         hilo.enviarMensajeATodos("MUSICA;PARAR");
     }
 
+    public void enviarEliminacionAtaquesJefe() {
+        hilo.enviarMensajeATodos("ELIMINAR_ATAQUES_JEFE");
+    }
+
+    public void enviarCreditos() {
+        hilo.enviarMensajeATodos("MOSTRAR_CREDITOS");
+    }
+
     public JugadorRed[] getJugadoresRed()
     {
         return hilo.getJugadores();
@@ -277,6 +286,16 @@ public class Servidor {
         if (hilo != null) {
             hilo.cerrar();
             hilo = null;
+        }
+    }
+
+    public void registrarCallbackVolverHub(Runnable callback) {
+        this.callbackVolverHub = callback;
+    }
+
+    public void ejecutarCallbackVolverHub() {
+        if (callbackVolverHub != null) {
+            callbackVolverHub.run();
         }
     }
 }

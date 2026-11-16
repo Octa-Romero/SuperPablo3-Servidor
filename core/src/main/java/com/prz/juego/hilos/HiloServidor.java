@@ -1,6 +1,7 @@
 package com.prz.juego.hilos;
 
 
+import com.prz.juego.red.Servidor;
 import com.prz.juego.utilidades.Global;
 
 import java.io.IOException;
@@ -72,6 +73,14 @@ public class HiloServidor extends Thread {
 
         if (msj.startsWith("VOTAR_NIVEL;")) {
             procesarVotoNivel(msj, indice);
+        }
+
+        if (msj.equals("VOLVER_HUB")) {
+            procesarVolverHub(indice);
+        }
+
+        if (msj.equals("CANCELAR_HUB")) {
+            procesarCancelarHub(indice);
         }
     }
 
@@ -199,6 +208,39 @@ public class HiloServidor extends Thread {
         jugadores[indice].setSolicitoSeleccionNivel(solicitaSeleccion);
     }
 
+    private boolean[] vuelveAlHub = new boolean[2];
+
+    private void procesarVolverHub(int indice) {
+        int otro = 1 - indice;
+        // Si ya habia confirmado, cancelar (toggle)
+        if (vuelveAlHub[indice]) {
+            vuelveAlHub[indice] = false;
+            // Avisar al otro jugador que se cancelo
+            enviarMensaje("CANCELAR_HUB", jugadores[otro].getIp(), jugadores[otro].getPuerto());
+            return;
+        }
+        vuelveAlHub[indice] = true;
+        // Avisar al otro jugador que este quiere volver
+        enviarMensaje("VOLVER_HUB;OTRO", jugadores[otro].getIp(), jugadores[otro].getPuerto());
+        // Si ambos quieren volver, enviar confirmacion a ambos
+        if (vuelveAlHub[otro]) {
+            enviarMensaje("VOLVER_HUB;AMBOS", jugadores[indice].getIp(), jugadores[indice].getPuerto());
+            enviarMensaje("VOLVER_HUB;AMBOS", jugadores[otro].getIp(), jugadores[otro].getPuerto());
+            // Resetear para la proxima vez
+            vuelveAlHub[0] = false;
+            vuelveAlHub[1] = false;
+            // Hacer que el servidor tambien vuelva al hub
+            Servidor.instancia.ejecutarCallbackVolverHub();
+        }
+    }
+
+    private void procesarCancelarHub(int indice) {
+        vuelveAlHub[indice] = false;
+        int otro = 1 - indice;
+        // Avisar al otro jugador que se cancelo
+        enviarMensaje("CANCELAR_HUB", jugadores[otro].getIp(), jugadores[otro].getPuerto());
+    }
+
     private void procesarVotoNivel(String msj, int indice) {
         String[] mensajeParametrizados = msj.split(";");
 
@@ -259,4 +301,5 @@ public class HiloServidor extends Thread {
         }
     }
 }
+
 

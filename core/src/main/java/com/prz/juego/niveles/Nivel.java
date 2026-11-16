@@ -9,6 +9,7 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.prz.juego.entidades.Entidad;
 import com.prz.juego.entidades.Lanzable;
 import com.prz.juego.entidades.Reliquia;
+import com.prz.juego.entidades.Tumba;
 import com.prz.juego.entidades.enemigos.Enemigo;
 import com.prz.juego.entidades.enemigos.TipoEnemigo;
 import com.prz.juego.entidades.enemigos.rango.EnemigoRango;
@@ -31,7 +32,9 @@ public abstract class Nivel {
     private Pablo pablo;
     private Walter walter;
     private Colisiones colision;
-    private boolean enemigoReliquiaDerrotado = false;
+    private boolean jefeMuerto = false;
+    private float tiempoDesdeMuerteJefe = 0f;
+    private boolean creditosDisparados = false;
     private final ArrayList<Entidad> ENTIDADES = new ArrayList<>();
     private final ArrayList<Entidad> ENTIDADES_PENDIENTES = new ArrayList<>();
     private final ArrayList<Entidad> ENTIDADES_PENDIENTES_ELIMINAR = new ArrayList<>();
@@ -39,11 +42,16 @@ public abstract class Nivel {
     private final ArrayList<Lanzable> PROYECTILES_ACTIVOS = new ArrayList<>();
     private final ArrayList<Integer> PROYECTILES_ELIMINADOS = new ArrayList<>();
     private final ArrayList<Reliquia> RELIQUIAS = new ArrayList<>();
+    private final ArrayList<Tumba> TUMBAS = new ArrayList<>();
     private final ArrayList<Enemigo> enemigosNuevos = new ArrayList<>();
     private ArrayList<Integer> idEnemigosEliminados = new ArrayList<>();
     private ShapeRenderer shapeRenderer;
     private boolean gameOver = false;
     private boolean tieneReliquia = false;
+    private boolean tumbaJugador0Creada = false;
+    private boolean tumbaJugador1Creada = false;
+    private boolean sonidoMuerteJugador0Enviado = false;
+    private boolean sonidoMuerteJugador1Enviado = false;
     private float anchoMapa;
     protected String musica;
     private int idProyectil = 1;
@@ -201,21 +209,19 @@ public abstract class Nivel {
     public void render() {
         Render.batch.setProjectionMatrix(camara.getCamera().combined);
 
-        boolean dibujarJugadoresAlFrente = getJefe() != null;
-
+        // Dibujar enemigos y jefes primero (todo lo que no sea jugador)
         for (Entidad entidad : ENTIDADES) {
-            if (dibujarJugadoresAlFrente
-                && (entidad == pablo || entidad == walter)) {
+            if (entidad == pablo || entidad == walter) {
                 continue;
             }
-
             entidad.dibujar();
         }
 
-        if (dibujarJugadoresAlFrente) {
-            getJefe().dibujarAtaquesExtra();
-            pablo.dibujar();
-            walter.dibujar();
+        // Dibujar jugadores: primero jugadores[0], luego jugadores[1] encima
+        for (Jugador jugador : jugadores) {
+            if (jugador != null) {
+                jugador.dibujar();
+            }
         }
 
         for (Lanzable proyectil : PROYECTILES_ACTIVOS) {
@@ -224,6 +230,16 @@ public abstract class Nivel {
 
         for (Reliquia reliquia : RELIQUIAS) {
             reliquia.dibujar();
+        }
+
+        for (Tumba tumba : TUMBAS) {
+            tumba.dibujar();
+        }
+
+        // Dibujar ataques extra del jefe (rayos, lasers, meteoritos, fueguitos)
+        Retumbar jefe = getJefe();
+        if (jefe != null) {
+            jefe.dibujarAtaquesExtra();
         }
     }
 
@@ -298,7 +314,7 @@ public abstract class Nivel {
             }
         }
 
-        // Eliminar enemigos muertos y generar la reliquia si corresponde.
+        // Eliminar enemigos muertos.
         for (int i = ENTIDADES.size() - 1; i >= 0; i--) {
             Entidad entidad = ENTIDADES.get(i);
 
@@ -308,34 +324,33 @@ public abstract class Nivel {
                 if (enemigo.estaMuerto()) {
                     idEnemigosEliminados.add(enemigo.getId());
 
-                    if (enemigo.sueltaReliquia()) {
-                        enemigoReliquiaDerrotado = true;
-                        System.out.println(
-                            "[RELIQUIA] ¡El enemigo marcado murió!"
-                        );
-
-                        float xReliquia = enemigo.getX()
-                            + (enemigo.getAncho() - 32f) / 2f;
-
-                        float yReliquia = enemigo.getY();
-
-                        System.out.println(
-                            "[RELIQUIA] Posición: X="
-                                + xReliquia + ", Y=" + yReliquia
-                        );
-
-                        RELIQUIAS.add(
-                            new Reliquia(xReliquia, yReliquia, colision)
-                        );
-
-                        System.out.println(
-                            "[RELIQUIA] Reliquia creada. Total: "
-                                + RELIQUIAS.size()
-                        );
+                    // Si es el jefe Retumbar, no eliminarlo de ENTIDADES para que siga visible durante el parpadeo
+                    if (enemigo instanceof Retumbar && !jefeMuerto) {
+                        jefeMuerto = true;
+                        tiempoDesdeMuerteJefe = 0f;
+                        Servidor.instancia.enviarEliminacionAtaquesJefe();
+                        // No eliminar el jefe de ENTIDADES; solo eliminar manos y fuego suelo
+                        Retumbar jefe = (Retumbar) enemigo;
+                        ENTIDADES.remove(jefe.getManoIzquierda());
+                        ENTIDADES.remove(jefe.getManoDerecha());
+                        ENTIDADES.remove(jefe.getFuegoSuelo());
+                    } else {
+                        enemigo.dispose();
+                        ENTIDADES.remove(i);
                     }
+                }
+            }
+        }
 
-                    enemigo.dispose();
-                    ENTIDADES.remove(i);
+        // Temporizador para mostrar créditos 2 segundos después de que muera el jefe
+        // Solo mostrar créditos si al menos un jugador sigue vivo
+        if (jefeMuerto && !creditosDisparados) {
+            tiempoDesdeMuerteJefe += delta;
+            if (tiempoDesdeMuerteJefe >= 2f) {
+                boolean algunJugadorVivo = !jugadores[0].estaMuerto() || !jugadores[1].estaMuerto();
+                if (algunJugadorVivo) {
+                    creditosDisparados = true;
+                    Servidor.instancia.enviarCreditos();
                 }
             }
         }
@@ -353,10 +368,27 @@ public abstract class Nivel {
             }
         }
 
-        // Actualizar cámara.
+        // Determinar qué jugador sigue la cámara
+        Jugador jugadorParaCamara;
+        if (jugadores[0].estaMuerto() && !jugadores[1].estaMuerto()) {
+            // Jugador 0 muerto, seguir al jugador 1 vivo
+            jugadorParaCamara = jugadores[1];
+        } else if (jugadores[1].estaMuerto() && !jugadores[0].estaMuerto()) {
+            // Jugador 1 muerto, seguir al jugador 0 vivo
+            jugadorParaCamara = jugadores[0];
+        } else if (jugadores[0].estaMuerto() && jugadores[1].estaMuerto()) {
+            // Ambos muertos: seguir al que tiene X más alta
+            jugadorParaCamara = jugadores[0].getX() >= jugadores[1].getX()
+                ? jugadores[0] : jugadores[1];
+        } else {
+            // Ambos vivos: seguir al que tiene X más alta
+            jugadorParaCamara = jugadores[0].getX() >= jugadores[1].getX()
+                ? jugadores[0] : jugadores[1];
+        }
+
         camara.seguirPersonaje(
-            jugadores[0].getX() + jugadores[0].getAncho() / 2f,
-            jugadores[0].getY() + jugadores[0].getAlto() / 2f,
+            jugadorParaCamara.getX() + jugadorParaCamara.getAncho() / 2f,
+            jugadorParaCamara.getY() + jugadorParaCamara.getAlto() / 2f,
             delta
         );
 
@@ -364,6 +396,43 @@ public abstract class Nivel {
         //if (entrada.aprietaF1()) {
         //    Debug.cambiarHitboxes();
         //}
+
+        // Crear tumba cuando un jugador muere
+        if (jugadores[0].estaMuerto() && !tumbaJugador0Creada) {
+            tumbaJugador0Creada = true;
+            Tumba tumba = new Tumba(
+                jugadores[0].getX() + jugadores[0].getAncho() / 2f,
+                jugadores[0].getY(),
+                colision
+            );
+            TUMBAS.add(tumba);
+        }
+        if (jugadores[0].estaMuerto() && !sonidoMuerteJugador0Enviado) {
+            sonidoMuerteJugador0Enviado = true;
+            Servidor.instancia.enviarSonido("MUERTE");
+        }
+        if (jugadores[1].estaMuerto() && !tumbaJugador1Creada) {
+            tumbaJugador1Creada = true;
+            Tumba tumba = new Tumba(
+                jugadores[1].getX() + jugadores[1].getAncho() / 2f,
+                jugadores[1].getY(),
+                colision
+            );
+            TUMBAS.add(tumba);
+        }
+        if (jugadores[1].estaMuerto() && !sonidoMuerteJugador1Enviado) {
+            sonidoMuerteJugador1Enviado = true;
+            Servidor.instancia.enviarSonido("MUERTE");
+        }
+
+        // Actualizar tumbas
+        for (int i = TUMBAS.size() - 1; i >= 0; i--) {
+            Tumba tumba = TUMBAS.get(i);
+            if (tumba.actualizar(delta)) {
+                tumba.dispose();
+                TUMBAS.remove(i);
+            }
+        }
 
         if (jugadores[0].estaMuerto() && jugadores[1].estaMuerto()) {
             gameOver = true;
@@ -387,9 +456,10 @@ public abstract class Nivel {
         if (shapeRenderer != null) {
             shapeRenderer.dispose();
         }
-
         for (Entidad entidad : ENTIDADES) {
-            entidad.dispose();
+            if (entidad != pablo && entidad != walter) {
+                entidad.dispose();
+            }
         }
 
         ENTIDADES.clear();
@@ -402,6 +472,11 @@ public abstract class Nivel {
         }
 
         RELIQUIAS.clear();
+
+        for (Tumba tumba : TUMBAS) {
+            tumba.dispose();
+        }
+        TUMBAS.clear();
     }
 
     public Camera getCamara() {
@@ -470,5 +545,9 @@ public abstract class Nivel {
         return tieneReliquia;
     }
 
-    public boolean enemigoReliquiaDerrotado(){return enemigoReliquiaDerrotado;}
+    public boolean creditosDisparados() {
+        return creditosDisparados;
+    }
+
 }
+

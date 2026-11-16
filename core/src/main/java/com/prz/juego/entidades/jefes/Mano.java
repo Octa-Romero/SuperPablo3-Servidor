@@ -24,7 +24,7 @@ public class Mano extends Enemigo {
     private static final float ANCHO = 120;
     private static final float ALTO = 100;
     private static final float SEPARACION = 10;
-    private static final double VIDA = 20;
+    private static final double VIDA = 2;
     private static final double DANIO = 1;
 
     private static final float ALTURA_LEVANTADA = 300;
@@ -278,9 +278,15 @@ public class Mano extends Enemigo {
                         estiloAtaque = EstiloAtaque.NORMAL;
                     } else {
                         objetivoMano = obtenerJugadorAleatorio();
-                        x = objetivoMano.getX() + objetivoMano.getAncho() / 2 - ANCHO / 2;
-                        y = ALTURA_TELETRANSPORTE;
-                        estiloAtaque = EstiloAtaque.PALMA;
+                        if (objetivoMano != null) {
+                            x = objetivoMano.getX() + objetivoMano.getAncho() / 2 - ANCHO / 2;
+                            y = ALTURA_TELETRANSPORTE;
+                            estiloAtaque = EstiloAtaque.PALMA;
+                        } else {
+                            seguirJefeEnX();
+                            y = RETUMBAR.getY() + ALTURA_REPOSO;
+                            estiloAtaque = EstiloAtaque.NORMAL;
+                        }
                     }
                     escalaTeletransporte = 0f;
                     visible = true;

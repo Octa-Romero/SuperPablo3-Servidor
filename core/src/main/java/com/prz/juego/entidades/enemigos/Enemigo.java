@@ -55,14 +55,18 @@ public abstract class Enemigo extends Entidad {
         actualizarInvencibilidad(delta);
 
         Jugador jugadorCercano = obtenerJugadorMasCercano();
-        Rectangle boundsJugador = jugadorCercano.getBounds();
+        if (jugadorCercano != null) {
+            Rectangle boundsJugador = jugadorCercano.getBounds();
 
-        if (detectaJugador(calcularDistanciaHorizontal(boundsJugador), boundsJugador)) {
-            tiempoPatrulla = 0;
-            caminandoPatrulla = false;
+            if (detectaJugador(calcularDistanciaHorizontal(boundsJugador), boundsJugador)) {
+                tiempoPatrulla = 0;
+                caminandoPatrulla = false;
+            }
+
+            actualizarComportamiento(delta, boundsJugador);
+        } else {
+            patrullar(delta);
         }
-
-        actualizarComportamiento(delta, boundsJugador);
 
         actualizarFisica(delta);
 
@@ -115,43 +119,47 @@ public abstract class Enemigo extends Entidad {
     }
 
     protected Jugador obtenerJugadorMasCercano() {
-        if (jugadores == null || jugadores.length == 0) {
+        if (jugadores != null && jugadores.length > 0) {
+            Jugador masCercano = null;
+            float distanciaMinima = Float.MAX_VALUE;
+            for (Jugador j : jugadores) {
+                if (j.estaMuerto()) {
+                    continue;
+                }
+                float dx = j.getX() + j.getAncho() / 2f - (x + ancho / 2f);
+                float dy = j.getY() + j.getAlto() / 2f - (y + alto / 2f);
+                float distancia = dx * dx + dy * dy;
+                if (distancia < distanciaMinima) {
+                    distanciaMinima = distancia;
+                    masCercano = j;
+                }
+            }
+            if (masCercano != null) {
+                return masCercano;
+            }
+        }
+        if (jugador != null && !jugador.estaMuerto()) {
             return jugador;
         }
-        Jugador masCercano = null;
-        float distanciaMinima = Float.MAX_VALUE;
-        for (Jugador j : jugadores) {
-            if (j.estaMuerto()) {
-                continue;
-            }
-            float dx = j.getX() + j.getAncho() / 2f - (x + ancho / 2f);
-            float dy = j.getY() + j.getAlto() / 2f - (y + alto / 2f);
-            float distancia = dx * dx + dy * dy;
-            if (distancia < distanciaMinima) {
-                distanciaMinima = distancia;
-                masCercano = j;
-            }
-        }
-        if (masCercano == null) {
-            return jugador;
-        }
-        return masCercano;
+        return null;
     }
 
     protected Jugador obtenerJugadorAleatorio() {
-        if (jugadores == null || jugadores.length == 0) {
-            return jugador;
-        }
-        ArrayList<Jugador> vivos = new ArrayList<>();
-        for (Jugador j : jugadores) {
-            if (!j.estaMuerto()) {
-                vivos.add(j);
+        if (jugadores != null && jugadores.length > 0) {
+            ArrayList<Jugador> vivos = new ArrayList<>();
+            for (Jugador j : jugadores) {
+                if (!j.estaMuerto()) {
+                    vivos.add(j);
+                }
+            }
+            if (!vivos.isEmpty()) {
+                return vivos.get((int) (Math.random() * vivos.size()));
             }
         }
-        if (vivos.isEmpty()) {
+        if (jugador != null && !jugador.estaMuerto()) {
             return jugador;
         }
-        return vivos.get((int) (Math.random() * vivos.size()));
+        return null;
     }
 
     protected void actualizarDireccion(Rectangle boundsJugador) {

@@ -37,6 +37,8 @@ public class Hub {
     private Rectangle centroHub;
     private BitmapFont fontAlerta;
     private Rectangle zonaPancrasio;
+    private float mapaAncho;
+    private float mapaAlto;
     private Dialogo dialogoPancrasio;
     private CuadroDialogo cuadroDialogo;
 
@@ -91,25 +93,22 @@ public class Hub {
         float mapTotalWidth = tileWidth * mapWidthTiles;
         float mapTotalHeight = tileHeight * mapHeightTiles;
 
+        mapaAncho = mapTotalWidth;
+        mapaAlto = mapTotalHeight;
+
         camara.setLimitesMapa(mapTotalWidth, mapTotalHeight);
 
         mapRenderer = new OrthogonalTiledMapRenderer(mapa, 1f);
     }
 
     private boolean estaCercaPancrasio() {
-        if (zonaPancrasio == null) return false;
-
-        for (Jugador jugador : jugadores) {
-            if (zonaPancrasio.overlaps(jugador.getBounds())) {
-                return true;
-            }
-        }
+        // Desactivado en servidor: los clientes pueden ver e interactuar con Pancrasio.
         return false;
     }
 
     private boolean estaCercaPancrasio(Jugador jugador) {
-        return zonaPancrasio != null
-            && zonaPancrasio.overlaps(jugador.getBounds());
+        // Desactivado en servidor: los clientes pueden ver e interactuar con Pancrasio.
+        return false;
     }
 
     public boolean ambosConfirmaronSeleccion()
@@ -162,11 +161,25 @@ public class Hub {
         shapeRenderer.end();
     }
 
+    private void restringirBordes(Jugador jugador) {
+        // Borde izquierdo: no puede pasar de 0
+        if (jugador.getX() < 0) {
+            jugador.setX(0);
+        }
+        // Borde derecho: no puede pasar del ancho del mapa menos su propio ancho
+        float bordeDerecho = mapaAncho - jugador.getAncho();
+        if (jugador.getX() > bordeDerecho) {
+            jugador.setX(bordeDerecho);
+        }
+    }
+
     public void update(float delta) {
 
         for (Jugador jugador : jugadores) {
             jugador.update(delta);
             colision.chequearColision(jugador);
+            // Restringir jugadores a los bordes laterales del mapa
+            restringirBordes(jugador);
         }
 
         camara.seguirPersonaje(
@@ -265,18 +278,7 @@ public class Hub {
     }
 
     public void dibujarAlertaCentro() {
-        if (!estaEnCentroHub()) {
-            return;
-        }
-
-        String mensaje = "Presioná E para elegir nivel";
-
-        GlyphLayout layout = new GlyphLayout(fontAlerta, mensaje);
-
-        float x = centroHub.x + centroHub.width / 2f - layout.width / 2f;
-        float y = centroHub.y + centroHub.height + 100f;
-
-        fontAlerta.draw(Render.batch, mensaje, x, y);
+        // Desactivado en servidor: los clientes pueden ver la alerta de selección de nivel.
     }
 
     private void dibujarAlertaPancrasio() {

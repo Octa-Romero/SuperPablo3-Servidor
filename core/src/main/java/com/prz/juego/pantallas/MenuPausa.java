@@ -79,7 +79,7 @@ public class MenuPausa {
                 new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        PANTALLA_JUEGO.volverAlHub();
+                        PANTALLA_JUEGO.cargarHub();
                     }
                 });
 

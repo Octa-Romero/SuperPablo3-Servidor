@@ -183,6 +183,9 @@ public abstract class EnemigoRango extends Enemigo {
         }
 
         Jugador objetivo = obtenerJugadorMasCercano();
+        if (objetivo == null) {
+            return;
+        }
         Rectangle boundsJugador = objetivo.getBounds();
         float origenX = x + ancho / 2f;
         float origenY = y + alto / 2f;

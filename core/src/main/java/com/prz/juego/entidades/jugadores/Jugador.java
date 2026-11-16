@@ -37,9 +37,26 @@ public abstract class Jugador extends Entidad {
 
     @Override
     public void update(float delta) {
+        if (muerto) {
+            guardarPosicionAnterior();
+            ANIMACION.actualizar(
+                    sprite,
+                    delta,
+                    false,
+                    false,
+                    false,
+                    false);
+            actualizarSpriteVisual();
+            bounds.setPosition(x, y);
+            actualizarInvencibilidad(delta);
+            return;
+        }
+
         if (estadoRed.solicitaSeleccion()) {
             velocidadY = 0;
             guardarPosicionAnterior();
+            forzarIdle();
+            actualizarOrientacionSegunMovimiento();
             actualizarSpriteVisual();
             return;
         }
@@ -83,9 +100,11 @@ public abstract class Jugador extends Entidad {
 
         if (y + alto < 0) {
             restarVida(1);
-            setY(respawnY);
             velocidadY = 0;
             trepando = false;
+            if (!muerto) {
+                setY(respawnY);
+            }
         }
 
         if (estadoRed.mueveIzquierda()) {
@@ -143,7 +162,7 @@ public abstract class Jugador extends Entidad {
     }
 
     public void dibujar() {
-        if (spriteVisible && sprite != null) {
+        if (!muerto && spriteVisible && sprite != null) {
             sprite.draw(Render.batch);
         }
     }
@@ -182,5 +201,31 @@ public abstract class Jugador extends Entidad {
 
     public float getTiempoAnimacion() {
         return ANIMACION.getTiempo();
+    }
+
+    public void forzarIdle() {
+        ANIMACION.forzarIdle(sprite);
+    }
+
+    public void reiniciar(float x, float y) {
+        muerto = false;
+        spriteVisible = true;
+        vida = vidaMaxima;
+        velocidadY = 0;
+        enSuelo = true;
+        trepando = false;
+        atacando = false;
+        accionesHabilitadas = true;
+        tiempoInvencibilidad = 0;
+        tiempoParpadeo = 0;
+        this.x = x;
+        this.y = y;
+        xAnterior = x;
+        yAnterior = y;
+        bounds.setPosition(x, y);
+        if (sprite != null) {
+            actualizarSpriteVisual();
+        }
+        ANIMACION.forzarIdle(sprite);
     }
 }

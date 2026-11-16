@@ -16,7 +16,6 @@ import com.prz.juego.niveles.Nivel;
 import com.prz.juego.entidades.enemigos.Enemigo;
 import com.prz.juego.hilos.JugadorRed;
 import com.prz.juego.principal.Navegable;
-import com.prz.juego.sistemas.Hud;
 import com.prz.juego.red.Servidor;
 import com.prz.juego.utilidades.Render;
 
@@ -25,15 +24,14 @@ public class PantallaJuego implements Screen {
     private Servidor servidor;
     private final Navegable NAV;
     private Jugador[] jugadores = new Jugador[2];
-    private final Nivel NIVEL;
-    private final MenuPausa MENU_PAUSA;
+    private Nivel NIVEL;
+    private MenuPausa MENU_PAUSA;
     private boolean pausado = false;
-    private final Hud HUD;
     private Hub hub;
-    private float tiempoEstadoHub = 0f;
     private boolean seleccionNotificada = false;
     private boolean jefeEliminado = false;
     private boolean jefeCreado = false;
+    private volatile boolean debeVolverAlHub = false;
 
     public PantallaJuego(Navegable NAV, Servidor servidor) {
         this(NAV, servidor, null);
@@ -44,6 +42,7 @@ public class PantallaJuego implements Screen {
         this.NIVEL = rutaNivel == null ? null : Nivel.crear(rutaNivel);
         this.MENU_PAUSA = new MenuPausa(nav, this);
         this.servidor = servidor;
+        servidor.registrarCallbackVolverHub(this::marcarVolverAlHub);
 
         JugadorRed[] estadosRed = servidor.getJugadoresRed();
 
@@ -56,7 +55,7 @@ public class PantallaJuego implements Screen {
 
             float spawnX = NIVEL != null ? NIVEL.getPosicionInicialX() : 50;
             float spawnY = NIVEL != null ? NIVEL.getPosicionInicialY() : 150;
-            jugadores[i] = personaje.crear((int) (spawnX + i * 100), (int) spawnY);
+            jugadores[i] = personaje.crear((int) spawnX, (int) spawnY);
             jugadores[i].setEstadoRed(estado);
         }
 
@@ -66,12 +65,6 @@ public class PantallaJuego implements Screen {
             } else {
                 hub = null;
                 NIVEL.cargar(jugadores);
-            }
-
-            HUD = new Hud(jugadores[0], Render.batch);
-
-            if (NIVEL != null) {
-                HUD.setJefe(NIVEL.getJefe());
             }
     }
 
@@ -88,9 +81,15 @@ public class PantallaJuego implements Screen {
 
     @Override
     public void render(float delta) {
+        // Verificar si hay que volver al hub (reutilizar pantalla existente)
+        if (debeVolverAlHub) {
+            debeVolverAlHub = false;
+            cargarHub();
+        }
+
         Render.limpiarPantalla();
 
-        // Actualizar entidades y enviar estados siempre, aunque esté pausado
+        // Actualizar entidades siempre
         if (hub != null) {
             hub.update(delta);
 
@@ -98,23 +97,13 @@ public class PantallaJuego implements Screen {
             {
                 servidor.enviarPosicion(jugador);
                 servidor.enviarEstadoAtaque(jugador);
-            }
-
-            tiempoEstadoHub += delta;
-
-            if (tiempoEstadoHub >= 0.25f) {
-                tiempoEstadoHub = 0f;
-
-                for (Jugador jugador : jugadores) {
-                    servidor.enviarEstadoCentroHub(
-                        jugador.getEstadoRed(),
-                        hub.estaEnCentroHub(jugador)
-                    );
-
-                    servidor.enviarEstadoSeleccion(
-                        jugador.getEstadoRed()
-                    );
-                }
+                servidor.enviarEstadoCentroHub(
+                    jugador.getEstadoRed(),
+                    hub.estaEnCentroHub(jugador)
+                );
+                servidor.enviarEstadoSeleccion(
+                    jugador.getEstadoRed()
+                );
             }
 
             if (!pausado && hub.contarJugadoresConfirmados() == 2
@@ -126,7 +115,10 @@ public class PantallaJuego implements Screen {
             }
         } else {
             NIVEL.update(delta);
+        }
 
+        // Enviar estados a los clientes siempre
+        if (hub == null) {
             for (Jugador jugador : jugadores) {
                 servidor.enviarPosicion(jugador);
                 servidor.enviarEstadoAtaque(jugador);
@@ -180,9 +172,10 @@ public class PantallaJuego implements Screen {
                     jefeCreado = true;
                 }
 
-                if (!jefe.estaMuerto()) {
-                    servidor.enviarEstadoJefe(jefe.getX(), jefe.getY(), jefe.getVida(), jefe.estaVisible(), jefe.getEscalaSprite(), jefe.getFaseEspecial());
+                // Enviar el estado del jefe siempre, incluso cuando está muerto, para que el cliente siga actualizando la animación
+                servidor.enviarEstadoJefe(jefe.getX(), jefe.getY(), jefe.getVida(), jefe.estaVisible(), jefe.getEscalaSprite(), jefe.getFaseEspecial());
 
+                if (!jefe.estaMuerto()) {
                     Mano izquierda = jefe.getManoIzquierda();
                     Mano derecha = jefe.getManoDerecha();
 
@@ -338,13 +331,13 @@ public class PantallaJuego implements Screen {
                             servidor.enviarEliminacionFueguito(id, "RADIAL");
                         }
                     }
-                } else if (!jefeEliminado) {
+                } else if (!jefeEliminado && NIVEL.creditosDisparados()) {
                     jefeEliminado = true;
                     servidor.enviarEliminacionJefe();
                 }
             }
 
-            if (NIVEL.enemigoReliquiaDerrotado()) {
+            if (NIVEL.creditosDisparados()) {
                 NAV.cambiarPantalla(new PantallaFinal(NAV));
                 return;
             }
@@ -367,16 +360,6 @@ public class PantallaJuego implements Screen {
             Render.end();
 
             NIVEL.renderDebug();
-
-            if (NIVEL.isGameOver()) {
-                NAV.cambiarPantalla(new GameOver(NAV));
-                return;
-            }
-        }
-
-        if (hub == null) {
-            HUD.setTieneReliquia(NIVEL.tieneReliquia());
-            HUD.dibujar();
         }
 
         if (pausado) {
@@ -394,7 +377,6 @@ public class PantallaJuego implements Screen {
         }
 
         MENU_PAUSA.resize(width, height);
-        HUD.actualizarTamano(width, height);
     }
 
     public void setPausa(boolean valor) {
@@ -424,8 +406,41 @@ public class PantallaJuego implements Screen {
         return NIVEL == null;
     }
 
-    public void volverAlHub() {
-        NAV.cambiarPantalla(new PantallaJuego(NAV, servidor));
+    public void cargarHub() {
+        // Desactivar pausa si estaba activa
+        if (pausado) {
+            pausado = false;
+            MENU_PAUSA.desactivar();
+        }
+        // Limpiar el nivel actual si existe
+        if (NIVEL != null) {
+            NIVEL.dispose();
+            NIVEL = null;
+        }
+        // Limpiar el hub actual si existe
+        if (hub != null) {
+            hub.dispose();
+            hub = null;
+        }
+        // Dispose del MenuPausa anterior
+        MENU_PAUSA.dispose();
+        // Reiniciar los jugadores a las posiciones iniciales del hub
+        jugadores[0].reiniciar(50, 150);
+        jugadores[1].reiniciar(50, 150);
+        // Crear el hub
+        hub = new Hub();
+        hub.cargar("Niveles/Niveles/Hub.tmx", jugadores);
+        hub.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        // Crear nuevo MenuPausa
+        MENU_PAUSA = new MenuPausa(NAV, this);
+        // Resetear estado
+        seleccionNotificada = false;
+        jefeEliminado = false;
+        jefeCreado = false;
+    }
+
+    public void marcarVolverAlHub() {
+        debeVolverAlHub = true;
     }
 
     public void restaurarPosicionCamara() {
@@ -458,11 +473,11 @@ public class PantallaJuego implements Screen {
     public void dispose() {
         if (hub != null) {
             hub.dispose();
-        } else {
+        }
+        if (NIVEL != null) {
             NIVEL.dispose();
         }
         MENU_PAUSA.dispose();
-        HUD.dispose();
     }
 }
 
