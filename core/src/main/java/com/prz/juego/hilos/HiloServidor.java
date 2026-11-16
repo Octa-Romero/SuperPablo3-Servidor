@@ -77,6 +77,15 @@ public class HiloServidor extends Thread {
 
         if (indice != -1) {
             enviarMensaje("Conexion recibida", dp.getAddress(), dp.getPort());
+
+            if (cantClientes == jugadores.length) {
+                enviarMensaje(
+                    "Conexion establecida",
+                    dp.getAddress(),
+                    dp.getPort()
+                );
+            }
+
             return;
         }
 
@@ -135,6 +144,12 @@ public class HiloServidor extends Thread {
         }
 
         int indiceRemoto = 1 - indice;
+
+        enviarMensaje(
+            "PERSONAJE_OCUPADO;" + msj,
+            jugadores[indiceRemoto].getIp(),
+            jugadores[indiceRemoto].getPuerto()
+        );
 
         String personajeRemoto = jugadores[indiceRemoto].getPersonaje();
 
