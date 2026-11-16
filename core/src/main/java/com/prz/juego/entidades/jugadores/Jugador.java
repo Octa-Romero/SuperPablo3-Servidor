@@ -48,6 +48,8 @@ public abstract class Jugador extends Entidad {
         guardarPosicionAnterior();
         cooldownSaltoRestante = Math.max(0f, cooldownSaltoRestante - delta);
 
+        boolean fueEnSuelo = enSuelo;
+
         boolean dentroEscalera = colisiones != null && colisiones.estaEnEscalera(this);
 
         if (!dentroEscalera) {
@@ -99,11 +101,15 @@ public abstract class Jugador extends Entidad {
             atacar();
         }
 
+        boolean saltandoTemp = !fueEnSuelo && !trepando;
+        boolean saltando = saltandoTemp && velocidadY > 0;
+        boolean cayendo = saltandoTemp && velocidadY <= 0;
         ANIMACION.actualizar(
                 sprite,
                 delta,
                 x != xAnterior || (trepando && y != yAnterior),
-                !enSuelo && !trepando,
+                saltando,
+                cayendo,
                 atacando);
 
         actualizarOrientacionSegunMovimiento();

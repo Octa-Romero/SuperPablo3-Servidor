@@ -62,8 +62,9 @@ public class FuegoSuelo extends Enemigo {
             null,
             null,
             null,
+            null,
             DURACION_FRAME_FUEGO);
-        ANIMACION.actualizar(sprite, 0f, false, false, false);
+        ANIMACION.actualizar(sprite, 0f, false, false, false, false);
         duracionInvencibilidad = 0f;
         ocultar();
     }
@@ -76,7 +77,7 @@ public class FuegoSuelo extends Enemigo {
         }
 
         actualizarComportamiento(delta, jugador.getBounds());
-        ANIMACION.actualizar(sprite, delta, false, false, false);
+        ANIMACION.actualizar(sprite, delta, false, false, false, false);
         sprite.setAlpha(activa ? 1f : 0f);
     }
 

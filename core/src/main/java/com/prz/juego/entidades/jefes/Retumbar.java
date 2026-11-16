@@ -210,8 +210,9 @@ public class Retumbar extends Enemigo {
             null,
             null,
             null,
+            null,
             DURACION_FRAME);
-        ANIMACION.actualizar(sprite, 0f, false, false, false);
+        ANIMACION.actualizar(sprite, 0f, false, false, false, false);
 
         Texture texturaLaser = GestorRecursos.obtenerTextura("Jefe/laser.png");
         REGION_PIXEL = new TextureRegion(GestorRecursos.obtenerPixel());
@@ -281,7 +282,7 @@ public class Retumbar extends Enemigo {
             guardarPosicionAnterior();
             actualizarInvencibilidad(delta);
             bounds.setPosition(x, y);
-            ANIMACION.actualizar(sprite, delta, false, false, false);
+            ANIMACION.actualizar(sprite, delta, false, false, false, false);
             actualizarSpriteVisual();
             return;
         }
@@ -298,7 +299,7 @@ public class Retumbar extends Enemigo {
         }
 
         bounds.setPosition(x, y);
-        ANIMACION.actualizar(sprite, delta, false, false, false);
+        ANIMACION.actualizar(sprite, delta, false, false, false, false);
         actualizarSpriteVisual();
     }
 

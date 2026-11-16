@@ -165,6 +165,7 @@ public class Mano extends Enemigo {
             null,
             null,
             null,
+            null,
             DURACION_FRAME);
     }
 
@@ -188,7 +189,7 @@ public class Mano extends Enemigo {
         actualizarSpriteVisual();
         actualizarTexturaSegunEstado(delta);
         ANIMACION_FUEGO_GOLPE.actualizar(
-            SPRITE_FUEGO_GOLPE, delta, false, false, false);
+            SPRITE_FUEGO_GOLPE, delta, false, false, false, false);
 
         if (tiempoHitboxExtendida > 0) {
             tiempoHitboxExtendida -= delta;
@@ -400,14 +401,14 @@ public class Mano extends Enemigo {
 
         if (estiloAtaque == EstiloAtaque.PUNIO
             || (estiloAtaque == EstiloAtaque.NORMAL && tiempoHitboxExtendida > 0)) {
-            ANIMACION_PUNIO.actualizar(sprite, delta, false, false, false);
+            ANIMACION_PUNIO.actualizar(sprite, delta, false, false, false, false);
             sprite.setFlip(LADO == Lado.DERECHA, false);
             ajustarTamanoSprite(ANCHO_SPRITE, ALTO_SPRITE);
             return;
         }
 
         if (estiloAtaque == EstiloAtaque.PALMA) {
-            ANIMACION.actualizar(sprite, delta, false, false, false);
+            ANIMACION.actualizar(sprite, delta, false, false, false, false);
             sprite.setFlip(LADO == Lado.DERECHA, false);
             ajustarTamanoSprite(ANCHO_SPRITE_EXTENDIDO, ALTO_SPRITE_EXTENDIDO);
             return;
@@ -417,28 +418,28 @@ public class Mano extends Enemigo {
             case LEVANTANDO:
             case MOVIENDO:
             case EN_POSICION:
-                ANIMACION_ABIERTA_ARRIBA.actualizar(sprite, delta, false, false, false);
+                ANIMACION_ABIERTA_ARRIBA.actualizar(sprite, delta, false, false, false, false);
                 sprite.setFlip(LADO == Lado.DERECHA, false);
                 ajustarTamanoSprite(ANCHO_SPRITE_EXTENDIDO, ALTO_SPRITE_EXTENDIDO);
                 return;
             case BAJANDO:
-                ANIMACION.actualizar(sprite, delta, false, false, false);
+                ANIMACION.actualizar(sprite, delta, false, false, false, false);
                 sprite.setFlip(LADO == Lado.DERECHA, false);
                 ajustarTamanoSprite(ANCHO_SPRITE_EXTENDIDO, ALTO_SPRITE_EXTENDIDO);
                 return;
             case RECUPERANDO:
-                ANIMACION_PUNIO.actualizar(sprite, delta, false, false, false);
+                ANIMACION_PUNIO.actualizar(sprite, delta, false, false, false, false);
                 sprite.setFlip(LADO == Lado.DERECHA, false);
                 ajustarTamanoSprite(ANCHO_SPRITE, ALTO_SPRITE);
                 return;
             case SIGUIENDO_JUGADOR:
             case ESPERANDO_GOLPE:
-                ANIMACION.actualizar(sprite, delta, false, false, false);
+                ANIMACION.actualizar(sprite, delta, false, false, false, false);
                 sprite.setFlip(LADO == Lado.DERECHA, false);
                 ajustarTamanoSprite(ANCHO_SPRITE_EXTENDIDO, ALTO_SPRITE_EXTENDIDO);
                 return;
             default:
-                ANIMACION.actualizar(sprite, delta, false, false, false);
+                ANIMACION.actualizar(sprite, delta, false, false, false, false);
                 sprite.setFlip(LADO == Lado.DERECHA, false);
                 ajustarTamanoSprite(ANCHO_SPRITE_EXTENDIDO, ALTO_SPRITE_EXTENDIDO);
                 return;

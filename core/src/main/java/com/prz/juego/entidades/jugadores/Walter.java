@@ -30,24 +30,25 @@ public class Walter extends Jugador {
     public Walter(float x, float y) {
         super(
             x, y, 50, 80, 140, 5, 0.5,
-            GestorRecursos.obtenerTextura("Personajes/Walter/walter.png"),
+            GestorRecursos.obtenerTextura("Personajes/Walter/walter_idle.png"),
             GestorRecursos.obtenerTextura("Hud/walter_hud.png")
         );
 
         ANIMACION.configurar(
             GestorRecursos.obtenerTextura(
-                "Personajes/Walter/walter_spritesheet.png"
+                "Personajes/Walter/walter.png"
             ),
             540,
             450,
             new int[]{0},
             new int[]{1, 2, 3, 4, 5, 3},
             null,
+            null,
             new int[]{6},
             0.12f
         );
 
-        configurarSpriteVisual(96f, 80f, 0f, -46f, 0f);
+        configurarSpriteVisual(96f, 80f, -5f, -42f, 0f);
     }
 
     public void configurarAtaque(

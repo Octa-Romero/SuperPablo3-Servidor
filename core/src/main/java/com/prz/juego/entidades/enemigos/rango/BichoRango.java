@@ -35,8 +35,9 @@ public class BichoRango extends EnemigoRango {
                 null,
                 null,
                 null,
+                null,
                 DURACION_FRAME_IDLE);
-        ANIMACION.actualizar(sprite, 0f, false, false, false);
+        ANIMACION.actualizar(sprite, 0f, false, false, false, false);
         vidaProyectil = 0.5;
         this.tipo = TipoEnemigo.BICHO_RANGO;
     }

@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 public class Pablo extends Jugador {
 
-    private float anchoAtaque = 100;
+    private float anchoAtaque = 80;
     private float altoAtaque = 10;
     private float tiempoAtaque = 0;
     private float duracionAtaque = 0.3f;
@@ -31,15 +31,29 @@ public class Pablo extends Jugador {
                 x,
                 y,
                 50,
-                80,
+                100,
                 170,
                 10,
                 1,
-                GestorRecursos.obtenerTextura("Personajes/Pablo/pablo.png"),
+                GestorRecursos.obtenerTextura("Personajes/Pablo/pablo_idle.png"),
                 GestorRecursos.obtenerTextura("Hud/pablo_hud.png"));
+
+        ANIMACION.configurar(
+                GestorRecursos.obtenerTextura("Personajes/Pablo/pablo.png"),
+                1080,
+                1079,
+                new int[]{0},
+                new int[]{1, 2, 3, 2},
+                new int[]{4},
+                new int[]{5},
+                new int[]{6},
+                0.12f
+        );
+
+        configurarSpriteVisual(100f, 100f, -5f, -45f, 0f);
+
         actualizarOrientacionSprites();
     }
-
     public void setEntidades(ArrayList<Entidad> entidades) {
         this.entidades = entidades;
     }
@@ -151,7 +165,7 @@ public class Pablo extends Jugador {
     }
 
     public Rectangle getBoundsAtaque() {
-        float ataqueY = y + (alto / 2f) - (altoAtaque / 2f);
+        float ataqueY = y + (alto / 2f) - (altoAtaque / 2f) + 10f;
         float centroJugador = x + (ancho / 2f);
         float ataqueX;
 
