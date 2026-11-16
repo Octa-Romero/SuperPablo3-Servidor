@@ -18,7 +18,6 @@ import com.prz.juego.red.Servidor;
 import com.prz.juego.sistemas.Camara;
 import com.prz.juego.sistemas.Colisiones;
 import com.prz.juego.utilidades.Debug;
-import com.prz.juego.utilidades.Musica;
 import com.prz.juego.utilidades.Render;
 
 import java.util.ArrayList;
@@ -46,7 +45,7 @@ public abstract class Nivel {
     private boolean gameOver = false;
     private boolean tieneReliquia = false;
     private float anchoMapa;
-    protected Musica musica = Musica.NIVEL;
+    protected String musica;
     private int idProyectil = 1;
     private int idEnemigo = 1;
 
@@ -124,7 +123,9 @@ public abstract class Nivel {
 
         mapRenderer = new OrthogonalTiledMapRenderer(mapa, 1f);
 
-        Servidor.instancia.enviarMusica(musica.name());
+        if (musica != null) {
+            Servidor.instancia.enviarMusica(musica);
+        }
     }
 
     protected abstract String getRutaMapa();

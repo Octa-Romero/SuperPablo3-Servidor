@@ -18,7 +18,7 @@ public class Lwjgl3Launcher {
         configuration.setTitle("Super Pablo 3 - Servidor");
         configuration.useVsync(true);
         configuration.setForegroundFPS(Lwjgl3ApplicationConfiguration.getDisplayMode().refreshRate + 1);
-        configuration.setFullscreenMode(Lwjgl3ApplicationConfiguration.getDisplayMode());
+        configuration.setWindowedMode(1280, 720);
         configuration.setResizable(false);
         configuration.setWindowIcon("logox128.png", "logox64.png", "logox32.png", "logox16.png");
         return configuration;

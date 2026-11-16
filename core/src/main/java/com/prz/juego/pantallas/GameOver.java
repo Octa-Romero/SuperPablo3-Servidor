@@ -13,7 +13,6 @@ import com.prz.juego.entidades.jugadores.Personajes;
 import com.prz.juego.principal.Navegable;
 import com.prz.juego.utilidades.Config;
 import com.prz.juego.utilidades.FuenteJuego;
-import com.prz.juego.utilidades.Musica;
 import com.prz.juego.utilidades.Render;
 
 public class GameOver implements Screen {
@@ -71,7 +70,6 @@ public class GameOver implements Screen {
                 new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        Musica.MENU.sonar();
                         //NAV.cambiarPantalla(new PantallaJuego(NAV, PERSONAJE_ELEGIDO));
                     }
                 });

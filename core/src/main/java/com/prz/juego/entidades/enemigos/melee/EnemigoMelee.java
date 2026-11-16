@@ -7,7 +7,6 @@ import com.badlogic.gdx.math.Rectangle;
 import com.prz.juego.entidades.enemigos.Enemigo;
 import com.prz.juego.entidades.jugadores.Jugador;
 import com.prz.juego.red.Servidor;
-import com.prz.juego.utilidades.Sonido;
 
 public abstract class EnemigoMelee extends Enemigo {
 

@@ -6,6 +6,10 @@ public class Nivel6 extends Nivel {
 
     public static final String RUTA = "Niveles/Niveles/Nivel6.tmx";
 
+    public Nivel6() {
+        musica = null;
+    }
+
     @Override
     protected String getRutaMapa() {
         return RUTA;

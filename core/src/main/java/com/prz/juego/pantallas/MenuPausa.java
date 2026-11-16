@@ -15,7 +15,6 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.prz.juego.principal.Navegable;
 import com.prz.juego.utilidades.Config;
 import com.prz.juego.utilidades.FuenteJuego;
-import com.prz.juego.utilidades.Sonido;
 
 public class MenuPausa {
 
@@ -63,7 +62,6 @@ public class MenuPausa {
         style.downFontColor = Color.RED;
 
         TextButton reanudar = new TextButton("Reanudar", style);
-        TextButton opciones = new TextButton("Opciones", style);
         TextButton hub = new TextButton("Volver al hub", style);
         TextButton menu = new TextButton("Salir al menú", style);
 
@@ -71,27 +69,16 @@ public class MenuPausa {
                 new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        Sonido.CLICK.sonar();
                         PANTALLA_JUEGO.setPausa(false);
                         desactivar();
                     }
                 });
 
-        opciones.addListener(
-                new ClickListener() {
-                    @Override
-                    public void clicked(InputEvent event, float x, float y) {
-                        Sonido.CLICK.sonar();
-                        PANTALLA_JUEGO.guardarPosicionCamara();
-                        NAV.cambiarPantalla(new PantallaOpciones(NAV, PANTALLA_JUEGO, true));
-                    }
-                });
 
         hub.addListener(
                 new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        Sonido.CLICK.sonar();
                         PANTALLA_JUEGO.volverAlHub();
                     }
                 });
@@ -100,14 +87,12 @@ public class MenuPausa {
                 new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        Sonido.CLICK.sonar();
                         NAV.cambiarPantalla(new PantallaMenu(NAV));
                     }
                 });
 
         contenedor.add(titulo).padBottom(40).row();
         contenedor.add(reanudar).width(250).height(50).padBottom(20).row();
-        contenedor.add(opciones).width(250).height(50).padBottom(20).row();
         if (!PANTALLA_JUEGO.estaEnHub()) {
             contenedor.add(hub).width(250).height(50).padBottom(20).row();
         }

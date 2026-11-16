@@ -15,9 +15,7 @@ import com.prz.juego.principal.Navegable;
 import com.prz.juego.recursos.Imagen;
 import com.prz.juego.utilidades.Config;
 import com.prz.juego.utilidades.FuenteJuego;
-import com.prz.juego.utilidades.Musica;
 import com.prz.juego.utilidades.Render;
-import com.prz.juego.utilidades.Sonido;
 
 public class PantallaMenu implements Screen {
 
@@ -38,8 +36,6 @@ public class PantallaMenu implements Screen {
         inicializarFondo();
         inicializarFuentes();
         crearInterfaz();
-
-        Musica.MENU.sonar();
 
         Gdx.input.setInputProcessor(stage);
     }
@@ -80,44 +76,24 @@ public class PantallaMenu implements Screen {
         estiloBoton.overFontColor = Color.GOLD;
         estiloBoton.downFontColor = Color.RED;
 
-        TextButton btnJugar = new TextButton("Jugar", estiloBoton);
-        TextButton btnOpciones = new TextButton("Opciones", estiloBoton);
-        TextButton btnComoJugar = new TextButton("Cómo jugar", estiloBoton);
+        TextButton btnIniciarServidor = new TextButton("Iniciar servidor", estiloBoton);
         TextButton btnSalir = new TextButton("Salir", estiloBoton);
 
-        btnJugar.addListener(
+        btnIniciarServidor.addListener(
             new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
-                    Sonido.CLICK.sonar();
                     NAV.cambiarPantalla(new SeleccionPersonaje(NAV, PantallaMenu.this));
                 }
             }
             );
 
 
-        btnOpciones.addListener(
-            new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    Sonido.CLICK.sonar();
-                    NAV.cambiarPantalla(new PantallaOpciones(NAV, PantallaMenu.this, false));
-                }
-            });
-
-        btnComoJugar.addListener(
-            new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    NAV.cambiarPantalla(new ComoJugar(NAV));
-                }
-            });
 
         btnSalir.addListener(
             new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
-                    Sonido.CLICK.sonar();
                     Gdx.app.exit();
                 }
             });
@@ -127,9 +103,7 @@ public class PantallaMenu implements Screen {
 
         contenedor.add(titulo).padBottom(5).row();
         contenedor.add(subtitulo).padBottom(60).row();
-        contenedor.add(btnJugar).width(250).height(50).padBottom(25).row();
-        contenedor.add(btnOpciones).width(250).height(50).padBottom(25).row();
-        contenedor.add(btnComoJugar).width(250).height(50).padBottom(25).row();
+        contenedor.add(btnIniciarServidor).width(250).height(50).padBottom(25).row();
         contenedor.add(btnSalir).width(250).height(50);
 
         stage.addActor(contenedor);

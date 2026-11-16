@@ -7,7 +7,6 @@ import com.prz.juego.sistemas.Colisiones;
 import com.prz.juego.utilidades.Entrada;
 import com.prz.juego.utilidades.Render;
 import com.prz.juego.red.Servidor;
-import com.prz.juego.utilidades.Sonido;
 
 public abstract class Jugador extends Entidad {
 

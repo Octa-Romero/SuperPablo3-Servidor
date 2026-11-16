@@ -8,9 +8,7 @@ import com.prz.juego.pantallas.PantallaMenu;
 import com.prz.juego.pantallas.SeleccionPersonaje;
 import com.prz.juego.recursos.GestorRecursos;
 import com.prz.juego.red.Servidor;
-import com.prz.juego.utilidades.Musica;
 import com.prz.juego.utilidades.Render;
-import com.prz.juego.utilidades.Sonido;
 
 public class Principal extends Game implements Navegable {
 
@@ -43,8 +41,6 @@ public class Principal extends Game implements Navegable {
             servidor.cerrar();
         }
 
-        Musica.dispose();
-        Sonido.dispose();
 
         GestorRecursos.dispose();
     }

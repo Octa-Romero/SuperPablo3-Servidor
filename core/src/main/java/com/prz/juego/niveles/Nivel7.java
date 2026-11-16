@@ -2,7 +2,6 @@ package com.prz.juego.niveles;
 
 import com.prz.juego.entidades.jefes.Retumbar;
 import com.prz.juego.entidades.jugadores.Jugador;
-import com.prz.juego.utilidades.Musica;
 
 public class Nivel7 extends Nivel {
 
@@ -16,7 +15,7 @@ public class Nivel7 extends Nivel {
     private Retumbar jefe;
 
     public Nivel7() {
-        musica = Musica.RETUMBAR;
+        musica = "RETUMBAR";
     }
 
     @Override

@@ -19,7 +19,6 @@ import com.prz.juego.utilidades.Config;
 import com.prz.juego.utilidades.FuenteJuego;
 import com.prz.juego.utilidades.Global;
 import com.prz.juego.utilidades.Render;
-import com.prz.juego.utilidades.Sonido;
 
 public class SeleccionPersonaje implements Screen {
 
@@ -123,7 +122,6 @@ public class SeleccionPersonaje implements Screen {
                 new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        Sonido.CLICK.sonar();
                         NAV.cambiarPantalla(PANTALLA_MENU);
                     }
                 });

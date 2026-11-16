@@ -18,9 +18,7 @@ import com.prz.juego.hilos.JugadorRed;
 import com.prz.juego.principal.Navegable;
 import com.prz.juego.sistemas.Hud;
 import com.prz.juego.red.Servidor;
-import com.prz.juego.utilidades.Musica;
 import com.prz.juego.utilidades.Render;
-import com.prz.juego.utilidades.Sonido;
 
 public class PantallaJuego implements Screen {
 
@@ -80,8 +78,6 @@ public class PantallaJuego implements Screen {
 
     @Override
     public void show() {
-        Gdx.input.setCursorCatched(!pausado);
-
         InputMultiplexer mux = new InputMultiplexer();
 
         mux.addProcessor(MENU_PAUSA.getStage());
@@ -94,264 +90,263 @@ public class PantallaJuego implements Screen {
     public void render(float delta) {
         Render.limpiarPantalla();
 
-        if (!pausado) {
-            if (hub != null) {
-                hub.update(delta);
+        // Actualizar entidades y enviar estados siempre, aunque esté pausado
+        if (hub != null) {
+            hub.update(delta);
 
-                for(Jugador jugador : jugadores)
-                {
-                    servidor.enviarPosicion(jugador);
-                    servidor.enviarEstadoAtaque(jugador);
-                }
+            for(Jugador jugador : jugadores)
+            {
+                servidor.enviarPosicion(jugador);
+                servidor.enviarEstadoAtaque(jugador);
+            }
 
-                tiempoEstadoHub += delta;
+            tiempoEstadoHub += delta;
 
-                if (tiempoEstadoHub >= 0.25f) {
-                    tiempoEstadoHub = 0f;
-
-                    for (Jugador jugador : jugadores) {
-                        servidor.enviarEstadoCentroHub(
-                            jugador.getEstadoRed(),
-                            hub.estaEnCentroHub(jugador)
-                        );
-
-                        servidor.enviarEstadoSeleccion(
-                            jugador.getEstadoRed()
-                        );
-                    }
-                }
-
-                if (hub.contarJugadoresConfirmados() == 2
-                    && !seleccionNotificada) {
-
-                    seleccionNotificada = true;
-                    servidor.enviarInicioSeleccionNivel();
-                    NAV.cambiarPantalla(new SeleccionNivel(NAV, servidor));
-                }
-            } else {
-                NIVEL.update(delta);
+            if (tiempoEstadoHub >= 0.25f) {
+                tiempoEstadoHub = 0f;
 
                 for (Jugador jugador : jugadores) {
-                    servidor.enviarPosicion(jugador);
-                    servidor.enviarEstadoAtaque(jugador);
-                    servidor.enviarEstadoVida(jugador);
-                    servidor.enviarEstadoInvencibilidad(jugador);
+                    servidor.enviarEstadoCentroHub(
+                        jugador.getEstadoRed(),
+                        hub.estaEnCentroHub(jugador)
+                    );
+
+                    servidor.enviarEstadoSeleccion(
+                        jugador.getEstadoRed()
+                    );
+                }
+            }
+
+            if (!pausado && hub.contarJugadoresConfirmados() == 2
+                && !seleccionNotificada) {
+
+                seleccionNotificada = true;
+                servidor.enviarInicioSeleccionNivel();
+                NAV.cambiarPantalla(new SeleccionNivel(NAV, servidor));
+            }
+        } else {
+            NIVEL.update(delta);
+
+            for (Jugador jugador : jugadores) {
+                servidor.enviarPosicion(jugador);
+                servidor.enviarEstadoAtaque(jugador);
+                servidor.enviarEstadoVida(jugador);
+                servidor.enviarEstadoInvencibilidad(jugador);
+            }
+
+            for (Enemigo e : NIVEL.getEnemigosNuevos()) {
+                servidor.enviarCreacionEnemigos(e.getId(), e.getTipo(), e.getX(), e.getY(), e.getVida());
+            }
+
+            for (Enemigo e : NIVEL.getEnemigosActivos()) {
+                servidor.enviarEstadoEnemigo(e.getId(), e.getX(), e.getY(), e.getDireccion(), e.estaAtacando(), e.getVida(), e.estaSpriteVisible(), e.getTipoAnimacion(), e.getTiempoAnimacion());
+            }
+
+            for (Integer id : NIVEL.getEnemigosEliminados()) {
+                servidor.enviarEliminacionJefe(id);
+            }
+
+            for (Lanzable p : NIVEL.getProyectilesNuevos()) {
+
+                if (p instanceof BolaFuego bola) {
+                    servidor.enviarCreacionProyectil(
+                        p.getId(), "WALTER",
+                        p.getX(), p.getY(),
+                        bola.getDireccion()
+                    );
+
+                } else if (p instanceof Proyectil proyectilEnemigo) {
+                    servidor.enviarCreacionProyectil(
+                        p.getId(), "ENEMIGO",
+                        p.getX(), p.getY(),
+                        proyectilEnemigo.getAngulo()
+                    );
+                }
+            }
+
+            for (Lanzable p : NIVEL.getProyectilesActivos()) {
+                servidor.enviarEstadoProyectil(p.getId(), p.getX(), p.getY());
+            }
+
+            for (Integer id : NIVEL.getProyectilesEliminados()) {
+                servidor.enviarEliminacionProyectil(id);
+            }
+
+            Retumbar jefe = NIVEL.getJefe();
+
+            if (jefe != null) {
+                if (!jefeCreado) {
+                    servidor.enviarCreacionJefe(jefe.getX(), jefe.getY(), jefe.getVida());
+                    jefeCreado = true;
                 }
 
-                for (Enemigo e : NIVEL.getEnemigosNuevos()) {
-                    servidor.enviarCreacionEnemigos(e.getId(), e.getTipo(), e.getX(), e.getY(), e.getVida());
-                }
+                if (!jefe.estaMuerto()) {
+                    servidor.enviarEstadoJefe(jefe.getX(), jefe.getY(), jefe.getVida(), jefe.estaVisible(), jefe.getEscalaSprite(), jefe.getFaseEspecial());
 
-                for (Enemigo e : NIVEL.getEnemigosActivos()) {
-                    servidor.enviarEstadoEnemigo(e.getId(), e.getX(), e.getY(), e.getDireccion(), e.estaAtacando(), e.getVida(), e.estaSpriteVisible(), e.getTipoAnimacion(), e.getTiempoAnimacion());
-                }
+                    Mano izquierda = jefe.getManoIzquierda();
+                    Mano derecha = jefe.getManoDerecha();
 
-                for (Integer id : NIVEL.getEnemigosEliminados()) {
-                    servidor.enviarEliminacionJefe(id);
-                }
+                    servidor.enviarEstadoMano(
+                        izquierda.getLado(),
+                        izquierda.getX(),
+                        izquierda.getY(),
+                        izquierda.getVida(),
+                        izquierda.estaVisible(),
+                        izquierda.getEscalaSprite(),
+                        izquierda.getEstadoAtaque(),
+                        izquierda.getEstiloAtaque(),
+                        izquierda.mostrarFuegoGolpe()
+                    );
 
-                for (Lanzable p : NIVEL.getProyectilesNuevos()) {
+                    servidor.enviarEstadoMano(
+                        derecha.getLado(),
+                        derecha.getX(),
+                        derecha.getY(),
+                        derecha.getVida(),
+                        derecha.estaVisible(),
+                        derecha.getEscalaSprite(),
+                        derecha.getEstadoAtaque(),
+                        derecha.getEstiloAtaque(),
+                        derecha.mostrarFuegoGolpe()
+                    );
 
-                    if (p instanceof BolaFuego bola) {
-                        servidor.enviarCreacionProyectil(
-                            p.getId(), "WALTER",
-                            p.getX(), p.getY(),
-                            bola.getDireccion()
+                    FuegoSuelo fuego = jefe.getFuegoSuelo();
+                    servidor.enviarEstadoFuegoSuelo(
+                        fuego.getX(),
+                        fuego.getY(),
+                        fuego.getAlto(),
+                        fuego.estaActiva()
+                    );
+
+                    AtaquesExtraRetumbar ataques = jefe.getAtaquesExtra();
+
+                    if (ataques != null) {
+                        servidor.enviarEstadoRayos(
+                            ataques.getFaseRayos(),
+                            ataques.mostrarAvisoRayos(),
+                            ataques.getPosicionesRayos()
                         );
 
-                    } else if (p instanceof Proyectil proyectilEnemigo) {
-                        servidor.enviarCreacionProyectil(
-                            p.getId(), "ENEMIGO",
-                            p.getX(), p.getY(),
-                            proyectilEnemigo.getAngulo()
-                        );
-                    }
-                }
-
-                for (Lanzable p : NIVEL.getProyectilesActivos()) {
-                    servidor.enviarEstadoProyectil(p.getId(), p.getX(), p.getY());
-                }
-
-                for (Integer id : NIVEL.getProyectilesEliminados()) {
-                    servidor.enviarEliminacionProyectil(id);
-                }
-
-                Retumbar jefe = NIVEL.getJefe();
-
-                if (jefe != null) {
-                    if (!jefeCreado) {
-                        servidor.enviarCreacionJefe(jefe.getX(), jefe.getY(), jefe.getVida());
-                        jefeCreado = true;
-                    }
-
-                    if (!jefe.estaMuerto()) {
-                        servidor.enviarEstadoJefe(jefe.getX(), jefe.getY(), jefe.getVida(), jefe.estaVisible(), jefe.getEscalaSprite(), jefe.getFaseEspecial());
-
-                        Mano izquierda = jefe.getManoIzquierda();
-                        Mano derecha = jefe.getManoDerecha();
-
-                        servidor.enviarEstadoMano(
-                            izquierda.getLado(),
-                            izquierda.getX(),
-                            izquierda.getY(),
-                            izquierda.getVida(),
-                            izquierda.estaVisible(),
-                            izquierda.getEscalaSprite(),
-                            izquierda.getEstadoAtaque(),
-                            izquierda.getEstiloAtaque(),
-                            izquierda.mostrarFuegoGolpe()
+                        servidor.enviarEstadoLasers(
+                            ataques.getFaseLasers(),
+                            ataques.mostrarAvisoLaser(),
+                            ataques.getLasersActivos()
                         );
 
-                        servidor.enviarEstadoMano(
-                            derecha.getLado(),
-                            derecha.getX(),
-                            derecha.getY(),
-                            derecha.getVida(),
-                            derecha.estaVisible(),
-                            derecha.getEscalaSprite(),
-                            derecha.getEstadoAtaque(),
-                            derecha.getEstiloAtaque(),
-                            derecha.mostrarFuegoGolpe()
-                        );
-
-                        FuegoSuelo fuego = jefe.getFuegoSuelo();
-                        servidor.enviarEstadoFuegoSuelo(
-                            fuego.getX(),
-                            fuego.getY(),
-                            fuego.getAlto(),
-                            fuego.estaActiva()
-                        );
-
-                        AtaquesExtraRetumbar ataques = jefe.getAtaquesExtra();
-
-                        if (ataques != null) {
-                            servidor.enviarEstadoRayos(
-                                ataques.getFaseRayos(),
-                                ataques.mostrarAvisoRayos(),
-                                ataques.getPosicionesRayos()
+                        for (Meteorito meteorito : ataques.getMeteoritosNuevos()) {
+                            servidor.enviarCreacionMeteorito(
+                                meteorito.getId(),
+                                "NORMAL",
+                                meteorito.getX(),
+                                meteorito.getY()
                             );
-
-                            servidor.enviarEstadoLasers(
-                                ataques.getFaseLasers(),
-                                ataques.mostrarAvisoLaser(),
-                                ataques.getLasersActivos()
-                            );
-
-                            for (Meteorito meteorito : ataques.getMeteoritosNuevos()) {
-                                servidor.enviarCreacionMeteorito(
-                                    meteorito.getId(),
-                                    "NORMAL",
-                                    meteorito.getX(),
-                                    meteorito.getY()
-                                );
-                            }
-
-                            for (MeteoritoGrande meteorito : ataques.getMeteoritosGrandesNuevos()) {
-                                servidor.enviarCreacionMeteorito(
-                                    meteorito.getId(),
-                                    "GRANDE",
-                                    meteorito.getX(),
-                                    meteorito.getY()
-                                );
-                            }
-
-                            for (Meteorito meteorito : ataques.getMeteoritosActivos()) {
-                                servidor.enviarEstadoMeteorito(
-                                    meteorito.getId(),
-                                    "NORMAL",
-                                    meteorito.getX(),
-                                    meteorito.getY(),
-                                    meteorito.estaImpactando(),
-                                    meteorito.getRotacion(),
-                                    meteorito.getTiempoEfecto()
-                                );
-                            }
-
-                            for (MeteoritoGrande meteorito : ataques.getMeteoritosGrandesActivos()) {
-                                servidor.enviarEstadoMeteorito(
-                                    meteorito.getId(),
-                                    "GRANDE",
-                                    meteorito.getX(),
-                                    meteorito.getY(),
-                                    meteorito.estaImpactando(),
-                                    meteorito.getRotacion(),
-                                    meteorito.getTiempoEfecto()
-                                );
-                            }
-
-                            for (int id : ataques.getMeteoritosEliminados()) {
-                                servidor.enviarEliminacionMeteorito(id);
-                            }
-
-                            servidor.enviarEstadoLaserJefe(
-                                jefe.estaLaserJefeVisible(),
-                                jefe.debeMostrarAvisoLaserJefe(),
-                                jefe.getAnguloLaserSegundaFase(),
-                                jefe.getTiempoAnimacionLaserSegundaFase()
-                            );
-
-                            for (Fueguito fueguito : ataques.getFueguitosNuevos()) {
-                                servidor.enviarCreacionFueguito(
-                                    fueguito.getId(),
-                                    "LLUVIA",
-                                    fueguito.getXSprite(),
-                                    fueguito.getYSprite(),
-                                    fueguito.getTamano(),
-                                    fueguito.getRotacion()
-                                );
-                            }
-
-                            for (Fueguito fueguito : ataques.getFueguitosActivos()) {
-                                servidor.enviarEstadoFueguito(
-                                    fueguito.getId(),
-                                    "LLUVIA",
-                                    fueguito.getXSprite(),
-                                    fueguito.getYSprite(),
-                                    fueguito.getTamano(),
-                                    fueguito.getRotacion()
-                                );
-                            }
-
-                            for (int id : ataques.getFueguitosEliminados()) {
-                                servidor.enviarEliminacionFueguito(id, "LLUVIA");
-                            }
-
-                            for (Fueguito fueguito : jefe.getFueguitosRadialesNuevos()) {
-                                servidor.enviarCreacionFueguito(
-                                    fueguito.getId(),
-                                    "RADIAL",
-                                    fueguito.getXSprite(),
-                                    fueguito.getYSprite(),
-                                    fueguito.getTamano(),
-                                    fueguito.getRotacion()
-                                );
-                            }
-
-                            for (Fueguito fueguito : jefe.getFueguitosRadialesActivos()) {
-                                servidor.enviarEstadoFueguito(
-                                    fueguito.getId(),
-                                    "RADIAL",
-                                    fueguito.getXSprite(),
-                                    fueguito.getYSprite(),
-                                    fueguito.getTamano(),
-                                    fueguito.getRotacion()
-                                );
-                            }
-
-                            for (int id : jefe.getFueguitosRadialesEliminados()) {
-                                servidor.enviarEliminacionFueguito(id, "RADIAL");
-                            }
                         }
-                    } else if (!jefeEliminado) {
-                        jefeEliminado = true;
-                        servidor.enviarEliminacionJefe();
-                    }
-                }
 
-                if (NIVEL.enemigoReliquiaDerrotado()) {
-                    NAV.cambiarPantalla(new PantallaFinal(NAV));
-                    return;
+                        for (MeteoritoGrande meteorito : ataques.getMeteoritosGrandesNuevos()) {
+                            servidor.enviarCreacionMeteorito(
+                                meteorito.getId(),
+                                "GRANDE",
+                                meteorito.getX(),
+                                meteorito.getY()
+                            );
+                        }
+
+                        for (Meteorito meteorito : ataques.getMeteoritosActivos()) {
+                            servidor.enviarEstadoMeteorito(
+                                meteorito.getId(),
+                                "NORMAL",
+                                meteorito.getX(),
+                                meteorito.getY(),
+                                meteorito.estaImpactando(),
+                                meteorito.getRotacion(),
+                                meteorito.getTiempoEfecto()
+                            );
+                        }
+
+                        for (MeteoritoGrande meteorito : ataques.getMeteoritosGrandesActivos()) {
+                            servidor.enviarEstadoMeteorito(
+                                meteorito.getId(),
+                                "GRANDE",
+                                meteorito.getX(),
+                                meteorito.getY(),
+                                meteorito.estaImpactando(),
+                                meteorito.getRotacion(),
+                                meteorito.getTiempoEfecto()
+                            );
+                        }
+
+                        for (int id : ataques.getMeteoritosEliminados()) {
+                            servidor.enviarEliminacionMeteorito(id);
+                        }
+
+                        servidor.enviarEstadoLaserJefe(
+                            jefe.estaLaserJefeVisible(),
+                            jefe.debeMostrarAvisoLaserJefe(),
+                            jefe.getAnguloLaserSegundaFase(),
+                            jefe.getTiempoAnimacionLaserSegundaFase()
+                        );
+
+                        for (Fueguito fueguito : ataques.getFueguitosNuevos()) {
+                            servidor.enviarCreacionFueguito(
+                                fueguito.getId(),
+                                "LLUVIA",
+                                fueguito.getXSprite(),
+                                fueguito.getYSprite(),
+                                fueguito.getTamano(),
+                                fueguito.getRotacion()
+                            );
+                        }
+
+                        for (Fueguito fueguito : ataques.getFueguitosActivos()) {
+                            servidor.enviarEstadoFueguito(
+                                fueguito.getId(),
+                                "LLUVIA",
+                                fueguito.getXSprite(),
+                                fueguito.getYSprite(),
+                                fueguito.getTamano(),
+                                fueguito.getRotacion()
+                            );
+                        }
+
+                        for (int id : ataques.getFueguitosEliminados()) {
+                            servidor.enviarEliminacionFueguito(id, "LLUVIA");
+                        }
+
+                        for (Fueguito fueguito : jefe.getFueguitosRadialesNuevos()) {
+                            servidor.enviarCreacionFueguito(
+                                fueguito.getId(),
+                                "RADIAL",
+                                fueguito.getXSprite(),
+                                fueguito.getYSprite(),
+                                fueguito.getTamano(),
+                                fueguito.getRotacion()
+                            );
+                        }
+
+                        for (Fueguito fueguito : jefe.getFueguitosRadialesActivos()) {
+                            servidor.enviarEstadoFueguito(
+                                fueguito.getId(),
+                                "RADIAL",
+                                fueguito.getXSprite(),
+                                fueguito.getYSprite(),
+                                fueguito.getTamano(),
+                                fueguito.getRotacion()
+                            );
+                        }
+
+                        for (int id : jefe.getFueguitosRadialesEliminados()) {
+                            servidor.enviarEliminacionFueguito(id, "RADIAL");
+                        }
+                    }
+                } else if (!jefeEliminado) {
+                    jefeEliminado = true;
+                    servidor.enviarEliminacionJefe();
                 }
+            }
+
+            if (NIVEL.enemigoReliquiaDerrotado()) {
+                NAV.cambiarPantalla(new PantallaFinal(NAV));
+                return;
             }
         }
 
@@ -404,7 +399,6 @@ public class PantallaJuego implements Screen {
 
     public void setPausa(boolean valor) {
         this.pausado = valor;
-        Gdx.input.setCursorCatched(!valor);
     }
 
     private void limitarJugadorDentroDePantalla() {
@@ -431,7 +425,6 @@ public class PantallaJuego implements Screen {
     }
 
     public void volverAlHub() {
-        Musica.MENU.sonar();
         NAV.cambiarPantalla(new PantallaJuego(NAV, servidor));
     }
 
@@ -453,7 +446,6 @@ public class PantallaJuego implements Screen {
 
     @Override
     public void hide() {
-        Gdx.input.setCursorCatched(false);
         Retumbar jefe = NIVEL != null ? NIVEL.getJefe() : null;
         if (jefe != null) {
             Servidor.instancia.enviarDetenerSonidoLoopConPosicion("FUEGO_SOSTENIDO", jefe.getX(), jefe.getY());

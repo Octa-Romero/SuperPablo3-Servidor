@@ -248,10 +248,6 @@ public class Servidor {
         hilo.enviarMensajeATodos("SONIDO;" + nombreSonido + ";" + x + ";" + y);
     }
 
-    public void enviarSonidoLoop(String nombreSonido) {
-        hilo.enviarMensajeATodos("SONIDO;" + nombreSonido + ";LOOP");
-    }
-
     public void enviarSonidoLoopConPosicion(String nombreSonido, float x, float y) {
         hilo.enviarMensajeATodos("SONIDO;" + nombreSonido + ";LOOP;" + x + ";" + y);
     }

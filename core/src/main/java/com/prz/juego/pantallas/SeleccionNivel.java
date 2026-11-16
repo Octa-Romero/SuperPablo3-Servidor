@@ -24,7 +24,6 @@ import com.prz.juego.red.Servidor;
 import com.prz.juego.utilidades.Config;
 import com.prz.juego.utilidades.FuenteJuego;
 import com.prz.juego.utilidades.Render;
-import com.prz.juego.utilidades.Sonido;
 
 public class SeleccionNivel implements Screen {
 
@@ -172,7 +171,6 @@ public class SeleccionNivel implements Screen {
                 new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        Sonido.CLICK.sonar();
                         PANTALLA_HUB.restaurarPosicionCamara();
                         NAV.cambiarPantalla(PANTALLA_HUB);
                     }

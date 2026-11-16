@@ -33,6 +33,8 @@ public class HiloServidor extends Thread {
             try {
                 socket.receive(dp);
                 procesarMensaje(dp);
+            } catch (SocketException e) {
+                break;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
