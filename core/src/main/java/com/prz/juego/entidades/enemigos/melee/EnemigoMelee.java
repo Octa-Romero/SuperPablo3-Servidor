@@ -10,10 +10,13 @@ import com.prz.juego.red.Servidor;
 
 public abstract class EnemigoMelee extends Enemigo {
 
-    protected float anchoAtaque = 100;
-    protected float altoAtaque = 10;
-    protected float distanciaAtaque = 15;
-    protected float tiempoEstado = 0;
+    private static final float DURACION_ATAQUE = 1f;
+    private static final String SONIDO_ESPADA = "ESPADA";
+
+    protected float anchoAtaque = 100f;
+    protected float altoAtaque = 10f;
+    protected float distanciaAtaque = 15f;
+    protected float tiempoEstado = 0f;
     protected float tiempoAntesDeAtacar = 0.3f;
     protected float tiempoEntreAtaques = 2f;
     protected boolean esperandoAtaque = false;
@@ -21,106 +24,114 @@ public abstract class EnemigoMelee extends Enemigo {
     protected boolean yaDanio = false;
 
     protected EnemigoMelee(
-            float x,
-            float y,
-            float ancho,
-            float alto,
-            int velocidadX,
-            double vida,
-            double danio,
-            Jugador jugador,
-            Jugador[] jugadores,
-            Texture textura) {
+        float x,
+        float y,
+        float ancho,
+        float alto,
+        int velocidadX,
+        double vida,
+        double danio,
+        Jugador jugador,
+        Jugador[] jugadores,
+        Texture textura) {
         super(x, y, ancho, alto, velocidadX, vida, danio, jugador, jugadores, textura);
     }
 
     @Override
     protected void actualizarComportamiento(float delta, Rectangle boundsJugador) {
         float distancia = calcularDistanciaHorizontal(boundsJugador);
+        boolean detectado = detectaJugador(distancia, boundsJugador);
 
         if (atacando) {
             actualizarAtaque(delta);
-        } else if (esperandoAtaque) {
+            return;
+        }
+
+        if (esperandoAtaque) {
             tiempoEstado += delta;
+
             if (tiempoEstado >= tiempoAntesDeAtacar) {
                 esperandoAtaque = false;
                 atacando = true;
-                tiempoEstado = 0;
+                tiempoEstado = 0f;
                 yaDanio = false;
-                Servidor.instancia.enviarSonido("ESPADA");
+
+                if (Servidor.instancia != null) {
+                    Servidor.instancia.enviarSonido(SONIDO_ESPADA);
+                }
             }
-        } else if (cooldownAtaque) {
+            return;
+        }
+
+        if (cooldownAtaque) {
             tiempoEstado += delta;
+
             if (tiempoEstado >= tiempoEntreAtaques) {
                 cooldownAtaque = false;
-                tiempoEstado = 0;
+                tiempoEstado = 0f;
             }
 
-            if (detectaJugador(distancia, boundsJugador)) {
-                perseguir(delta, boundsJugador, distanciaAtaque);
-            } else {
-                patrullar(delta);
-            }
+            perseguirOPatrullar(delta, boundsJugador, detectado);
+            return;
+        }
+
+        if (detectado && distancia <= distanciaAtaque) {
+            actualizarDireccion(boundsJugador);
+            esperandoAtaque = true;
+            tiempoEstado = 0f;
         } else {
-            if (distancia <= distanciaAtaque && detectaJugador(distancia, boundsJugador)) {
-                actualizarDireccion(boundsJugador);
-                esperandoAtaque = true;
-                tiempoEstado = 0;
-            } else if (detectaJugador(distancia, boundsJugador)) {
-                perseguir(delta, boundsJugador, distanciaAtaque);
-            } else {
-                patrullar(delta);
-            }
+            perseguirOPatrullar(delta, boundsJugador, detectado);
+        }
+    }
+
+    private void perseguirOPatrullar(float delta, Rectangle boundsJugador, boolean detectado) {
+        if (detectado) {
+            perseguir(delta, boundsJugador, distanciaAtaque);
+        } else {
+            patrullar(delta);
         }
     }
 
     private void actualizarAtaque(float delta) {
         tiempoEstado += delta;
-        if (!yaDanio && ataqueTocaJugador()) {
-            Jugador objetivo = obtenerJugadorMasCercano();
-            if (objetivo != null) {
-                objetivo.restarVida(danio);
+
+        if (!yaDanio) {
+            Rectangle ataque = getBoundsAtaque();
+            boolean golpeo = false;
+
+            if (jugadores != null) {
+                for (Jugador j : jugadores) {
+                    golpeo |= golpear(j, ataque);
+                }
+            } else {
+                golpeo = golpear(jugador, ataque);
             }
-            yaDanio = true;
+
+            yaDanio = golpeo;
         }
 
-        if (tiempoEstado >= 1f) {
+        if (tiempoEstado >= DURACION_ATAQUE) {
             atacando = false;
             cooldownAtaque = true;
-            tiempoEstado = 0;
+            tiempoEstado = 0f;
         }
+    }
+
+    private boolean golpear(Jugador objetivo, Rectangle ataque) {
+        if (objetivo == null || objetivo.estaMuerto() || !ataque.overlaps(objetivo.getBounds())) {
+            return false;
+        }
+
+        objetivo.restarVida(danio);
+        return true;
     }
 
     protected Rectangle getBoundsAtaque() {
-        float ataqueY = y + (alto / 2f) - (altoAtaque / 2f);
+        float ataqueY = y + alto / 2f - altoAtaque / 2f;
         float centroEnemigo = x + ancho / 2f;
-        float ataqueX;
-
-        if (direccion > 0) {
-            ataqueX = centroEnemigo;
-        } else {
-            ataqueX = centroEnemigo - anchoAtaque;
-        }
+        float ataqueX = direccion > 0 ? centroEnemigo : centroEnemigo - anchoAtaque;
 
         return new Rectangle(ataqueX, ataqueY, anchoAtaque, altoAtaque);
-    }
-
-    private boolean ataqueTocaJugador() {
-        Rectangle ataque = getBoundsAtaque();
-        if (jugadores != null) {
-            for (Jugador j : jugadores) {
-                if (!j.estaMuerto() && ataque.overlaps(j.getBounds())) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        return !jugador.estaMuerto() && ataque.overlaps(jugador.getBounds());
-    }
-
-    @Override
-    protected void actualizarOrientacionSprites() {
-        super.actualizarOrientacionSprites();
     }
 
     @Override
@@ -132,9 +143,5 @@ public abstract class EnemigoMelee extends Enemigo {
             shapeRenderer.setColor(Color.RED);
             shapeRenderer.rect(ataque.x, ataque.y, ataque.width, ataque.height);
         }
-    }
-
-    public Rectangle getBoundsAtaquePublico() {
-        return getBoundsAtaque();
     }
 }

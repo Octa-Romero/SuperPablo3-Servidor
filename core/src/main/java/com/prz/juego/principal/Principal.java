@@ -1,11 +1,11 @@
 package com.prz.juego.principal;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.prz.juego.pantallas.PantallaJuego;
 import com.prz.juego.pantallas.PantallaMenu;
-import com.prz.juego.pantallas.SeleccionPersonaje;
 import com.prz.juego.recursos.GestorRecursos;
 import com.prz.juego.red.Servidor;
 import com.prz.juego.utilidades.Render;
@@ -17,46 +17,60 @@ public class Principal extends Game implements Navegable {
     @Override
     public void create() {
         Render.batch = new SpriteBatch();
+
         servidor = new Servidor();
         Servidor.instancia = servidor;
-        servidor.iniciar();
-        this.setScreen(new PantallaMenu(this));
-    }
 
-    @Override
-    public void dispose() {
-
-        Screen pantallaActual = getScreen();
-        if (pantallaActual != null) {
-            pantallaActual.dispose();
-        }
-
-        if (Render.batch != null) {
-            Render.batch.dispose();
-            Render.batch = null;
-        }
-
-        if(servidor != null)
-        {
-            servidor.cerrar();
-        }
-
-
-        GestorRecursos.dispose();
+        setScreen(new PantallaMenu(this, servidor));
     }
 
     @Override
     public void cambiarPantalla(Screen screen) {
-        setScreen(screen);
+        Gdx.app.postRunnable(() -> reemplazarPantalla(screen));
     }
 
     @Override
     public void iniciarJuego(String rutaNivel) {
-        setScreen(new PantallaJuego(this, servidor, rutaNivel));
+        Gdx.app.postRunnable(() -> reemplazarPantalla(new PantallaJuego(this, servidor, rutaNivel)));
     }
 
+    @Override
     public void iniciarPartida() {
-        setScreen(new PantallaJuego(this, servidor, null));
+        iniciarJuego(null);
     }
 
+    private void reemplazarPantalla(Screen nueva) {
+        Screen anterior = getScreen();
+        setScreen(nueva);
+
+        if (anterior != null && anterior != nueva) {
+            anterior.dispose();
+        }
+    }
+
+    @Override
+    public void dispose() {
+        try {
+            if (servidor != null) {
+                servidor.cerrar();
+            }
+        } finally {
+            try {
+                Screen pantallaActual = getScreen();
+                setScreen(null);
+                if (pantallaActual != null) {
+                    pantallaActual.dispose();
+                }
+            } finally {
+                if (Render.batch != null) {
+                    Render.batch.dispose();
+                    Render.batch = null;
+                }
+                GestorRecursos.dispose();
+
+                Servidor.instancia = null;
+                servidor = null;
+            }
+        }
+    }
 }

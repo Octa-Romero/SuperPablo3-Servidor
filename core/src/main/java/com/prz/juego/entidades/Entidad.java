@@ -6,9 +6,12 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
-import com.prz.juego.utilidades.Animacion;
+import com.prz.juego.utilidades.Render;
 
 public abstract class Entidad {
+
+    protected static final float GRAVEDAD = 400f;
+    private static final float INTERVALO_PARPADEO = 0.1f;
 
     protected Sprite sprite;
     protected float x, y;
@@ -18,8 +21,7 @@ public abstract class Entidad {
     protected float xAnterior, yAnterior;
     protected int direccion = 1;
     protected int velocidadX;
-    protected float velocidadY = 0;
-    protected final float GRAVEDAD = 400;
+    protected float velocidadY = 0f;
     protected boolean enSuelo = true;
     protected boolean chocoPared = false;
     protected Rectangle bounds;
@@ -27,21 +29,24 @@ public abstract class Entidad {
     protected double vidaMaxima;
     protected boolean muerto = false;
     protected double danio;
-    protected float tiempoInvencibilidad = 0;
+    protected float tiempoInvencibilidad = 0f;
     protected float duracionInvencibilidad = 2f;
-    protected float tiempoParpadeo = 0;
+    protected float tiempoParpadeo = 0f;
     protected boolean spriteVisible = true;
-    protected final Animacion ANIMACION;
 
     protected Entidad(
-            float x,
-            float y,
-            float ancho,
-            float alto,
-            int velocidadX,
-            double vida,
-            double danio,
-            Texture textura) {
+        float x,
+        float y,
+        float ancho,
+        float alto,
+        int velocidadX,
+        double vida,
+        double danio,
+        Texture textura) {
+        if (textura == null) {
+            throw new IllegalArgumentException("La textura no puede ser null");
+        }
+
         this.x = x;
         this.y = y;
         this.ancho = ancho;
@@ -52,40 +57,33 @@ public abstract class Entidad {
         this.vida = vida;
         this.vidaMaxima = vida;
         this.danio = danio;
-        xAnterior = x;
-        yAnterior = y;
-        bounds = new Rectangle(x, y, ancho, alto);
-        sprite = new Sprite(textura);
-        ANIMACION = new Animacion(textura);
+        this.xAnterior = x;
+        this.yAnterior = y;
+        this.bounds = new Rectangle(x, y, ancho, alto);
+        this.sprite = new Sprite(textura);
         actualizarSpriteVisual();
     }
 
     protected void configurarSpriteVisual(float anchoSprite, float altoSprite) {
-        validarTamanoSprite(anchoSprite, altoSprite);
-
-        this.anchoSprite = anchoSprite;
-        this.altoSprite = altoSprite;
-        offsetSpriteXDerecha = (ancho - anchoSprite) / 2f;
-        offsetSpriteXIzquierda = offsetSpriteXDerecha;
-        offsetSpriteY = 0f;
-
-        actualizarSpriteVisual();
+        float offset = (ancho - anchoSprite) / 2f;
+        configurarSpriteVisual(anchoSprite, altoSprite, offset, offset, 0f);
     }
 
     protected void configurarSpriteVisual(
-            float anchoSprite,
-            float altoSprite,
-            float offsetDerecha,
-            float offsetIzquierda,
-            float offsetY) {
-
-        validarTamanoSprite(anchoSprite, altoSprite);
+        float anchoSprite,
+        float altoSprite,
+        float offsetDerecha,
+        float offsetIzquierda,
+        float offsetY) {
+        if (anchoSprite <= 0 || altoSprite <= 0) {
+            throw new IllegalArgumentException("El tamano visual del sprite debe ser positivo");
+        }
 
         this.anchoSprite = anchoSprite;
         this.altoSprite = altoSprite;
-        offsetSpriteXDerecha = offsetDerecha;
-        offsetSpriteXIzquierda = offsetIzquierda;
-        offsetSpriteY = offsetY;
+        this.offsetSpriteXDerecha = offsetDerecha;
+        this.offsetSpriteXIzquierda = offsetIzquierda;
+        this.offsetSpriteY = offsetY;
 
         actualizarSpriteVisual();
     }
@@ -96,11 +94,11 @@ public abstract class Entidad {
         }
 
         configurarSpriteVisual(
-                anchoSprite * escala,
-                altoSprite * escala,
-                offsetSpriteXDerecha * escala,
-                offsetSpriteXIzquierda * escala,
-                offsetSpriteY * escala);
+            anchoSprite * escala,
+            altoSprite * escala,
+            offsetSpriteXDerecha * escala,
+            offsetSpriteXIzquierda * escala,
+            offsetSpriteY * escala);
     }
 
     public void escalar(float escala) {
@@ -114,69 +112,65 @@ public abstract class Entidad {
         escalarSpriteVisual(escala);
     }
 
-    private void validarTamanoSprite(float anchoSprite, float altoSprite) {
-        if (anchoSprite <= 0 || altoSprite <= 0) {
-            throw new IllegalArgumentException("El tamano visual del sprite debe ser positivo");
-        }
-    }
-
     protected void actualizarSpriteVisual() {
-        if (sprite != null) {
-            sprite.setSize(anchoSprite, altoSprite);
-
-            float offsetX = sprite.isFlipX() ? offsetSpriteXIzquierda : offsetSpriteXDerecha;
-
-            sprite.setPosition(x + offsetX, y + offsetSpriteY);
+        if (sprite == null) {
+            return;
         }
+
+        sprite.setSize(anchoSprite, altoSprite);
+        float offsetX = sprite.isFlipX() ? offsetSpriteXIzquierda : offsetSpriteXDerecha;
+        sprite.setPosition(x + offsetX, y + offsetSpriteY);
     }
 
     public abstract void update(float delta);
+
+    public abstract void saltar();
+
+    public abstract void dibujar();
+
+    protected void dibujarSprite() {
+        if (sprite != null && spriteVisible) {
+            sprite.draw(Render.batch);
+        }
+    }
 
     public boolean debeVerificarColisionesMapa() {
         return true;
     }
 
     protected void actualizarFisica(float delta) {
-
         if (!enSuelo) {
             velocidadY -= GRAVEDAD * delta;
         }
 
         y += velocidadY * delta;
-
         bounds.setPosition(x, y);
     }
 
     protected void actualizarInvencibilidad(float delta) {
-
         if (tiempoInvencibilidad > 0) {
-
             tiempoInvencibilidad -= delta;
             tiempoParpadeo += delta;
 
-            if (tiempoParpadeo >= 0.1f) {
+            if (tiempoParpadeo >= INTERVALO_PARPADEO) {
                 spriteVisible = !spriteVisible;
-                tiempoParpadeo = 0;
+                tiempoParpadeo = 0f;
             }
-
         } else {
-
-            tiempoInvencibilidad = 0;
-            tiempoParpadeo = 0;
+            tiempoInvencibilidad = 0f;
+            tiempoParpadeo = 0f;
             spriteVisible = true;
         }
     }
 
     public void restarVida(double cantidad) {
-
-        if (tiempoInvencibilidad > 0) {
+        if (muerto || tiempoInvencibilidad > 0) {
             return;
         }
 
         vida -= cantidad;
-
         tiempoInvencibilidad = duracionInvencibilidad;
-        tiempoParpadeo = 0;
+        tiempoParpadeo = 0f;
         spriteVisible = true;
 
         if (vida <= 0) {
@@ -191,24 +185,20 @@ public abstract class Entidad {
     }
 
     public void limitarMovimientoHorizontal(float limiteIzquierdo, float limiteDerecho) {
-        float maximoX = limiteDerecho - bounds.width;
-        if (maximoX < limiteIzquierdo) {
-            maximoX = limiteIzquierdo;
-        }
-
+        float maximoX = Math.max(limiteIzquierdo, limiteDerecho - bounds.width);
         float xLimitado = MathUtils.clamp(x, limiteIzquierdo, maximoX);
-        chocoPared =
-            chocoPared
-                || xLimitado != x
-                || xLimitado <= limiteIzquierdo
-                || xLimitado >= maximoX;
+
+        chocoPared = chocoPared || xLimitado <= limiteIzquierdo || xLimitado >= maximoX;
+
         x = xLimitado;
         bounds.setPosition(x, y);
         actualizarSpriteVisual();
     }
 
-    protected void orientarSprite(Sprite sprite, float movimiento) {
-        if (sprite == null) return;
+    protected void orientarSprite(float movimiento) {
+        if (sprite == null) {
+            return;
+        }
 
         if (movimiento > 0) {
             direccion = 1;
@@ -217,17 +207,16 @@ public abstract class Entidad {
         }
 
         boolean invertir = direccion < 0;
-
         if (sprite.isFlipX() != invertir) {
             sprite.flip(true, false);
+            actualizarSpriteVisual();
         }
     }
 
-    public abstract void saltar();
-
     protected void actualizarOrientacionSegunMovimiento() {
-        orientarSprite(sprite, x - xAnterior);
+        orientarSprite(x - xAnterior);
     }
+
     protected void morir() {
         muerto = true;
     }
@@ -244,12 +233,8 @@ public abstract class Entidad {
         return spriteVisible;
     }
 
-    public abstract void dibujar();
-
     public void dibujarHitbox(ShapeRenderer shapeRenderer) {
-
         shapeRenderer.setColor(Color.GREEN);
-
         shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
     }
 
@@ -277,9 +262,8 @@ public abstract class Entidad {
         return alto;
     }
 
-    public int getDireccion()
-    {
-        return this.direccion;
+    public int getDireccion() {
+        return direccion;
     }
 
     public Rectangle getBounds() {
@@ -344,6 +328,5 @@ public abstract class Entidad {
 
     public void dispose() {
         sprite = null;
-        ANIMACION.dispose();
     }
 }

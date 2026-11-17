@@ -16,57 +16,60 @@ import com.prz.juego.utilidades.Render;
 
 public class Proyectil implements Lanzable {
 
-    private int id;
-    private float x;
-    private float y;
     private final float ANCHO;
     private final float ALTO;
     private final float VELOCIDAD;
     private final float DISTANCIA_MAXIMA;
     private final Vector2 DIRECCION;
     private final double DANIO;
-    private double vida;
-    private float distanciaRecorrida;
     private final Sprite SPRITE;
     private final Polygon BOUNDS;
-    private boolean activa = true;
+    private final Polygon POLIGONO_TEMPORAL = new Polygon();
+    private final float[] VERTICES_TEMPORALES = new float[8];
     private final Jugador JUGADOR;
     private final Colisiones COLISION;
 
+    private int id;
+    private float x;
+    private float y;
+    private double vida;
+    private float distanciaRecorrida = 0f;
+    private boolean activa = true;
+
     public Proyectil(
-            float x,
-            float y,
-            Vector2 DIRECCION,
-            float ANCHO,
-            float ALTO,
-            float VELOCIDAD,
-            float DISTANCIA_MAXIMA,
-            double DANIO,
-            double vida,
-            Jugador JUGADOR,
-            Colisiones COLISION,
-            Texture textura) {
+        float x,
+        float y,
+        Vector2 direccion,
+        float ancho,
+        float alto,
+        float velocidad,
+        float distanciaMaxima,
+        double danio,
+        double vida,
+        Jugador jugador,
+        Colisiones colision,
+        Texture textura) {
         this.x = x;
         this.y = y;
-        this.DIRECCION = new Vector2(DIRECCION).nor();
-        this.ANCHO = ANCHO;
-        this.ALTO = ALTO;
-        this.VELOCIDAD = VELOCIDAD;
-        this.DISTANCIA_MAXIMA = DISTANCIA_MAXIMA;
-        this.DANIO = DANIO;
+        this.DIRECCION = new Vector2(direccion).nor();
+        this.ANCHO = ancho;
+        this.ALTO = alto;
+        this.VELOCIDAD = velocidad;
+        this.DISTANCIA_MAXIMA = distanciaMaxima;
+        this.DANIO = danio;
         this.vida = vida;
-        this.JUGADOR = JUGADOR;
-        this.COLISION = COLISION;
+        this.JUGADOR = jugador;
+        this.COLISION = colision;
 
-        float angulo = this.DIRECCION.angleDeg();
+        float angulo = DIRECCION.angleDeg();
 
         SPRITE = new Sprite(textura);
-        SPRITE.setSize(ANCHO, ALTO);
+        SPRITE.setSize(ancho, alto);
         SPRITE.setOriginCenter();
         SPRITE.setRotation(angulo);
 
-        BOUNDS = new Polygon(new float[] {0, 0, ANCHO, 0, ANCHO, ALTO, 0, ALTO});
-        BOUNDS.setOrigin(ANCHO / 2f, ALTO / 2f);
+        BOUNDS = new Polygon(new float[] {0, 0, ancho, 0, ancho, alto, 0, alto});
+        BOUNDS.setOrigin(ancho / 2f, alto / 2f);
         BOUNDS.setRotation(angulo);
 
         actualizarPosicion();
@@ -79,7 +82,6 @@ public class Proyectil implements Lanzable {
         }
 
         float movimiento = VELOCIDAD * delta;
-
         x += DIRECCION.x * movimiento;
         y += DIRECCION.y * movimiento;
         distanciaRecorrida += movimiento;
@@ -116,20 +118,20 @@ public class Proyectil implements Lanzable {
     }
 
     public boolean chocaCon(Rectangle rectangulo) {
-        Polygon poligono =
-                new Polygon(
-                        new float[] {
-                            rectangulo.x,
-                            rectangulo.y,
-                            rectangulo.x + rectangulo.width,
-                            rectangulo.y,
-                            rectangulo.x + rectangulo.width,
-                            rectangulo.y + rectangulo.height,
-                            rectangulo.x,
-                            rectangulo.y + rectangulo.height
-                        });
+        float derecha = rectangulo.x + rectangulo.width;
+        float arriba = rectangulo.y + rectangulo.height;
 
-        return Intersector.overlapConvexPolygons(BOUNDS, poligono);
+        VERTICES_TEMPORALES[0] = rectangulo.x;
+        VERTICES_TEMPORALES[1] = rectangulo.y;
+        VERTICES_TEMPORALES[2] = derecha;
+        VERTICES_TEMPORALES[3] = rectangulo.y;
+        VERTICES_TEMPORALES[4] = derecha;
+        VERTICES_TEMPORALES[5] = arriba;
+        VERTICES_TEMPORALES[6] = rectangulo.x;
+        VERTICES_TEMPORALES[7] = arriba;
+        POLIGONO_TEMPORAL.setVertices(VERTICES_TEMPORALES);
+
+        return Intersector.overlapConvexPolygons(BOUNDS, POLIGONO_TEMPORAL);
     }
 
     public boolean chocaCon(Circle circulo) {
@@ -166,10 +168,6 @@ public class Proyectil implements Lanzable {
         }
     }
 
-    public double getVida() {
-        return vida;
-    }
-
     @Override
     public void dibujar() {
         if (activa) {
@@ -199,17 +197,17 @@ public class Proyectil implements Lanzable {
 
     @Override
     public int getId() {
-        return this.id;
+        return id;
     }
 
     @Override
     public float getX() {
-        return this.x;
+        return x;
     }
 
     @Override
     public float getY() {
-        return this.y;
+        return y;
     }
 
     public float getAngulo() {

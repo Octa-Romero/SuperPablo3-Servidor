@@ -1,6 +1,6 @@
 package com.prz.juego.niveles;
 
-import com.prz.juego.entidades.jefes.Retumbar;
+import com.prz.juego.entidades.retumbar.Retumbar;
 import com.prz.juego.entidades.jugadores.Jugador;
 
 public class Nivel7 extends Nivel {
@@ -29,7 +29,6 @@ public class Nivel7 extends Nivel {
         agregarEntidadAlFondo(jefe);
         agregarEntidad(jefe.getManoIzquierda());
         agregarEntidad(jefe.getManoDerecha());
-        agregarEntidad(jefe.getFuegoSuelo());
     }
 
     @Override

@@ -3,9 +3,7 @@ package com.prz.juego.principal;
 import com.badlogic.gdx.Screen;
 
 public interface Navegable {
-    void cambiarPantalla(Screen screen);
-
-    void iniciarJuego(String rutaNivel);
-
+    void cambiarPantalla(Screen SCREEN);
+    void iniciarJuego(String RUTA_NIVEL);
     void iniciarPartida();
 }

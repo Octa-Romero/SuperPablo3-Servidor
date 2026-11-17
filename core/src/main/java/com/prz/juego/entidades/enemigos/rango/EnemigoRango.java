@@ -17,50 +17,52 @@ public abstract class EnemigoRango extends Enemigo {
         MOVIL
     }
 
-    protected float distanciaDisparo = 400;
-    protected float distanciaHuida = 300;
+    protected float distanciaDisparo = 400f;
+    protected float distanciaHuida = 300f;
     protected float tiempoAntesDeDisparar = 0.5f;
     protected float tiempoEntreDisparos = 3f;
-    protected float tiempoEstado = 0;
+    protected float tiempoEstado = 0f;
     protected boolean esperandoDisparo = false;
     protected boolean cooldownDisparo = false;
-    protected float velocidadProyectil = 500;
-    protected float distanciaMaximaProyectil = 1200;
+    protected float velocidadProyectil = 500f;
+    protected float distanciaMaximaProyectil = 1200f;
     protected double vidaProyectil = 1;
+
     private final Modo MODO;
     private final Texture TEXTURA_PROYECTIL;
     private final float ANCHO_PROYECTIL;
     private final float ALTO_PROYECTIL;
+    private final ArrayList<Proyectil> PROYECTILES_PROPIOS = new ArrayList<>();
+
     private ArrayList<Lanzable> proyectiles;
-    private final ArrayList<Proyectil> proyectilesPropios = new ArrayList<>();
     private Colisiones colisiones;
-    private boolean ataquesCancelados;
+    private boolean ataquesCancelados = false;
     private boolean huyendo = false;
-    private boolean esperarAterrizajeAntesDeAtacar;
-    private float retrasoInicialAntesDeAtacar;
-    private float tiempoRetrasoInicial;
+    private boolean esperarAterrizajeAntesDeAtacar = false;
+    private float retrasoInicialAntesDeAtacar = 0f;
+    private float tiempoRetrasoInicial = 0f;
 
     protected EnemigoRango(
-            float x,
-            float y,
-            float ancho,
-            float alto,
-            int velocidadX,
-            double vida,
-            double danio,
-            Jugador jugador,
-            Jugador[] jugadores,
-            Texture textura,
-            Texture TEXTURA_PROYECTIL,
-            float ANCHO_PROYECTIL,
-            float ALTO_PROYECTIL,
-            Modo MODO) {
+        float x,
+        float y,
+        float ancho,
+        float alto,
+        int velocidadX,
+        double vida,
+        double danio,
+        Jugador jugador,
+        Jugador[] jugadores,
+        Texture textura,
+        Texture texturaProyectil,
+        float anchoProyectil,
+        float altoProyectil,
+        Modo modo) {
         super(x, y, ancho, alto, velocidadX, vida, danio, jugador, jugadores, textura);
-        this.TEXTURA_PROYECTIL = TEXTURA_PROYECTIL;
-        this.ANCHO_PROYECTIL = ANCHO_PROYECTIL;
-        this.ALTO_PROYECTIL = ALTO_PROYECTIL;
-        this.MODO = MODO;
-        distanciaDeteccion = 700;
+        this.TEXTURA_PROYECTIL = texturaProyectil;
+        this.ANCHO_PROYECTIL = anchoProyectil;
+        this.ALTO_PROYECTIL = altoProyectil;
+        this.MODO = modo;
+        this.distanciaDeteccion = 700f;
     }
 
     public void configurarDisparo(Colisiones colisiones, ArrayList<Lanzable> proyectiles) {
@@ -84,44 +86,34 @@ public abstract class EnemigoRango extends Enemigo {
             throw new IllegalArgumentException("La direccion inicial no puede ser cero");
         }
 
-        this.direccion = (int) Math.signum(direccion);
-        orientarSprite(sprite, this.direccion);
+        this.direccion = direccion > 0 ? 1 : -1;
+        orientarSprite(this.direccion);
     }
 
     @Override
     protected void actualizarComportamiento(float delta, Rectangle boundsJugador) {
-        if (ataquesCancelados) {
+        if (ataquesCancelados || !aterrizajeInicialCompleto(delta)) {
             return;
-        }
-
-        if (esperarAterrizajeAntesDeAtacar) {
-            if (!enSuelo) {
-                return;
-            }
-
-            tiempoRetrasoInicial += delta;
-            if (tiempoRetrasoInicial < retrasoInicialAntesDeAtacar) {
-                return;
-            }
-            esperarAterrizajeAntesDeAtacar = false;
         }
 
         if (cooldownDisparo) {
             tiempoEstado += delta;
+
             if (tiempoEstado >= tiempoEntreDisparos) {
                 cooldownDisparo = false;
-                tiempoEstado = 0;
+                tiempoEstado = 0f;
             }
         }
 
         if (esperandoDisparo) {
             tiempoEstado += delta;
+
             if (tiempoEstado >= tiempoAntesDeDisparar) {
                 disparar();
                 esperandoDisparo = false;
                 atacando = false;
                 cooldownDisparo = true;
-                tiempoEstado = 0;
+                tiempoEstado = 0f;
             }
             return;
         }
@@ -141,7 +133,7 @@ public abstract class EnemigoRango extends Enemigo {
         if (!cooldownDisparo) {
             esperandoDisparo = true;
             atacando = true;
-            tiempoEstado = 0;
+            tiempoEstado = 0f;
             return;
         }
 
@@ -151,8 +143,6 @@ public abstract class EnemigoRango extends Enemigo {
 
         if (chocoPared) {
             huyendo = false;
-            actualizarDireccion(boundsJugador);
-            actualizarOrientacionSprites();
             return;
         }
 
@@ -172,6 +162,24 @@ public abstract class EnemigoRango extends Enemigo {
         }
     }
 
+    private boolean aterrizajeInicialCompleto(float delta) {
+        if (!esperarAterrizajeAntesDeAtacar) {
+            return true;
+        }
+
+        if (!enSuelo) {
+            return false;
+        }
+
+        tiempoRetrasoInicial += delta;
+        if (tiempoRetrasoInicial < retrasoInicialAntesDeAtacar) {
+            return false;
+        }
+
+        esperarAterrizajeAntesDeAtacar = false;
+        return true;
+    }
+
     private void alejarse(float delta, float distancia) {
         float movimiento = Math.min(velocidad * delta, distanciaDisparo - distancia);
         x += direccion * movimiento;
@@ -186,51 +194,51 @@ public abstract class EnemigoRango extends Enemigo {
         if (objetivo == null) {
             return;
         }
-        Rectangle boundsJugador = objetivo.getBounds();
+
+        Rectangle boundsObjetivo = objetivo.getBounds();
         float origenX = x + ancho / 2f;
         float origenY = y + alto / 2f;
-        float objetivoX = boundsJugador.x + boundsJugador.width / 2f;
-        float objetivoY = boundsJugador.y + boundsJugador.height / 2f;
+        float objetivoX = boundsObjetivo.x + boundsObjetivo.width / 2f;
+        float objetivoY = boundsObjetivo.y + boundsObjetivo.height / 2f;
 
         Vector2 direccionProyectil = new Vector2(objetivoX - origenX, objetivoY - origenY);
         if (direccionProyectil.isZero()) {
-            direccionProyectil.set(direccion, 0);
+            direccionProyectil.set(direccion, 0f);
         }
         direccionProyectil.nor();
 
         float proyectilX = origenX + direccionProyectil.x * ancho / 2f;
         float proyectilY = origenY + direccionProyectil.y * ancho / 2f;
 
-        proyectilesPropios.removeIf(proyectil -> !proyectil.estaActiva());
+        PROYECTILES_PROPIOS.removeIf(proyectil -> !proyectil.estaActiva());
+
         Proyectil proyectil =
-                new Proyectil(
-                        proyectilX,
-                        proyectilY,
-                        direccionProyectil,
-                        ANCHO_PROYECTIL,
-                        ALTO_PROYECTIL,
-                        velocidadProyectil,
-                        distanciaMaximaProyectil,
-                        danio,
-                        vidaProyectil,
-                        objetivo,
-                        colisiones,
-                        TEXTURA_PROYECTIL);
+            new Proyectil(
+                proyectilX,
+                proyectilY,
+                direccionProyectil,
+                ANCHO_PROYECTIL,
+                ALTO_PROYECTIL,
+                velocidadProyectil,
+                distanciaMaximaProyectil,
+                danio,
+                vidaProyectil,
+                objetivo,
+                colisiones,
+                TEXTURA_PROYECTIL);
+
         proyectiles.add(proyectil);
-        proyectilesPropios.add(proyectil);
+        PROYECTILES_PROPIOS.add(proyectil);
     }
 
     public void cancelarAtaques() {
         ataquesCancelados = true;
         esperandoDisparo = false;
         atacando = false;
-        for (Proyectil proyectil : proyectilesPropios) {
+
+        for (Proyectil proyectil : PROYECTILES_PROPIOS) {
             proyectil.desactivar();
         }
-        proyectilesPropios.clear();
-    }
-
-    public Modo getModo() {
-        return MODO;
+        PROYECTILES_PROPIOS.clear();
     }
 }

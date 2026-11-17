@@ -6,7 +6,7 @@ import com.prz.juego.entidades.jugadores.Jugador;
 
 public class Nivel2 extends Nivel {
 
-    public static final String RUTA = "Niveles/Niveles/Nivel2.1.tmx";
+    public static final String RUTA = "Niveles/Niveles/Nivel2.tmx";
 
     public Nivel2() {
         musica = null;

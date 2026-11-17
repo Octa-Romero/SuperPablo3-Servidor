@@ -10,30 +10,42 @@ import java.util.Map;
 public class GestorRecursos {
 
     private static final Map<String, Texture> TEXTURAS = new HashMap<>();
-    private static final String PIXEL = "pixel";
+    private static Texture pixel;
 
-    public static Texture obtenerTextura(String ruta) {
-        if (!TEXTURAS.containsKey(ruta)) {
-            TEXTURAS.put(ruta, new Texture(ruta));
+    private GestorRecursos() {}
+
+    public static synchronized Texture obtenerTextura(String ruta) {
+        Texture textura = TEXTURAS.get(ruta);
+        if (textura == null) {
+            textura = new Texture(ruta);
+            TEXTURAS.put(ruta, textura);
         }
-        return TEXTURAS.get(ruta);
+        return textura;
     }
 
-    public static Texture obtenerPixel() {
-        if (!TEXTURAS.containsKey(PIXEL)) {
+    public static synchronized Texture obtenerPixel() {
+        if (pixel == null) {
             Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-            pixmap.setColor(Color.WHITE);
-            pixmap.fill();
-            TEXTURAS.put(PIXEL, new Texture(pixmap));
-            pixmap.dispose();
+            try {
+                pixmap.setColor(Color.WHITE);
+                pixmap.fill();
+                pixel = new Texture(pixmap);
+            } finally {
+                pixmap.dispose();
+            }
         }
-        return TEXTURAS.get(PIXEL);
+        return pixel;
     }
 
-    public static void dispose() {
+    public static synchronized void dispose() {
         for (Texture textura : TEXTURAS.values()) {
             textura.dispose();
         }
         TEXTURAS.clear();
+
+        if (pixel != null) {
+            pixel.dispose();
+            pixel = null;
+        }
     }
 }

@@ -1,131 +1,94 @@
 package com.prz.juego.niveles;
 
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
-import com.prz.juego.entidades.Entidad;
-import com.prz.juego.entidades.enemigos.*;
-import com.prz.juego.entidades.jugadores.*;
-import com.prz.juego.hilos.JugadorRed;
+import com.prz.juego.entidades.jugadores.Jugador;
+import com.prz.juego.red.JugadorRed;
 import com.prz.juego.sistemas.Camara;
 import com.prz.juego.sistemas.Colisiones;
-import com.prz.juego.sistemas.CuadroDialogo;
-import com.prz.juego.utilidades.Debug;
-import com.prz.juego.utilidades.Dialogo;
-import com.prz.juego.utilidades.Entrada;
-import com.prz.juego.utilidades.FuenteJuego;
 import com.prz.juego.utilidades.Render;
 
-import java.util.ArrayList;
-
 public class Hub {
+
+    private static final float ESCALA_JUGADOR = 2f;
+    private static final float MULTIPLICADOR_VELOCIDAD = 1.5f;
+    private static final String CAPA_CENTRO_HUB = "centroHub";
 
     private Camara camara;
     private TiledMap mapa;
     private OrthogonalTiledMapRenderer mapRenderer;
-    private Jugador[] jugadores;
-    private Colisiones colision;
     private ShapeRenderer shapeRenderer;
+    private Colisiones colision;
+    private Jugador[] jugadores;
     private Rectangle centroHub;
-    private BitmapFont fontAlerta;
-    private Rectangle zonaPancrasio;
     private float mapaAncho;
-    private float mapaAlto;
-    private Dialogo dialogoPancrasio;
-    private CuadroDialogo cuadroDialogo;
 
     public void cargar(String ruta, Jugador[] jugadores) {
-        camara = new Camara();
         this.jugadores = jugadores;
-
-        for(Jugador jugador : jugadores) {
-            jugador.escalar(2f);
-            jugador.setVelocidadX(Math.round(jugador.getVelocidadX() * 1.5f));
-            jugador.setAccionesHabilitadas(false);
-        }
+        camara = new Camara();
         shapeRenderer = new ShapeRenderer();
 
-        inicializarFuenteAlerta();
-
-        TmxMapLoader mapLoader = new TmxMapLoader();
-        mapa = mapLoader.load(ruta);
-
-        if (mapa.getLayers().get("pancrasio") != null) {
-            for (MapObject object : mapa.getLayers().get("pancrasio").getObjects()) {
-                if (object instanceof RectangleMapObject) {
-                    zonaPancrasio = ((RectangleMapObject) object).getRectangle();
-                    break;
-                }
-            }
+        for (Jugador jugador : jugadores) {
+            jugador.escalar(ESCALA_JUGADOR);
+            jugador.setVelocidadX(Math.round(jugador.getVelocidadX() * MULTIPLICADOR_VELOCIDAD));
+            jugador.setAccionesHabilitadas(false);
         }
 
-        dialogoPancrasio =
-                new Dialogo(
-                        "¡Bienvenidos, aventureros!",
-                        "Pronto tendré mercancía para ustedes.",
-                        "Vuelvan cuando esté todo preparado.");
-
-        cuadroDialogo = new CuadroDialogo();
-
-        for (MapObject object : mapa.getLayers().get("centroHub").getObjects()) {
-            if (object instanceof RectangleMapObject) {
-                centroHub = ((RectangleMapObject) object).getRectangle();
-            }
-        }
-
+        mapa = new TmxMapLoader().load(ruta);
+        centroHub = buscarRectangulo(CAPA_CENTRO_HUB);
         colision = new Colisiones(mapa);
 
         MapProperties props = mapa.getProperties();
+        mapaAncho = props.get("tilewidth", Integer.class) * props.get("width", Integer.class);
+        float mapaAlto = props.get("tileheight", Integer.class) * props.get("height", Integer.class);
 
-        int tileWidth = props.get("tilewidth", Integer.class);
-        int tileHeight = props.get("tileheight", Integer.class);
-        int mapWidthTiles = props.get("width", Integer.class);
-        int mapHeightTiles = props.get("height", Integer.class);
-
-        float mapTotalWidth = tileWidth * mapWidthTiles;
-        float mapTotalHeight = tileHeight * mapHeightTiles;
-
-        mapaAncho = mapTotalWidth;
-        mapaAlto = mapTotalHeight;
-
-        camara.setLimitesMapa(mapTotalWidth, mapTotalHeight);
-
+        camara.setLimitesMapa(mapaAncho, mapaAlto);
         mapRenderer = new OrthogonalTiledMapRenderer(mapa, 1f);
     }
 
-    private boolean estaCercaPancrasio() {
-        // Desactivado en servidor: los clientes pueden ver e interactuar con Pancrasio.
-        return false;
-    }
+    private Rectangle buscarRectangulo(String nombreCapa) {
+        MapLayer capa = mapa.getLayers().get(nombreCapa);
+        if (capa == null) {
+            return null;
+        }
 
-    private boolean estaCercaPancrasio(Jugador jugador) {
-        // Desactivado en servidor: los clientes pueden ver e interactuar con Pancrasio.
-        return false;
-    }
-
-    public boolean ambosConfirmaronSeleccion()
-    {
-        int cont = 0;
-        for(Jugador jugador : jugadores)
-        {
-            if(jugador.getEstadoRed().solicitaSeleccion())
-            {
-                cont++;
+        Rectangle resultado = null;
+        for (MapObject objeto : capa.getObjects()) {
+            if (objeto instanceof RectangleMapObject) {
+                resultado = ((RectangleMapObject) objeto).getRectangle();
             }
         }
-        return cont == jugadores.length;
+        return resultado;
     }
 
-    private void inicializarFuenteAlerta() {
-        fontAlerta = FuenteJuego.generar(28);
+    public void update(float delta) {
+        for (Jugador jugador : jugadores) {
+            jugador.update(delta);
+            colision.chequearColision(jugador);
+            restringirBordes(jugador);
+        }
+
+        Jugador seguido = jugadores[0];
+        camara.seguirPersonaje(
+            seguido.getX() + seguido.getAncho() / 2f,
+            seguido.getY() + seguido.getAlto() / 2f,
+            delta);
+    }
+
+    private void restringirBordes(Jugador jugador) {
+        float x = MathUtils.clamp(jugador.getX(), 0f, mapaAncho - jugador.getAncho());
+        if (x != jugador.getX()) {
+            jugador.setX(x);
+        }
     }
 
     public void renderMapa() {
@@ -139,130 +102,38 @@ public class Hub {
         for (Jugador jugador : jugadores) {
             jugador.dibujar();
         }
-
-
-        if (cuadroDialogo.estaVisible()) {
-            cuadroDialogo.dibujar(Render.batch, camara.getCamera());
-        } else if (estaCercaPancrasio()) {
-            dibujarAlertaPancrasio();
-        }
     }
 
-    public void renderDebug() {
-        if (!Debug.mostrarHitboxes()) {
-            return;
-        }
-
-        shapeRenderer.setProjectionMatrix(camara.getCamera().combined);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-
-        colision.dibujarHitboxes(shapeRenderer);
-
-        shapeRenderer.end();
-    }
-
-    private void restringirBordes(Jugador jugador) {
-        // Borde izquierdo: no puede pasar de 0
-        if (jugador.getX() < 0) {
-            jugador.setX(0);
-        }
-        // Borde derecho: no puede pasar del ancho del mapa menos su propio ancho
-        float bordeDerecho = mapaAncho - jugador.getAncho();
-        if (jugador.getX() > bordeDerecho) {
-            jugador.setX(bordeDerecho);
-        }
-    }
-
-    public void update(float delta) {
-
-        for (Jugador jugador : jugadores) {
-            jugador.update(delta);
-            colision.chequearColision(jugador);
-            // Restringir jugadores a los bordes laterales del mapa
-            restringirBordes(jugador);
-        }
-
-        camara.seguirPersonaje(
-                jugadores[0].getX() + jugadores[0].getAncho() / 2f,
-                jugadores[0].getY() + jugadores[0].getAlto() / 2f,
-                delta);
-
-        // La tecla E tambien abre la seleccion de nivel desde el centro del hub.
-        // Solo consumirla aqui cuando haya una interaccion con Pancrasio.
-        for (Jugador jugador : jugadores) {
-            JugadorRed estadoRed = jugador.getEstadoRed();
-
-            if (estadoRed != null
-                //&& estadoRed.aprietaE()
-                && (cuadroDialogo.estaVisible()
-                || estaCercaPancrasio(jugador))) {
-
-                if (cuadroDialogo.estaVisible()) {
-                    dialogoPancrasio.avanzar();
-
-                    if (dialogoPancrasio.estaActivo()) {
-                        cuadroDialogo.mostrar(dialogoPancrasio.getMensajeActual());
-                    } else {
-                        cuadroDialogo.ocultar();
-                    }
-                } else {
-                    dialogoPancrasio.iniciar();
-                    cuadroDialogo.mostrar(dialogoPancrasio.getMensajeActual());
-                }
-            }
-        }
-    }
-
-    public void resize(int width, int height) {
-        camara.actualizarTamano(width, height);
-    }
-
-    public void dispose() {
-        if (mapa != null) {
-            mapa.dispose();
-        }
-
-        if (mapRenderer != null) {
-            mapRenderer.dispose();
-        }
-
-        if (shapeRenderer != null) {
-            shapeRenderer.dispose();
-        }
-
-        fontAlerta.dispose();
-
-        if (cuadroDialogo != null) {
-            cuadroDialogo.dispose();
-        }
-    }
-
-    public boolean estaEnCentroHub() {
-        if (centroHub == null) return false;
-
-        for (Jugador jugador : jugadores) {
-            if (centroHub.overlaps(jugador.getBounds())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean estaEnCentroHub(Jugador jugador) {
-        return centroHub != null
-            && centroHub.overlaps(jugador.getBounds());
+    private boolean confirmoSeleccion(Jugador jugador) {
+        JugadorRed estadoRed = jugador.getEstadoRed();
+        return estadoRed != null && estadoRed.solicitaSeleccion();
     }
 
     public int contarJugadoresConfirmados() {
         int cont = 0;
-
         for (Jugador jugador : jugadores) {
-            if (jugador.getEstadoRed().solicitaSeleccion()) {
+            if (confirmoSeleccion(jugador)) {
                 cont++;
             }
         }
-
         return cont;
+    }
+
+    public boolean ambosConfirmaronSeleccion() {
+        return contarJugadoresConfirmados() == jugadores.length;
+    }
+
+    public boolean estaEnCentroHub(Jugador jugador) {
+        return centroHub != null && centroHub.overlaps(jugador.getBounds());
+    }
+
+    public boolean estaEnCentroHub() {
+        for (Jugador jugador : jugadores) {
+            if (estaEnCentroHub(jugador)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public Camera getCamara() {
@@ -277,22 +148,19 @@ public class Hub {
         camara.restaurarPosicion();
     }
 
-    public void dibujarAlertaCentro() {
-        // Desactivado en servidor: los clientes pueden ver la alerta de selección de nivel.
+    public void resize(int width, int height) {
+        camara.actualizarTamano(width, height);
     }
 
-    private void dibujarAlertaPancrasio() {
-        String mensaje = "Presioná E para hablar";
-
-        GlyphLayout layout = new GlyphLayout(fontAlerta, mensaje);
-
-        float ancho = getCamara().viewportWidth;
-        float alto = getCamara().viewportHeight;
-
-        float x = getCamara().position.x - ancho / 2f + (ancho - layout.width) / 2f;
-
-        float y = getCamara().position.y - alto / 2f + 80;
-
-        fontAlerta.draw(Render.batch, mensaje, x, y);
+    public void dispose() {
+        if (mapa != null) {
+            mapa.dispose();
+        }
+        if (mapRenderer != null) {
+            mapRenderer.dispose();
+        }
+        if (shapeRenderer != null) {
+            shapeRenderer.dispose();
+        }
     }
 }
