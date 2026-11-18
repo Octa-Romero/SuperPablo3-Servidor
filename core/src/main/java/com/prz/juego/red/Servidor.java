@@ -257,6 +257,14 @@ public class Servidor {
         enviarATodos("MOSTRAR_CREDITOS");
     }
 
+    public void enviarCreacionReliquia(float x, float y) {
+        enviarATodos("RELIQUIA;APARECER;" + x + ";" + y);
+    }
+
+    public void enviarEliminacionReliquia() {
+        enviarATodos("RELIQUIA;RECOGIDA");
+    }
+
     public JugadorRed[] getJugadoresRed() {
         HiloServidor hiloActual = hilo;
         return hiloActual != null ? hiloActual.getJugadores() : new JugadorRed[CANTIDAD_JUGADORES];

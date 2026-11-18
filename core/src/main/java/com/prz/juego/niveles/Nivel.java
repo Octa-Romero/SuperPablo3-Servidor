@@ -287,24 +287,28 @@ public abstract class Nivel {
         for (int i = ENTIDADES.size() - 1; i >= 0; i--) {
             Entidad entidad = ENTIDADES.get(i);
 
-            if (entidad instanceof Enemigo) {
-                Enemigo enemigo = (Enemigo) entidad;
+            if (entidad instanceof Enemigo enemigo) {
 
-                if (enemigo.estaMuerto()) {
-                    idEnemigosEliminados.add(enemigo.getId());
+                if (enemigo instanceof Retumbar jefe
+                    && jefe.estaMuerto()
+                    && !jefeMuerto) {
 
-                    if (enemigo instanceof Retumbar && !jefeMuerto) {
-                        jefeMuerto = true;
-                        tiempoDesdeMuerteJefe = 0f;
-                        Servidor.instancia.enviarEliminacionAtaquesJefe();
-                        Retumbar jefe = (Retumbar) enemigo;
-                        ENTIDADES.remove(jefe.getManoIzquierda());
-                        ENTIDADES.remove(jefe.getManoDerecha());
-                        ENTIDADES.remove(jefe.getFuegoSuelo());
-                    } else {
-                        enemigo.dispose();
-                        ENTIDADES.remove(i);
-                    }
+                    jefeMuerto = true;
+                    tiempoDesdeMuerteJefe = 0f;
+
+                    Servidor.instancia.enviarEliminacionAtaquesJefe();
+
+                    // Generar la reliquia cuando muere El Retumbar.
+                    float reliquiaX = jefe.getX() + (jefe.getAncho() - 48f) / 2f;
+                    float reliquiaY = jefe.getY() + jefe.getAlto() / 2f;
+
+                    RELIQUIAS.add(new Reliquia(reliquiaX, reliquiaY, colision));
+                    Servidor.instancia.enviarCreacionReliquia(reliquiaX, reliquiaY);
+
+                    // Eliminar los componentes del jefe.
+                    ENTIDADES.remove(jefe.getManoIzquierda());
+                    ENTIDADES.remove(jefe.getManoDerecha());
+                    ENTIDADES.remove(jefe.getFuegoSuelo());
                 }
             }
         }
@@ -313,7 +317,7 @@ public abstract class Nivel {
             tiempoDesdeMuerteJefe += delta;
             if (tiempoDesdeMuerteJefe >= 2f) {
                 boolean algunJugadorVivo = !jugadores[0].estaMuerto() || !jugadores[1].estaMuerto();
-                if (algunJugadorVivo) {
+                if (algunJugadorVivo && tieneReliquia) {
                     creditosDisparados = true;
                     Servidor.instancia.enviarCreditos();
                 }
@@ -326,6 +330,9 @@ public abstract class Nivel {
             for (Jugador jugador : jugadores) {
                 if (reliquia.actualizar(jugador, delta)) {
                     tieneReliquia = true;
+
+                    Servidor.instancia.enviarEliminacionReliquia();
+
                     reliquia.dispose();
                     RELIQUIAS.remove(i);
                     break;
