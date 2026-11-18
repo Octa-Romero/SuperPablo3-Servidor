@@ -6,13 +6,13 @@ import com.prz.juego.recursos.GestorRecursos;
 
 public class Arquero extends EnemigoRango {
 
-    private static final float ANCHO = 70f;
-    private static final float ALTO = 110f;
+    private static final float ANCHO = 50f;
+    private static final float ALTO = 85f;
     private static final int VELOCIDAD = 100;
-    private static final double VIDA = 3;
+    private static final double VIDA = 5;
     private static final double DANIO = 0.5;
-    private static final float ANCHO_PROYECTIL = 50f;
-    private static final float ALTO_PROYECTIL = 10f;
+    private static final float ANCHO_PROYECTIL = 25f;
+    private static final float ALTO_PROYECTIL = 8f;
     private static final double VIDA_PROYECTIL = 0.5;
     private static final float ESCALA_MINIJEFE = 1.5f;
     private static final double VIDA_MINIJEFE = 12;
