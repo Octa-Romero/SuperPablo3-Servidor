@@ -9,7 +9,7 @@ import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.prz.juego.entidades.Entidad;
 import com.prz.juego.entidades.enemigos.Enemigo;
-import com.prz.juego.entidades.enemigos.TipoEnemigo;
+import com.prz.juego.entidades.enemigos.Enemigos;
 import com.prz.juego.entidades.jugadores.Jugador;
 import com.prz.juego.recursos.GestorRecursos;
 import com.prz.juego.red.Servidor;
@@ -28,7 +28,7 @@ public class Retumbar extends Enemigo {
     private static final float ALTURA_PECHO = ALTO * 0.77f;
     private static final int VELOCIDAD = 45;
     private static final float RECORRIDO = 250f;
-    private static final double VIDA = 40;
+    private static final double VIDA = 50;
     private static final double DANIO = 1;
     private static final float TIEMPO_ENTRE_ATAQUES = 3f;
     private static final int REPETICIONES_LEVANTAR_BAJAR = 5;
@@ -1069,8 +1069,8 @@ public class Retumbar extends Enemigo {
     }
 
     @Override
-    public TipoEnemigo getTipo() {
-        return TipoEnemigo.JEFE;
+    public Enemigos getTipo() {
+        return Enemigos.RETUMBAR;
     }
 
     public boolean estaVisible() {

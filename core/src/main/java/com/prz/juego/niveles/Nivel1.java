@@ -1,6 +1,8 @@
 package com.prz.juego.niveles;
 
-import com.prz.juego.entidades.enemigos.melee.BichoMelee;
+import com.prz.juego.entidades.enemigos.melee.Demonio;
+import com.prz.juego.entidades.enemigos.rango.Arquero;
+import com.prz.juego.entidades.enemigos.rango.EnemigoRango;
 import com.prz.juego.entidades.jugadores.Jugador;
 
 public class Nivel1 extends Nivel {
@@ -18,8 +20,7 @@ public class Nivel1 extends Nivel {
 
     @Override
     protected void configurarContenidoEspecifico(Jugador[] jugadores) {
-        agregarEntidad(new BichoMelee(2000, 300, jugadores[0], jugadores));
-        agregarEntidad(new BichoMelee(2200, 300, jugadores[0], jugadores));
-        agregarEntidad(new BichoMelee(500, 500, jugadores[0], jugadores, true));
+        agregarEntidad(new Arquero(500, 500, jugadores[0], jugadores, EnemigoRango.Modo.ESTATICO));
+        agregarEntidad(new Arquero(1000, 500, jugadores[0], jugadores, EnemigoRango.Modo.MOVIL, true));
     }
 }

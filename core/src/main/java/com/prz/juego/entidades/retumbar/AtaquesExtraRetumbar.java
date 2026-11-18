@@ -7,7 +7,8 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.prz.juego.entidades.Entidad;
-import com.prz.juego.entidades.enemigos.rango.BichoRango;
+import com.prz.juego.entidades.enemigos.melee.Demonio;
+import com.prz.juego.entidades.enemigos.rango.Arquero;
 import com.prz.juego.entidades.enemigos.rango.EnemigoRango;
 import com.prz.juego.entidades.jugadores.Jugador;
 import com.prz.juego.recursos.GestorRecursos;
@@ -106,7 +107,7 @@ public class AtaquesExtraRetumbar {
     private final List<Fueguito> FUEGUITOS = new ArrayList<>();
     private final ArrayList<Fueguito> FUEGUITOS_NUEVOS = new ArrayList<>();
     private final ArrayList<Integer> FUEGUITOS_ELIMINADOS = new ArrayList<>();
-    private final List<BichoRango> BICHOS_INVOCADOS = new ArrayList<>();
+    private final List<Demonio> BICHOS_INVOCADOS = new ArrayList<>();
 
     private TipoAtaque ataqueActual = TipoAtaque.NINGUNO;
     private float tiempoCooldown = 0f;
@@ -299,19 +300,14 @@ public class AtaquesExtraRetumbar {
 
     private void invocarBichos() {
         float y = ALTO_MAPA + DESPLAZAMIENTO_APARICION;
-        BichoRango izquierdo =
-            new BichoRango(MARGEN_BICHO, y, JUGADOR, JUGADORES, EnemigoRango.Modo.MOVIL);
-        BichoRango derecho =
-            new BichoRango(
+        Demonio izquierdo =
+            new Demonio(MARGEN_BICHO, y, JUGADOR, JUGADORES);
+        Demonio derecho =
+            new Demonio(
                 Math.max(MARGEN_BICHO, ANCHO_MAPA - MARGEN_BICHO - ANCHO_BICHO),
                 y,
                 JUGADOR,
-                JUGADORES,
-                EnemigoRango.Modo.MOVIL);
-
-        izquierdo.configurarRetrasoInicialAntesDeAtacar(1f);
-        derecho.configurarRetrasoInicialAntesDeAtacar(1f);
-        derecho.configurarDireccionInicial(-1);
+                JUGADORES);
 
         BICHOS_INVOCADOS.add(izquierdo);
         BICHOS_INVOCADOS.add(derecho);
@@ -338,7 +334,7 @@ public class AtaquesExtraRetumbar {
         faseOleada = null;
         mostrarAvisoOleada = false;
 
-        for (BichoRango bicho : BICHOS_INVOCADOS) {
+        for (Demonio bicho : BICHOS_INVOCADOS) {
             ELIMINAR_ENTIDAD.accept(bicho);
         }
         BICHOS_INVOCADOS.clear();

@@ -16,7 +16,7 @@ import com.prz.juego.entidades.Lanzable;
 import com.prz.juego.entidades.Reliquia;
 import com.prz.juego.entidades.Tumba;
 import com.prz.juego.entidades.enemigos.Enemigo;
-import com.prz.juego.entidades.enemigos.TipoEnemigo;
+import com.prz.juego.entidades.enemigos.Enemigos;
 import com.prz.juego.entidades.enemigos.rango.EnemigoRango;
 import com.prz.juego.entidades.retumbar.Retumbar;
 import com.prz.juego.entidades.jugadores.*;
@@ -200,7 +200,7 @@ public abstract class Nivel {
 
     private void registrarEnemigo(Entidad entidad) {
         if (entidad instanceof Enemigo enemigo
-            && enemigo.getTipo() != TipoEnemigo.JEFE) {
+            && enemigo.getTipo() != Enemigos.RETUMBAR) {
 
             enemigo.setId(idEnemigo++);
             ENEMIGOS_NUEVOS.add(enemigo);
@@ -407,7 +407,7 @@ public abstract class Nivel {
     private void programarEliminacionEnemigosMuertos() {
         for (Entidad entidad : ENTIDADES) {
             if (entidad instanceof Enemigo enemigo
-                && enemigo.getTipo() != TipoEnemigo.JEFE
+                && enemigo.getTipo() != Enemigos.RETUMBAR
                 && enemigo.estaMuerto()) {
                 soltarReliquiaMinijefe(enemigo);
                 eliminarEntidadDiferida(enemigo);

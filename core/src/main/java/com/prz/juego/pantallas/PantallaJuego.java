@@ -5,7 +5,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.math.Rectangle;
 import com.prz.juego.entidades.Lanzable;
 import com.prz.juego.entidades.enemigos.Enemigo;
-import com.prz.juego.entidades.enemigos.TipoEnemigo;
+import com.prz.juego.entidades.enemigos.Enemigos;
 import com.prz.juego.entidades.enemigos.rango.Proyectil;
 import com.prz.juego.entidades.retumbar.AtaquesExtraRetumbar;
 import com.prz.juego.entidades.retumbar.FuegoSuelo;
@@ -249,12 +249,14 @@ public class PantallaJuego implements Screen {
 
     private void enviarEnemigos() {
         for (Enemigo e : nivel.getEnemigosNuevos()) {
-            SERVIDOR.enviarCreacionEnemigos(e.getId(), e.getTipo(), e.getX(), e.getY(), e.getVida());
+            SERVIDOR.enviarCreacionEnemigos(e);
         }
 
         for (Enemigo e : nivel.getEnemigosActivos()) {
-            SERVIDOR.enviarEstadoEnemigo(e.getId(), e.getX(), e.getY(), e.getDireccion(), e.estaAtacando(),
-                e.getVida(), e.estaSpriteVisible(), e.getTipoAnimacion(), e.getTiempoAnimacion());
+            if (e.getTipo() == Enemigos.RETUMBAR) {
+                continue;
+            }
+            SERVIDOR.enviarEstadoEnemigo(e);
         }
 
         for (Integer id : nivel.getEnemigosEliminados()) {
@@ -464,15 +466,12 @@ public class PantallaJuego implements Screen {
 
     private void enviarSnapshotEnemigos(InetAddress ip, int puerto) {
         for (Enemigo e : nivel.getEnemigosActivos()) {
-            if (e.getTipo() == TipoEnemigo.JEFE) {
+            if (e.getTipo() == Enemigos.RETUMBAR) {
                 continue;
             }
 
-            enviar("CREAR_ENEMIGO;" + e.getId() + ";" + e.getTipo() + ";" + e.getX() + ";" + e.getY() + ";"
-                + e.getVida(), ip, puerto);
-            enviar("ESTADO_ENEMIGO;" + e.getId() + ";" + e.getX() + ";" + e.getY() + ";" + e.getDireccion() + ";"
-                + e.estaAtacando() + ";" + e.getVida() + ";" + e.estaSpriteVisible() + ";"
-                + e.getTipoAnimacion() + ";" + e.getTiempoAnimacion(), ip, puerto);
+            enviar(SERVIDOR.armarMensajeCreacionEnemigo(e), ip, puerto);
+            enviar(SERVIDOR.armarMensajeEstadoEnemigo(e), ip, puerto);
         }
     }
 

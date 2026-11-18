@@ -37,7 +37,7 @@ public class Pablo extends Jugador {
             100,
             170,
             10,
-            100,
+            1,
             GestorRecursos.obtenerTextura("Personajes/Pablo/pablo_idle.png"));
 
         configurarSpriteVisual(100f, 100f, -5f, -45f, 0f);

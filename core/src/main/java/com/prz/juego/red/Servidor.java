@@ -1,6 +1,7 @@
 package com.prz.juego.red;
 
-import com.prz.juego.entidades.enemigos.TipoEnemigo;
+import com.badlogic.gdx.math.Rectangle;
+import com.prz.juego.entidades.enemigos.Enemigo;
 import com.prz.juego.entidades.retumbar.Mano;
 import com.prz.juego.entidades.jugadores.Jugador;
 
@@ -185,7 +186,6 @@ public class Servidor {
         return contadorDesconexiones;
     }
 
-    // DEBUG
     public void desbloquearTodo() {
         synchronized (RELIQUIAS_RECOGIDAS) {
             Arrays.fill(RELIQUIAS_RECOGIDAS, true);
@@ -217,14 +217,29 @@ public class Servidor {
         enviarATodos("ESTADO_TUMBA;" + personaje + ";" + centroX + ";" + y);
     }
 
-    public void enviarCreacionEnemigos(int id, TipoEnemigo tipo, float x, float y, double vida) {
-        enviarATodos("CREAR_ENEMIGO;" + id + ";" + tipo + ";" + x + ";" + y + ";" + vida);
+    public String armarMensajeCreacionEnemigo(Enemigo enemigo) {
+        return "CREAR_ENEMIGO;" + enemigo.getId() + ";" + enemigo.getTipo() + ";" + enemigo.getX() + ";"
+            + enemigo.getY() + ";" + enemigo.getVida() + ";" + enemigo.getAncho() + ";" + enemigo.getAlto();
     }
 
-    public void enviarEstadoEnemigo(int id, float x, float y, int direccion, boolean estaAtacando, double vida,
-                                    boolean spriteVisible, int tipoAnimacion, float tiempoAnimacion) {
-        enviarATodos("ESTADO_ENEMIGO;" + id + ";" + x + ";" + y + ";" + direccion + ";" + estaAtacando + ";"
-            + vida + ";" + spriteVisible + ";" + tipoAnimacion + ";" + tiempoAnimacion);
+    public String armarMensajeEstadoEnemigo(Enemigo enemigo) {
+        Rectangle ataque = enemigo.estaAtacando() ? enemigo.getBoundsAtaque() : null;
+        String datosAtaque = ataque == null
+            ? "0;0;0;0"
+            : ataque.x + ";" + ataque.y + ";" + ataque.width + ";" + ataque.height;
+
+        return "ESTADO_ENEMIGO;" + enemigo.getId() + ";" + enemigo.getX() + ";" + enemigo.getY() + ";"
+            + enemigo.getDireccion() + ";" + enemigo.estaAtacando() + ";" + enemigo.getVida() + ";"
+            + enemigo.estaSpriteVisible() + ";" + enemigo.getTipoAnimacion() + ";"
+            + enemigo.getTiempoAnimacion() + ";" + datosAtaque;
+    }
+
+    public void enviarCreacionEnemigos(Enemigo enemigo) {
+        enviarATodos(armarMensajeCreacionEnemigo(enemigo));
+    }
+
+    public void enviarEstadoEnemigo(Enemigo enemigo) {
+        enviarATodos(armarMensajeEstadoEnemigo(enemigo));
     }
 
     public void enviarEliminacionJefe(int id) {

@@ -13,6 +13,12 @@ import java.util.ArrayList;
 public abstract class Enemigo extends Entidad {
 
     protected static final int TIPO_REPOSO = 0;
+    protected static final int TIPO_CAMINAR = 1;
+    protected static final int TIPO_SALTO = 2;
+    protected static final int TIPO_ATAQUE = 3;
+    protected static final int TIPO_CAIDA = 4;
+    protected static final int TIPO_PREPARAR = 5;
+    private static final float UMBRAL_MOVIMIENTO = 0.01f;
     private static final float VELOCIDAD_SALTO = 300f;
     private static final float DURACION_CAMINATA_PATRULLA = 2f;
     private static final float ESPERA_PATRULLA = 5f;
@@ -20,7 +26,7 @@ public abstract class Enemigo extends Entidad {
     private static final String SONIDO_SALTO = "SALTO";
 
     protected int id;
-    protected TipoEnemigo tipo;
+    protected Enemigos tipo;
     protected String sonidoAtaque;
     protected float velocidad;
     protected float distanciaDeteccion = 500f;
@@ -58,6 +64,7 @@ public abstract class Enemigo extends Entidad {
             return;
         }
 
+        float xAnterior = x;
         guardarPosicionAnterior();
         actualizarInvencibilidad(delta);
 
@@ -82,13 +89,37 @@ public abstract class Enemigo extends Entidad {
             return;
         }
 
-        tiempoAnimacion += delta;
+        actualizarAnimacion(delta, Math.abs(x - xAnterior) > UMBRAL_MOVIMIENTO);
         actualizarOrientacionSprites();
         actualizarSpriteVisual();
         bounds.setPosition(x, y);
     }
 
     protected abstract void actualizarComportamiento(float delta, Rectangle boundsJugador);
+
+    protected boolean estaPreparandoAtaque() {
+        return false;
+    }
+
+    private void actualizarAnimacion(float delta, boolean seMovio) {
+        int nuevoTipo;
+
+        if (estaPreparandoAtaque()) {
+            nuevoTipo = TIPO_PREPARAR;
+        } else if (atacando) {
+            nuevoTipo = TIPO_ATAQUE;
+        } else if (!enSuelo) {
+            nuevoTipo = velocidadY > 0f ? TIPO_SALTO : TIPO_CAIDA;
+        } else {
+            nuevoTipo = seMovio ? TIPO_CAMINAR : TIPO_REPOSO;
+        }
+
+        if (nuevoTipo != tipoAnimacion) {
+            tipoAnimacion = nuevoTipo;
+            tiempoAnimacion = 0f;
+        }
+        tiempoAnimacion += delta;
+    }
 
     protected void reproducirSonidoAtaque() {
         if (sonidoAtaque != null && Servidor.instancia != null) {
@@ -258,7 +289,7 @@ public abstract class Enemigo extends Entidad {
         shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
     }
 
-    public abstract TipoEnemigo getTipo();
+    public abstract Enemigos getTipo();
 
     public void setId(int id) {
         this.id = id;
@@ -269,7 +300,11 @@ public abstract class Enemigo extends Entidad {
     }
 
     public boolean debeSoltarReliquia() {
-        return tipo == TipoEnemigo.MINIJEFE_MELEE || tipo == TipoEnemigo.MINIJEFE_RANGO;
+        return getTipo().esMinijefe();
+    }
+
+    public Rectangle getBoundsAtaque() {
+        return null;
     }
 
     public int getTipoAnimacion() {

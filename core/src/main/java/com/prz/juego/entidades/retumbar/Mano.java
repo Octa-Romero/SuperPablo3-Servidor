@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.prz.juego.entidades.enemigos.Enemigo;
-import com.prz.juego.entidades.enemigos.TipoEnemigo;
+import com.prz.juego.entidades.enemigos.Enemigos;
 import com.prz.juego.entidades.jugadores.Jugador;
 import com.prz.juego.recursos.GestorRecursos;
 import com.prz.juego.red.Servidor;
@@ -500,8 +500,8 @@ public class Mano extends Enemigo {
     }
 
     @Override
-    public TipoEnemigo getTipo() {
-        return TipoEnemigo.JEFE;
+    public Enemigos getTipo() {
+        return Enemigos.RETUMBAR;
     }
 
     private void eliminarDelEscenario() {

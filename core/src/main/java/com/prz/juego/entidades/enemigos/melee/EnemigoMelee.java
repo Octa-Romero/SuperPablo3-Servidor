@@ -10,13 +10,11 @@ import com.prz.juego.entidades.jugadores.Jugador;
 public abstract class EnemigoMelee extends Enemigo {
 
     private static final float DURACION_ATAQUE = 1f;
-
-    protected float anchoAtaque = 100f;
-    protected float altoAtaque = 10f;
+    private final Ataque HITBOX_ATAQUE;
     protected float distanciaAtaque = 15f;
     protected float tiempoEstado = 0f;
-    protected float tiempoAntesDeAtacar = 0.3f;
-    protected float tiempoEntreAtaques = 2f;
+    protected float tiempoAntesDeAtacar;
+    protected float tiempoEntreAtaques;
     protected boolean esperandoAtaque = false;
     protected boolean cooldownAtaque = false;
     protected boolean yaDanio = false;
@@ -29,10 +27,21 @@ public abstract class EnemigoMelee extends Enemigo {
         int velocidadX,
         double vida,
         double danio,
+        Ataque hitboxAtaque,
+        float tiempoAntesDeAtacar,
+        float tiempoEntreAtaques,
         Jugador jugador,
         Jugador[] jugadores,
         Texture textura) {
         super(x, y, ancho, alto, velocidadX, vida, danio, jugador, jugadores, textura);
+        this.HITBOX_ATAQUE = hitboxAtaque;
+        this.tiempoAntesDeAtacar = tiempoAntesDeAtacar;
+        this.tiempoEntreAtaques = tiempoEntreAtaques;
+    }
+
+    @Override
+    protected boolean estaPreparandoAtaque() {
+        return esperandoAtaque && !atacando;
     }
 
     @Override
@@ -121,12 +130,9 @@ public abstract class EnemigoMelee extends Enemigo {
         return true;
     }
 
-    protected Rectangle getBoundsAtaque() {
-        float ataqueY = y + alto / 2f - altoAtaque / 2f;
-        float centroEnemigo = x + ancho / 2f;
-        float ataqueX = direccion > 0 ? centroEnemigo : centroEnemigo - anchoAtaque;
-
-        return new Rectangle(ataqueX, ataqueY, anchoAtaque, altoAtaque);
+    @Override
+    public Rectangle getBoundsAtaque() {
+        return HITBOX_ATAQUE.calcular(x, y, ancho, direccion);
     }
 
     @Override

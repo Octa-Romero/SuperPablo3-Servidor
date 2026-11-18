@@ -91,6 +91,11 @@ public abstract class EnemigoRango extends Enemigo {
     }
 
     @Override
+    protected boolean estaPreparandoAtaque() {
+        return esperandoDisparo;
+    }
+
+    @Override
     protected void actualizarComportamiento(float delta, Rectangle boundsJugador) {
         if (ataquesCancelados || !aterrizajeInicialCompleto(delta)) {
             return;

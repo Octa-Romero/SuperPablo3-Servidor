@@ -1,10 +1,10 @@
 package com.prz.juego.entidades.enemigos.rango;
 
-import com.prz.juego.entidades.enemigos.TipoEnemigo;
+import com.prz.juego.entidades.enemigos.Enemigos;
 import com.prz.juego.entidades.jugadores.Jugador;
 import com.prz.juego.recursos.GestorRecursos;
 
-public class BichoRango extends EnemigoRango {
+public class Arquero extends EnemigoRango {
 
     private static final float ANCHO = 70f;
     private static final float ALTO = 110f;
@@ -19,11 +19,11 @@ public class BichoRango extends EnemigoRango {
     private static final double DANIO_MINIJEFE = 1;
     private static final String SONIDO_ATAQUE = "ESPADA";
 
-    public BichoRango(float x, float y, Jugador jugador, Jugador[] jugadores, Modo modo) {
+    public Arquero(float x, float y, Jugador jugador, Jugador[] jugadores, Modo modo) {
         this(x, y, jugador, jugadores, modo, false);
     }
 
-    public BichoRango(
+    public Arquero(
         float x, float y, Jugador jugador, Jugador[] jugadores, Modo modo, boolean minijefe) {
         super(
             x,
@@ -35,18 +35,18 @@ public class BichoRango extends EnemigoRango {
             minijefe ? DANIO_MINIJEFE : DANIO,
             jugador,
             jugadores,
-            GestorRecursos.obtenerTextura("Enemigos/BichoRango/bichoRango.png"),
-            GestorRecursos.obtenerTextura("Enemigos/BichoRango/flecha.png"),
+            GestorRecursos.obtenerTextura("Enemigos/arquero_idle.png"),
+            GestorRecursos.obtenerTextura("Enemigos/flecha.png"),
             minijefe ? ANCHO_PROYECTIL * ESCALA_MINIJEFE : ANCHO_PROYECTIL,
             minijefe ? ALTO_PROYECTIL * ESCALA_MINIJEFE : ALTO_PROYECTIL,
             modo);
         this.vidaProyectil = VIDA_PROYECTIL;
-        this.tipo = minijefe ? TipoEnemigo.MINIJEFE_RANGO : TipoEnemigo.BICHO_RANGO;
+        this.tipo = minijefe ? Enemigos.MINIJEFE_ARQUERO : Enemigos.ARQUERO;
         this.sonidoAtaque = SONIDO_ATAQUE;
     }
 
     @Override
-    public TipoEnemigo getTipo() {
+    public Enemigos getTipo() {
         return tipo;
     }
 }
