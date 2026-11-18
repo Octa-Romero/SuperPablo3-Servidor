@@ -229,6 +229,7 @@ public abstract class EnemigoRango extends Enemigo {
 
         proyectiles.add(proyectil);
         PROYECTILES_PROPIOS.add(proyectil);
+        reproducirSonidoAtaque();
     }
 
     public void cancelarAtaques() {

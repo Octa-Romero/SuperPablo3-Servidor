@@ -2,6 +2,7 @@ package com.prz.juego.pantallas;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.math.Rectangle;
 import com.prz.juego.entidades.Lanzable;
 import com.prz.juego.entidades.enemigos.Enemigo;
 import com.prz.juego.entidades.enemigos.TipoEnemigo;
@@ -16,6 +17,7 @@ import com.prz.juego.entidades.retumbar.Retumbar;
 import com.prz.juego.entidades.jugadores.BolaFuego;
 import com.prz.juego.entidades.jugadores.Jugador;
 import com.prz.juego.entidades.jugadores.Personajes;
+import com.prz.juego.entidades.Reliquia;
 import com.prz.juego.red.JugadorRed;
 import com.prz.juego.niveles.Hub;
 import com.prz.juego.niveles.Nivel;
@@ -34,7 +36,7 @@ public class PantallaJuego implements Screen {
     private static final int CANTIDAD_JUGADORES = 2;
     private static final int SPAWN_X_DEFECTO = 50;
     private static final int SPAWN_Y_DEFECTO = 150;
-    private static final float DURACION_CREDITOS = 74f;
+    private static final int NIVEL_FINAL = 7;
 
     private final Navegable NAV;
     private final Servidor SERVIDOR;
@@ -48,8 +50,6 @@ public class PantallaJuego implements Screen {
     private Hub hub;
     private boolean seleccionNivelActiva = false;
     private boolean nivelIniciado = false;
-    private boolean creditosIniciados = false;
-    private float tiempoCreditos = 0f;
     private boolean jefeEliminado = false;
     private boolean jefeCreado = false;
     private volatile boolean debeVolverAlHub = false;
@@ -95,20 +95,16 @@ public class PantallaJuego implements Screen {
     public void render(float delta) {
         if (SERVIDOR.getCantClientes() == 0) {
             Global.empieza = false;
-            NAV.cambiarPantalla(new PantallaMenu(NAV, SERVIDOR));
+            NAV.cambiarPantalla(new PantallaMenu(NAV, SERVIDOR, true));
             return;
         }
 
         procesarSnapshotsPendientes();
+        SERVIDOR.liberarInputsInactivos();
 
         if (SERVIDOR.isJuegoPausado()) {
             Render.limpiarPantalla();
             dibujar();
-            return;
-        }
-
-        if (creditosIniciados) {
-            actualizarCreditos(delta);
             return;
         }
 
@@ -126,11 +122,29 @@ public class PantallaJuego implements Screen {
             enviarEstadoNivel();
 
             if (nivel.creditosDisparados()) {
-                iniciarCreditos();
+                cerrarPorCreditos();
+                return;
+            }
+
+            if (nivel.consumirVolverAlHub()) {
+                SERVIDOR.volverAlHubTodos();
+            } else if (nivel.consumirAvance()) {
+                iniciarNivelFinal();
+                return;
             }
         }
 
         dibujar();
+    }
+
+    private void iniciarNivelFinal() {
+        SERVIDOR.marcarNivel7Alcanzado();
+        SERVIDOR.enviarInicioNivel(NIVEL_FINAL);
+
+        String rutaNivel = SERVIDOR.getNivelActual();
+        if (rutaNivel != null) {
+            NAV.iniciarJuego(rutaNivel);
+        }
     }
 
     private boolean hayJugadorEnSeleccion() {
@@ -199,24 +213,6 @@ public class PantallaJuego implements Screen {
         }
     }
 
-    private void iniciarCreditos() {
-        creditosIniciados = true;
-        tiempoCreditos = 0f;
-        detenerSonidosLoop();
-    }
-
-    private void actualizarCreditos(float delta) {
-        tiempoCreditos += delta;
-
-        if (tiempoCreditos >= DURACION_CREDITOS) {
-            NAV.cambiarPantalla(new PantallaMenu(NAV, SERVIDOR));
-            return;
-        }
-
-        Render.limpiarPantalla();
-        dibujar();
-    }
-
     private void dibujar() {
         if (hub != null) {
             hub.renderMapa();
@@ -271,7 +267,8 @@ public class PantallaJuego implements Screen {
             if (p instanceof BolaFuego bola) {
                 SERVIDOR.enviarCreacionProyectil(p.getId(), "WALTER", p.getX(), p.getY(), bola.getDireccion());
             } else if (p instanceof Proyectil proyectilEnemigo) {
-                SERVIDOR.enviarCreacionProyectil(p.getId(), "ENEMIGO", p.getX(), p.getY(), proyectilEnemigo.getAngulo());
+                SERVIDOR.enviarCreacionProyectil(p.getId(), "ENEMIGO", p.getX(), p.getY(),
+                    proyectilEnemigo.getAngulo(), proyectilEnemigo.getAncho(), proyectilEnemigo.getAlto());
             }
         }
 
@@ -383,6 +380,9 @@ public class PantallaJuego implements Screen {
 
         for (Jugador jugador : JUGADORES) {
             jugador.reiniciar(SPAWN_X_DEFECTO, SPAWN_Y_DEFECTO);
+            if (jugador.getEstadoRed() != null) {
+                jugador.getEstadoRed().descartarAccionesPendientes();
+            }
         }
 
         hub = new Hub();
@@ -393,8 +393,6 @@ public class PantallaJuego implements Screen {
         nivelIniciado = false;
         jefeEliminado = false;
         jefeCreado = false;
-        creditosIniciados = false;
-        tiempoCreditos = 0f;
     }
 
     @Override
@@ -439,6 +437,16 @@ public class PantallaJuego implements Screen {
             enviarSnapshotJefe(jefe, ip, puerto);
         }
 
+        for (Reliquia r : nivel.getReliquiasActivas()) {
+            enviar("RELIQUIA;APARECER;" + r.getX() + ";" + r.getY(), ip, puerto);
+        }
+
+        Rectangle portal = nivel.getPortalHub();
+        if (portal != null) {
+            enviar("PORTAL;APARECER;" + portal.x + ";" + portal.y + ";" + portal.width + ";" + portal.height,
+                ip, puerto);
+        }
+
         enviar("SNAPSHOT_FIN", ip, puerto);
     }
 
@@ -475,7 +483,8 @@ public class PantallaJuego implements Screen {
                     + bola.getDireccion(), ip, puerto);
             } else if (p instanceof Proyectil proyectilEnemigo) {
                 enviar("CREAR_PROYECTIL;" + p.getId() + ";ENEMIGO;" + p.getX() + ";" + p.getY() + ";"
-                    + proyectilEnemigo.getAngulo(), ip, puerto);
+                    + proyectilEnemigo.getAngulo() + ";" + proyectilEnemigo.getAncho() + ";"
+                    + proyectilEnemigo.getAlto(), ip, puerto);
             }
             enviar("ESTADO_PROYECTIL;" + p.getId() + ";" + p.getX() + ";" + p.getY(), ip, puerto);
         }
@@ -554,7 +563,7 @@ public class PantallaJuego implements Screen {
     }
 
     private void enviar(String mensaje, InetAddress ip, int puerto) {
-        SERVIDOR.enviarMensajeASpecifico(mensaje, ip, puerto);
+        SERVIDOR.enviarMensajeAEspecifico(mensaje, ip, puerto);
     }
 
     private void detenerSonidosLoop() {
@@ -564,6 +573,16 @@ public class PantallaJuego implements Screen {
         } else {
             SERVIDOR.enviarDetenerSonidoLoop("FUEGO_SOSTENIDO");
         }
+    }
+
+    private void cerrarPorCreditos() {
+        detenerSonidosLoop();
+        SERVIDOR.cerrar();
+        SERVIDOR.reiniciarProgreso();
+        SERVIDOR.resetearNivelActual();
+        SERVIDOR.iniciar();
+        Global.empieza = false;
+        NAV.cambiarPantalla(new PantallaMenu(NAV, SERVIDOR, true));
     }
 
     @Override

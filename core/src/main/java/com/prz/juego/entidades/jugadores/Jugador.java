@@ -45,6 +45,7 @@ public abstract class Jugador extends Entidad {
     @Override
     public void update(float delta) {
         if (muerto) {
+            descartarAtaquePendiente();
             guardarPosicionAnterior();
             actualizarAnimacion(delta, false, false, false, false);
             actualizarSpriteVisual();
@@ -58,6 +59,7 @@ public abstract class Jugador extends Entidad {
         }
 
         if (estadoRed.solicitaSeleccion()) {
+            descartarAtaquePendiente();
             velocidadY = 0f;
             guardarPosicionAnterior();
             forzarIdle();
@@ -97,7 +99,8 @@ public abstract class Jugador extends Entidad {
             x += velocidadX * delta;
         }
 
-        if (accionesHabilitadas && estadoRed.ataca()) {
+        boolean ataquePedido = estadoRed.ataca();
+        if (accionesHabilitadas && ataquePedido) {
             atacar();
         }
 
@@ -110,6 +113,12 @@ public abstract class Jugador extends Entidad {
         actualizarSpriteVisual();
         bounds.setPosition(x, y);
         actualizarInvencibilidad(delta);
+    }
+
+    private void descartarAtaquePendiente() {
+        if (estadoRed != null) {
+            estadoRed.ataca();
+        }
     }
 
     private void actualizarTrepado(float delta) {
@@ -174,6 +183,9 @@ public abstract class Jugador extends Entidad {
     public abstract Personajes getPersonaje();
 
     public void setAccionesHabilitadas(boolean habilitadas) {
+        if (habilitadas && !accionesHabilitadas) {
+            descartarAtaquePendiente();
+        }
         accionesHabilitadas = habilitadas;
         if (!habilitadas) {
             atacando = false;

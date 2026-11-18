@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="80" height="200" tilewidth="16" tileheight="16" infinite="0" nextlayerid="9" nextobjectid="78">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="80" height="200" tilewidth="16" tileheight="16" infinite="0" nextlayerid="10" nextobjectid="79">
  <imagelayer id="2" name="Capa de Imagen 1">
   <image source="../Tilesets/lvl7.png" width="1280" height="3200"/>
  </imagelayer>
@@ -236,7 +236,6 @@
   <object id="67" x="94" y="662.5" width="794.667" height="22.1667"/>
  </objectgroup>
  <objectgroup id="8" name="escaleras">
-  <object id="68" x="112.667" y="432" width="112.667" height="230"/>
   <object id="69" x="1127.5" y="640" width="88" height="229.5"/>
   <object id="70" x="222" y="914.5" width="86.5" height="225"/>
   <object id="71" x="643.25" y="1159.75" width="92" height="239.5"/>
@@ -247,4 +246,7 @@
   <object id="76" x="94.25" y="2574.5" width="86.25" height="228.25"/>
   <object id="77" x="988.667" y="2819.67" width="87.3333" height="229"/>
  </objectgroup>
+  <objectgroup id="9" name="avance">
+   <object id="78" x="112.667" y="432" width="112.667" height="230"/>
+  </objectgroup>
 </map>

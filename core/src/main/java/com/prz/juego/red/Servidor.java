@@ -5,6 +5,7 @@ import com.prz.juego.entidades.retumbar.Mano;
 import com.prz.juego.entidades.jugadores.Jugador;
 
 import java.net.InetAddress;
+import java.util.Arrays;
 import java.util.function.BiConsumer;
 
 public class Servidor {
@@ -12,6 +13,7 @@ public class Servidor {
     public static volatile Servidor instancia;
 
     private static final int CANTIDAD_JUGADORES = 2;
+    private static final int CANTIDAD_RELIQUIAS = 5;
     private static final String[] RUTAS_NIVELES = {
         "Niveles/Niveles/Nivel1.tmx",
         "Niveles/Niveles/Nivel2.tmx",
@@ -22,10 +24,15 @@ public class Servidor {
         "Niveles/Niveles/Nivel7.tmx"
     };
 
+    private final boolean[] RELIQUIAS_RECOGIDAS = new boolean[CANTIDAD_RELIQUIAS];
+
     private volatile HiloServidor hilo;
     private volatile Runnable callbackVolverHub;
     private volatile BiConsumer<InetAddress, Integer> callbackSnapshotEntidades;
     private volatile String nivelActual;
+    private volatile int numeroNivelActual = 0;
+    private volatile boolean nivel7Alcanzado = false;
+    private volatile int contadorDesconexiones = 0;
 
     public void iniciar() {
         if (hilo == null) {
@@ -65,6 +72,126 @@ public class Servidor {
     public boolean isJuegoPausado() {
         HiloServidor hiloActual = hilo;
         return hiloActual != null && hiloActual.hayJugadorNoListo();
+    }
+
+    public int getNumeroNivelActual() {
+        return numeroNivelActual;
+    }
+
+    public boolean puedeSoltarReliquia(int numeroNivel) {
+        if (numeroNivel < 1 || numeroNivel > CANTIDAD_RELIQUIAS) {
+            return false;
+        }
+        synchronized (RELIQUIAS_RECOGIDAS) {
+            return !RELIQUIAS_RECOGIDAS[numeroNivel - 1];
+        }
+    }
+
+    public boolean tieneReliquiaDeNivel(int numeroNivel) {
+        if (numeroNivel < 1 || numeroNivel > CANTIDAD_RELIQUIAS) {
+            return false;
+        }
+        synchronized (RELIQUIAS_RECOGIDAS) {
+            return RELIQUIAS_RECOGIDAS[numeroNivel - 1];
+        }
+    }
+
+    public boolean todasLasReliquiasRecogidas() {
+        synchronized (RELIQUIAS_RECOGIDAS) {
+            for (boolean recogida : RELIQUIAS_RECOGIDAS) {
+                if (!recogida) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    public void marcarReliquiaRecogida(int numeroNivel) {
+        if (numeroNivel < 1 || numeroNivel > CANTIDAD_RELIQUIAS) {
+            return;
+        }
+        synchronized (RELIQUIAS_RECOGIDAS) {
+            RELIQUIAS_RECOGIDAS[numeroNivel - 1] = true;
+        }
+        enviarProgreso();
+    }
+
+    public boolean isNivel7Alcanzado() {
+        return nivel7Alcanzado;
+    }
+
+    public void marcarNivel7Alcanzado() {
+        nivel7Alcanzado = true;
+        enviarProgreso();
+    }
+
+    public boolean puedeEntrarANivel(int numeroNivel) {
+        if (numeroNivel < 1 || numeroNivel > RUTAS_NIVELES.length) {
+            return false;
+        }
+        if (numeroNivel == 6) {
+            return todasLasReliquiasRecogidas();
+        }
+        if (numeroNivel == 7) {
+            return nivel7Alcanzado;
+        }
+        return true;
+    }
+
+    public void enviarProgreso() {
+        StringBuilder mensaje = new StringBuilder("PROGRESO");
+        synchronized (RELIQUIAS_RECOGIDAS) {
+            for (boolean recogida : RELIQUIAS_RECOGIDAS) {
+                mensaje.append(";").append(recogida);
+            }
+        }
+        mensaje.append(";").append(nivel7Alcanzado);
+        enviarATodos(mensaje.toString());
+    }
+
+    public void enviarPortal(float x, float y, float ancho, float alto) {
+        enviarATodos("PORTAL;APARECER;" + x + ";" + y + ";" + ancho + ";" + alto);
+    }
+
+    public void enviarVotoPortal(JugadorRed destinatario, boolean voto) {
+        enviarA(destinatario, "PORTAL;VOTO;" + voto);
+    }
+
+    public void volverAlHubTodos() {
+        HiloServidor hiloActual = hilo;
+        if (hiloActual != null) {
+            hiloActual.resetearVotosVolverHub();
+        }
+
+        establecerEstadoJugadores(JugadorRed.ESTADO_HUB);
+        resetearNivelActual();
+        enviarATodos("VOLVER_HUB;AMBOS");
+        ejecutarCallbackVolverHub();
+    }
+
+    public void reiniciarProgreso() {
+        synchronized (RELIQUIAS_RECOGIDAS) {
+            Arrays.fill(RELIQUIAS_RECOGIDAS, false);
+        }
+        nivel7Alcanzado = false;
+    }
+
+    public synchronized void registrarDesconexion() {
+        contadorDesconexiones++;
+    }
+
+    public int getContadorDesconexiones() {
+        return contadorDesconexiones;
+    }
+
+    // DEBUG
+    public void desbloquearTodo() {
+        synchronized (RELIQUIAS_RECOGIDAS) {
+            Arrays.fill(RELIQUIAS_RECOGIDAS, true);
+        }
+        nivel7Alcanzado = true;
+        enviarProgreso();
     }
 
     public void enviarPosicion(Jugador jugador) {
@@ -108,6 +235,12 @@ public class Servidor {
         enviarATodos("CREAR_PROYECTIL;" + id + ";" + origen + ";" + x + ";" + y + ";" + direccion);
     }
 
+    public void enviarCreacionProyectil(int id, String origen, float x, float y, float direccion, float ancho,
+                                        float alto) {
+        enviarATodos("CREAR_PROYECTIL;" + id + ";" + origen + ";" + x + ";" + y + ";" + direccion + ";" + ancho + ";"
+            + alto);
+    }
+
     public void enviarEstadoProyectil(int id, float x, float y) {
         enviarATodos("ESTADO_PROYECTIL;" + id + ";" + x + ";" + y);
     }
@@ -126,6 +259,7 @@ public class Servidor {
 
     public void enviarInicioSeleccionNivel() {
         establecerEstadoJugadores(JugadorRed.ESTADO_SELECCION_NIVEL);
+        enviarProgreso();
         enviarATodos("ABRIR_SELECCION_NIVEL");
     }
 
@@ -134,7 +268,9 @@ public class Servidor {
     }
 
     public void enviarInicioNivel(int voto) {
-        nivelActual = voto >= 1 && voto <= RUTAS_NIVELES.length ? RUTAS_NIVELES[voto - 1] : null;
+        boolean valido = voto >= 1 && voto <= RUTAS_NIVELES.length;
+        nivelActual = valido ? RUTAS_NIVELES[voto - 1] : null;
+        numeroNivelActual = valido ? voto : 0;
         establecerEstadoJugadores(JugadorRed.ESTADO_JUGANDO);
         enviarATodos("INICIAR_NIVEL;" + voto);
     }
@@ -145,6 +281,7 @@ public class Servidor {
 
     public void resetearNivelActual() {
         nivelActual = null;
+        numeroNivelActual = 0;
     }
 
     public void enviarCreacionJefe(float x, float y, double vida) {
@@ -244,17 +381,15 @@ public class Servidor {
         enviarATodos("MUSICA;" + nombreMusica);
     }
 
-    public void enviarDetenerMusica() {
-        enviarATodos("MUSICA;PARAR");
-    }
-
     public void enviarEliminacionAtaquesJefe() {
         enviarATodos("ELIMINAR_ATAQUES_JEFE");
     }
 
     public void enviarCreditos() {
         establecerEstadoJugadores(JugadorRed.ESTADO_CREDITOS);
-        enviarATodos("MOSTRAR_CREDITOS");
+        for (int i = 0; i < 3; i++) {
+            enviarATodos("MOSTRAR_CREDITOS");
+        }
     }
 
     public void enviarCreacionReliquia(float x, float y) {
@@ -262,7 +397,13 @@ public class Servidor {
     }
 
     public void enviarEliminacionReliquia() {
-        enviarATodos("RELIQUIA;RECOGIDA");
+        for (int i = 0; i < 3; i++) {
+            enviarATodos("RELIQUIA;RECOGIDA");
+        }
+    }
+
+    public void enviarPosicionReliquia(float x, float y) {
+        enviarATodos("RELIQUIA;POS;" + x + ";" + y);
     }
 
     public JugadorRed[] getJugadoresRed() {
@@ -306,10 +447,17 @@ public class Servidor {
         }
     }
 
-    public void enviarMensajeASpecifico(String msj, InetAddress ip, int puerto) {
+    public void enviarMensajeAEspecifico(String msj, InetAddress ip, int puerto) {
         HiloServidor hiloActual = hilo;
         if (hiloActual != null) {
             hiloActual.enviarMensaje(msj, ip, puerto);
+        }
+    }
+
+    public void liberarInputsInactivos() {
+        HiloServidor hiloActual = hilo;
+        if (hiloActual != null) {
+            hiloActual.liberarInputsInactivos();
         }
     }
 }

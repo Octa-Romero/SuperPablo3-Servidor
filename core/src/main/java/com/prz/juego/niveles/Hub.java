@@ -13,6 +13,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.prz.juego.entidades.jugadores.Jugador;
 import com.prz.juego.red.JugadorRed;
+import com.prz.juego.red.Servidor;
 import com.prz.juego.sistemas.Camara;
 import com.prz.juego.sistemas.Colisiones;
 import com.prz.juego.utilidades.Render;
@@ -46,6 +47,8 @@ public class Hub {
         mapa = new TmxMapLoader().load(ruta);
         centroHub = buscarRectangulo(CAPA_CENTRO_HUB);
         colision = new Colisiones(mapa);
+
+        Servidor.instancia.enviarMusica("HUB");
 
         MapProperties props = mapa.getProperties();
         mapaAncho = props.get("tilewidth", Integer.class) * props.get("width", Integer.class);

@@ -436,6 +436,10 @@ public class Mano extends Enemigo {
 
     @Override
     public void dibujar() {
+        if (muerto) {
+            return;
+        }
+
         if (spriteVisible && visible && tiempoHitboxExtendida > 0f) {
             SPRITE_FUEGO_GOLPE.setBounds(
                 BOUNDS_FUEGO_GOLPE.x,
@@ -500,20 +504,31 @@ public class Mano extends Enemigo {
         return TipoEnemigo.JEFE;
     }
 
-    void desactivarPorMuerteJefe() {
+    private void eliminarDelEscenario() {
         muerto = true;
         visible = false;
         spriteVisible = false;
         haciendoDanio = false;
         tiempoHitboxExtendida = 0f;
         estadoAtaque = EstadoAtaque.NINGUNO;
+        estiloAtaque = EstiloAtaque.NORMAL;
+        escalaTeletransporte = 0f;
+        velocidadY = 0f;
         bounds.set(0f, 0f, 0f, 0f);
         BOUNDS_FUEGO_GOLPE.set(0f, 0f, 0f, 0f);
+        if (sprite != null) {
+            sprite.setAlpha(0f);
+            sprite.setScale(0f);
+        }
+    }
+
+    void desactivarPorMuerteJefe() {
+        eliminarDelEscenario();
     }
 
     @Override
     public void restarVida(double cantidad) {
-        if (!visible) {
+        if (muerto || !visible) {
             return;
         }
         if (vida - cantidad > 0) {
@@ -620,6 +635,7 @@ public class Mano extends Enemigo {
     protected void morir() {
         super.morir();
         reproducirSonido("RETUMBAR_MANO_ROTA");
+        eliminarDelEscenario();
     }
 
     @Override

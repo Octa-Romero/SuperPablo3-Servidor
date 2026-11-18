@@ -6,12 +6,10 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.prz.juego.entidades.enemigos.Enemigo;
 import com.prz.juego.entidades.jugadores.Jugador;
-import com.prz.juego.red.Servidor;
 
 public abstract class EnemigoMelee extends Enemigo {
 
     private static final float DURACION_ATAQUE = 1f;
-    private static final String SONIDO_ESPADA = "ESPADA";
 
     protected float anchoAtaque = 100f;
     protected float altoAtaque = 10f;
@@ -55,10 +53,7 @@ public abstract class EnemigoMelee extends Enemigo {
                 atacando = true;
                 tiempoEstado = 0f;
                 yaDanio = false;
-
-                if (Servidor.instancia != null) {
-                    Servidor.instancia.enviarSonidoConPosicion(SONIDO_ESPADA, x, y);
-                }
+                reproducirSonidoAtaque();
             }
             return;
         }

@@ -1,5 +1,6 @@
 package com.prz.juego.niveles;
 
+import com.prz.juego.entidades.enemigos.melee.BichoMelee;
 import com.prz.juego.entidades.enemigos.rango.BichoRango;
 import com.prz.juego.entidades.enemigos.rango.EnemigoRango;
 import com.prz.juego.entidades.jugadores.Jugador;
@@ -9,7 +10,7 @@ public class Nivel2 extends Nivel {
     public static final String RUTA = "Niveles/Niveles/Nivel2.tmx";
 
     public Nivel2() {
-        musica = null;
+        musica = "NIVEL2";
     }
 
     @Override
@@ -31,5 +32,6 @@ public class Nivel2 extends Nivel {
     protected void configurarContenidoEspecifico(Jugador[] jugadores) {
         agregarEntidad(new BichoRango(2650, 650, jugadores[0], jugadores, EnemigoRango.Modo.ESTATICO));
         agregarEntidad(new BichoRango(5000, 260, jugadores[0], jugadores, EnemigoRango.Modo.MOVIL));
+        agregarEntidad(new BichoMelee(500, 500, jugadores[0], jugadores, true));
     }
 }

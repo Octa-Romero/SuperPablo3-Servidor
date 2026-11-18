@@ -20,7 +20,8 @@ public class HiloServidor extends Thread {
     private static final long INTERVALO_PONG = 1000;
     private static final long TIEMPO_ESPERA_RECONEXION = 60000;
     private static final String PERSONAJE_POR_DEFECTO = "PABLO";
-
+    private static final long TIEMPO_LIMITE_INPUT = 750;
+    private final long[] ULTIMO_INPUT = new long[MAX_JUGADORES];
     private final DatagramSocket SOCKET;
     private final JugadorRed[] JUGADORES = new JugadorRed[MAX_JUGADORES];
     private final boolean[] VUELVE_AL_HUB = new boolean[MAX_JUGADORES];
@@ -74,7 +75,6 @@ public class HiloServidor extends Thread {
         for (int i = 0; i < cantClientes; i++) {
             JugadorRed jugador = JUGADORES[i];
             if (jugador != null && jugador.estaConectado() && ahora - jugador.getUltimoPing() > TIEMPO_LIMITE_PING) {
-                System.out.println("Jugador " + i + " desconectado por falta de PING");
                 marcarDesconectado(i);
             }
         }
@@ -84,6 +84,7 @@ public class HiloServidor extends Thread {
         JUGADORES[indice].setConectado(false);
         VUELVE_AL_HUB[indice] = false;
         cancelarSeleccionNivel();
+        Servidor.instancia.registrarDesconexion();
 
         JugadorRed otro = JUGADORES[1 - indice];
         if (otro != null && otro.estaConectado()) {
@@ -163,8 +164,6 @@ public class HiloServidor extends Thread {
     }
 
     private void expulsar(JugadorRed jugador) {
-        System.out.println("Tiempo de reconexión agotado. Expulsando al jugador restante.");
-
         for (int i = 0; i < ENVIOS_EXPULSION; i++) {
             enviarMensaje("EXPULSADO", jugador.getIp(), jugador.getPuerto());
         }
@@ -214,7 +213,6 @@ public class HiloServidor extends Thread {
             }
         }
 
-        System.out.println("Ningún jugador conectado. Limpiando array de jugadores.");
         cantClientes = 0;
         limiteReconexion = 0;
         for (int i = 0; i < JUGADORES.length; i++) {
@@ -224,6 +222,12 @@ public class HiloServidor extends Thread {
         partidaIniciada = false;
         Global.empieza = false;
         Servidor.instancia.resetearNivelActual();
+        Servidor.instancia.reiniciarProgreso();
+    }
+
+    public synchronized void resetearVotosVolverHub() {
+        VUELVE_AL_HUB[0] = false;
+        VUELVE_AL_HUB[1] = false;
     }
 
     public boolean hayJugadorNoListo() {
@@ -277,7 +281,7 @@ public class HiloServidor extends Thread {
             ? buscarJugadorPorIdDemo(idDemo)
             : buscarJugador(dp.getAddress(), dp.getPort());
 
-        if (tienePrefijoDemo && indice != -1) {
+        if (tienePrefijoDemo && indice != -1 && !msj.startsWith("Conectar")) {
             JUGADORES[indice].setPuerto(dp.getPort());
         }
 
@@ -295,7 +299,7 @@ public class HiloServidor extends Thread {
         if (msj.equals("PING")) {
             jugador.actualizarPing();
         } else if (msj.startsWith("INPUT;")) {
-            procesarInput(msj, jugador);
+            procesarInput(msj, jugador, indice);
         } else if (msj.equals("PABLO") || msj.equals("WALTER")) {
             procesarSeleccionPersonaje(msj, indice);
         } else if (msj.equals("LISTO_COMENZAR")) {
@@ -318,6 +322,8 @@ public class HiloServidor extends Thread {
             cancelarSeleccionNivel();
         } else if (msj.equals("DESCONECTAR")) {
             procesarDesconexion(indice);
+        } else if (msj.equals("DEBUG_DESBLOQUEAR")) {
+            Servidor.instancia.desbloquearTodo();
         }
     }
 
@@ -330,11 +336,21 @@ public class HiloServidor extends Thread {
             indiceExistente = indice;
         }
 
-        if (indiceExistente != -1) {
-            reconectarJugador(indiceExistente, dp, idDemo, esDemo);
-        } else {
+        if (indiceExistente == -1) {
             registrarJugadorNuevo(dp, idDemo, esDemo);
+            return;
         }
+
+        if (esConexionDuplicada(JUGADORES[indiceExistente], dp)) {
+            enviarMensaje("CONEXION_RECHAZADA", dp.getAddress(), dp.getPort());
+            return;
+        }
+
+        reconectarJugador(indiceExistente, dp, idDemo, esDemo);
+    }
+
+    private boolean esConexionDuplicada(JugadorRed jugador, DatagramPacket dp) {
+        return jugador.estaConectado() && jugador.getPuerto() != dp.getPort();
     }
 
     private void reconectarJugador(int indice, DatagramPacket dp, int idDemo, boolean esDemo) {
@@ -365,7 +381,6 @@ public class HiloServidor extends Thread {
         boolean requiereSnapshot = JugadorRed.ESTADO_JUGANDO.equals(jugador.getEstadoActual());
         jugador.marcarReconexion(requiereSnapshot);
         VUELVE_AL_HUB[indice] = false;
-        System.out.println("Jugador " + indice + " se reconectó");
 
         enviarMensaje(armarMensajeReconexion(jugador, otro, requiereSnapshot), dp.getAddress(), dp.getPort());
 
@@ -396,9 +411,9 @@ public class HiloServidor extends Thread {
             .append(personajeOtro);
 
         if (requiereSnapshot) {
-            String nivelActual = Servidor.instancia.getNivelActual();
-            if (nivelActual != null) {
-                mensaje.append(";").append(nivelActual);
+            int numeroNivel = Servidor.instancia.getNumeroNivelActual();
+            if (numeroNivel > 0) {
+                mensaje.append(";").append(numeroNivel);
             }
         }
 
@@ -447,11 +462,11 @@ public class HiloServidor extends Thread {
     }
 
     private void procesarDesconexion(int indice) {
-        System.out.println("Jugador " + indice + " se desconectó intencionalmente");
         marcarDesconectado(indice);
     }
 
-    private void procesarInput(String msj, JugadorRed jugador) {
+    private void procesarInput(String msj, JugadorRed jugador, int indice) {
+        ULTIMO_INPUT[indice] = System.currentTimeMillis();
         String[] partes = msj.split(";");
         if (partes.length < 2) {
             return;
@@ -473,6 +488,24 @@ public class HiloServidor extends Thread {
         }
     }
 
+    public void liberarInputsInactivos() {
+        long ahora = System.currentTimeMillis();
+
+        for (int i = 0; i < cantClientes; i++) {
+            JugadorRed jugador = JUGADORES[i];
+            if (jugador == null || ahora - ULTIMO_INPUT[i] <= TIEMPO_LIMITE_INPUT) {
+                continue;
+            }
+
+            boolean seMueve = jugador.mueveIzquierda() || jugador.mueveDerecha()
+                || jugador.mueveArriba() || jugador.mueveAbajo();
+            if (seMueve) {
+                jugador.setMovimientoHorizontal(false, false);
+                jugador.setMovimientoVertical(false, false);
+            }
+        }
+    }
+
     private void procesarSeleccionPersonaje(String msj, int indice) {
         if (cantClientes != JUGADORES.length || partidaIniciada) {
             return;
@@ -485,7 +518,6 @@ public class HiloServidor extends Thread {
         }
 
         jugador.setPersonaje(msj);
-        System.out.println("Jugador " + indice + " eligió " + msj);
 
         enviarMensaje("PERSONAJE_REMOTO;" + msj, remoto.getIp(), remoto.getPuerto());
         jugador.setListoParaComenzar(false);
@@ -535,8 +567,6 @@ public class HiloServidor extends Thread {
     }
 
     private void iniciarJuego() {
-        System.out.println("Ambos listos. Iniciando juego.");
-
         for (int i = 0; i < cantClientes; i++) {
             JugadorRed jugador = JUGADORES[i];
             JugadorRed remoto = JUGADORES[1 - i];
@@ -571,7 +601,8 @@ public class HiloServidor extends Thread {
 
         try {
             int nivel = Integer.parseInt(partes[1]);
-            if (nivel >= 0 && nivel <= MAX_NIVEL) {
+            if (nivel == 0
+                || (nivel > 0 && nivel <= MAX_NIVEL && Servidor.instancia.puedeEntrarANivel(nivel))) {
                 jugador.setNivelSeleccionado(nivel);
             }
         } catch (NumberFormatException e) {

@@ -2,10 +2,15 @@ package com.prz.juego.niveles;
 
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapProperties;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
 import com.prz.juego.entidades.Entidad;
 import com.prz.juego.entidades.Lanzable;
 import com.prz.juego.entidades.Reliquia;
@@ -15,16 +20,27 @@ import com.prz.juego.entidades.enemigos.TipoEnemigo;
 import com.prz.juego.entidades.enemigos.rango.EnemigoRango;
 import com.prz.juego.entidades.retumbar.Retumbar;
 import com.prz.juego.entidades.jugadores.*;
+import com.prz.juego.recursos.GestorRecursos;
+import com.prz.juego.red.JugadorRed;
 import com.prz.juego.red.Servidor;
 import com.prz.juego.sistemas.Camara;
 import com.prz.juego.sistemas.Colisiones;
 import com.prz.juego.utilidades.Render;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public abstract class Nivel {
 
     private static final float INTERVALO_ENVIO_TUMBA = 0.5f;
+    private static final float TAMANO_RELIQUIA = 48f;
+    private static final float ANCHO_PORTAL = 120f;
+    private static final float ALTO_PORTAL = 160f;
+    private static final float INTERVALO_REENVIO_PORTAL = 1f;
+    private static final int CANTIDAD_JUGADORES = 2;
+    private static final String CAPA_AVANCE = "avance";
+
+    private final boolean[] VOTOS_PORTAL = new boolean[CANTIDAD_JUGADORES];
 
     private Camara camara;
     private TiledMap mapa;
@@ -43,17 +59,26 @@ public abstract class Nivel {
     private final ArrayList<Lanzable> PROYECTILES_ACTIVOS = new ArrayList<>();
     private final ArrayList<Integer> PROYECTILES_ELIMINADOS = new ArrayList<>();
     private final ArrayList<Reliquia> RELIQUIAS = new ArrayList<>();
-    private final ArrayList<Enemigo> enemigosNuevos = new ArrayList<>();
+    private final ArrayList<Enemigo> ENEMIGOS_NUEVOS = new ArrayList<>();
     private ArrayList<Integer> idEnemigosEliminados = new ArrayList<>();
     private Tumba[] tumbas;
     private float[] tiemposEnvioTumba;
     private ShapeRenderer shapeRenderer;
     private boolean gameOver = false;
-    private boolean tieneReliquia = false;
+    private boolean reliquiaMinijefeProcesada = false;
+    private Reliquia reliquiaMinijefe;
+    private int numeroNivel = 0;
+    private Rectangle zonaPortal;
+    private boolean portalEsAvance = false;
+    private boolean volverAlHubConfirmado = false;
+    private boolean avanceConfirmado = false;
+    private float tiempoReenvioPortal = 0f;
+    private int desconexionesVistas = 0;
     private float anchoMapa;
     protected String musica;
     private int idProyectil = 1;
     private int idEnemigo = 1;
+    private static final String TEXTURA_PORTAL = "Menu/Portales/portalHub.png";
 
     public static Nivel crear(String ruta) {
         switch (ruta) {
@@ -82,6 +107,8 @@ public abstract class Nivel {
         camara = new Camara();
 
         this.jugadores = jugadores;
+        this.numeroNivel = Servidor.instancia.getNumeroNivelActual();
+        desconexionesVistas = Servidor.instancia.getContadorDesconexiones();
         tumbas = new Tumba[jugadores.length];
         tiemposEnvioTumba = new float[jugadores.length];
 
@@ -102,9 +129,14 @@ public abstract class Nivel {
 
         colision = new Colisiones(mapa);
 
-        for (Jugador jugador : jugadores)
-        {
+        zonaPortal = buscarRectangulo(CAPA_AVANCE);
+        portalEsAvance = zonaPortal != null;
+
+        for (Jugador jugador : jugadores) {
             jugador.setColisiones(colision);
+            if (jugador.getEstadoRed() != null) {
+                jugador.getEstadoRed().descartarAccionesPendientes();
+            }
         }
 
         pablo.setEntidades(ENTIDADES);
@@ -136,6 +168,20 @@ public abstract class Nivel {
         }
     }
 
+    private Rectangle buscarRectangulo(String nombreCapa) {
+        MapLayer capa = mapa.getLayers().get(nombreCapa);
+        if (capa == null) {
+            return null;
+        }
+
+        for (MapObject objeto : capa.getObjects()) {
+            if (objeto instanceof RectangleMapObject rectangulo) {
+                return rectangulo.getRectangle();
+            }
+        }
+        return null;
+    }
+
     protected abstract String getRutaMapa();
 
     protected abstract void configurarContenidoEspecifico(Jugador[] jugadores);
@@ -157,7 +203,7 @@ public abstract class Nivel {
             && enemigo.getTipo() != TipoEnemigo.JEFE) {
 
             enemigo.setId(idEnemigo++);
-            enemigosNuevos.add(enemigo);
+            ENEMIGOS_NUEVOS.add(enemigo);
         }
     }
 
@@ -213,6 +259,8 @@ public abstract class Nivel {
     public void render() {
         Render.batch.setProjectionMatrix(camara.getCamera().combined);
 
+        dibujarPortal();
+
         for (Entidad entidad : ENTIDADES) {
             if (entidad == pablo || entidad == walter) {
                 continue;
@@ -249,19 +297,10 @@ public abstract class Nivel {
             }
             entidad.limitarMovimientoHorizontal(0, anchoMapa);
         }
-        for (Entidad entidad : ENTIDADES_PENDIENTES_ELIMINAR) {
-            if (ENTIDADES.remove(entidad)) {
 
-                if (entidad instanceof Enemigo enemigo) {
-                    idEnemigosEliminados.add(enemigo.getId());
-                }
+        programarEliminacionEnemigosMuertos();
+        procesarEliminaciones();
 
-                entidad.dispose();
-            }
-
-            ENTIDADES_PENDIENTES.remove(entidad);
-        }
-        ENTIDADES_PENDIENTES_ELIMINAR.clear();
         ENTIDADES.addAll(ENTIDADES_PENDIENTES);
         ENTIDADES_PENDIENTES.clear();
 
@@ -298,17 +337,8 @@ public abstract class Nivel {
 
                     Servidor.instancia.enviarEliminacionAtaquesJefe();
 
-                    // Generar la reliquia cuando muere El Retumbar.
-                    float reliquiaX = jefe.getX() + (jefe.getAncho() - 48f) / 2f;
-                    float reliquiaY = jefe.getY() + jefe.getAlto() / 2f;
-
-                    RELIQUIAS.add(new Reliquia(reliquiaX, reliquiaY, colision));
-                    Servidor.instancia.enviarCreacionReliquia(reliquiaX, reliquiaY);
-
-                    // Eliminar los componentes del jefe.
                     ENTIDADES.remove(jefe.getManoIzquierda());
                     ENTIDADES.remove(jefe.getManoDerecha());
-                    ENTIDADES.remove(jefe.getFuegoSuelo());
                 }
             }
         }
@@ -317,7 +347,7 @@ public abstract class Nivel {
             tiempoDesdeMuerteJefe += delta;
             if (tiempoDesdeMuerteJefe >= 2f) {
                 boolean algunJugadorVivo = !jugadores[0].estaMuerto() || !jugadores[1].estaMuerto();
-                if (algunJugadorVivo && tieneReliquia) {
+                if (algunJugadorVivo) {
                     creditosDisparados = true;
                     Servidor.instancia.enviarCreditos();
                 }
@@ -329,7 +359,11 @@ public abstract class Nivel {
 
             for (Jugador jugador : jugadores) {
                 if (reliquia.actualizar(jugador, delta)) {
-                    tieneReliquia = true;
+                    if (reliquia == reliquiaMinijefe) {
+                        reliquiaMinijefe = null;
+                        Servidor.instancia.marcarReliquiaRecogida(numeroNivel);
+                        abrirPortalHub(reliquia.getX() + TAMANO_RELIQUIA / 2f, reliquia.getY());
+                    }
 
                     Servidor.instancia.enviarEliminacionReliquia();
 
@@ -338,7 +372,13 @@ public abstract class Nivel {
                     break;
                 }
             }
+
+            if (!reliquia.estaRecogida()) {
+                Servidor.instancia.enviarPosicionReliquia(reliquia.getX(), reliquia.getY());
+            }
         }
+
+        actualizarPortal(delta);
 
         Jugador jugadorParaCamara;
         if (jugadores[0].estaMuerto() && !jugadores[1].estaMuerto()) {
@@ -362,6 +402,162 @@ public abstract class Nivel {
             gameOver = true;
         }
 
+    }
+
+    private void programarEliminacionEnemigosMuertos() {
+        for (Entidad entidad : ENTIDADES) {
+            if (entidad instanceof Enemigo enemigo
+                && enemigo.getTipo() != TipoEnemigo.JEFE
+                && enemigo.estaMuerto()) {
+                soltarReliquiaMinijefe(enemigo);
+                eliminarEntidadDiferida(enemigo);
+            }
+        }
+    }
+
+    private void soltarReliquiaMinijefe(Enemigo enemigo) {
+        if (reliquiaMinijefeProcesada || !enemigo.debeSoltarReliquia()) {
+            return;
+        }
+
+        reliquiaMinijefeProcesada = true;
+
+        float centroX = enemigo.getX() + enemigo.getAncho() / 2f;
+        float baseY = enemigo.getY();
+        float alturaAparicion = enemigo.getAlto() / 2f;
+
+        if (enemigo.getY() + enemigo.getAlto() < 0f) {
+            Jugador referencia = jugadores[0].estaMuerto() ? jugadores[1] : jugadores[0];
+            centroX = referencia.getX() + referencia.getAncho() / 2f;
+            baseY = referencia.getY();
+            alturaAparicion = referencia.getAlto();
+        }
+
+        if (!Servidor.instancia.puedeSoltarReliquia(numeroNivel)) {
+            abrirPortalHub(centroX, baseY);
+            return;
+        }
+
+        Reliquia reliquia =
+            new Reliquia(centroX - TAMANO_RELIQUIA / 2f, baseY + alturaAparicion, colision);
+        reliquiaMinijefe = reliquia;
+        RELIQUIAS.add(reliquia);
+        Servidor.instancia.enviarCreacionReliquia(reliquia.getX(), reliquia.getY());
+    }
+
+    private void abrirPortalHub(float centroX, float baseY) {
+        float x = MathUtils.clamp(centroX - ANCHO_PORTAL / 2f, 0f, Math.max(0f, anchoMapa - ANCHO_PORTAL));
+
+        zonaPortal = new Rectangle(x, baseY, ANCHO_PORTAL, ALTO_PORTAL);
+        portalEsAvance = false;
+        tiempoReenvioPortal = 0f;
+        Arrays.fill(VOTOS_PORTAL, false);
+
+        for (Jugador jugador : jugadores) {
+            if (jugador.getEstadoRed() != null) {
+                jugador.getEstadoRed().descartarAccionesPendientes();
+            }
+        }
+
+        Servidor.instancia.enviarPortal(zonaPortal.x, zonaPortal.y, zonaPortal.width, zonaPortal.height);
+    }
+
+    private void actualizarPortal(float delta) {
+        int desconexionesActuales = Servidor.instancia.getContadorDesconexiones();
+        if (desconexionesActuales != desconexionesVistas) {
+            desconexionesVistas = desconexionesActuales;
+            Arrays.fill(VOTOS_PORTAL, false);
+        }
+
+        for (int i = 0; i < jugadores.length; i++) {
+            JugadorRed estadoRed = jugadores[i].getEstadoRed();
+            if (estadoRed == null) {
+                continue;
+            }
+
+            boolean presiono = estadoRed.interactua();
+            if (zonaPortal == null) {
+                continue;
+            }
+
+            if (presiono) {
+                if (VOTOS_PORTAL[i]) {
+                    VOTOS_PORTAL[i] = false;
+                } else if (!jugadores[i].estaMuerto() && zonaPortal.overlaps(jugadores[i].getBounds())) {
+                    VOTOS_PORTAL[i] = true;
+                }
+            }
+
+            Servidor.instancia.enviarVotoPortal(estadoRed, VOTOS_PORTAL[i]);
+        }
+
+        if (zonaPortal == null) {
+            return;
+        }
+
+        if (!portalEsAvance) {
+            tiempoReenvioPortal += delta;
+            if (tiempoReenvioPortal >= INTERVALO_REENVIO_PORTAL) {
+                tiempoReenvioPortal = 0f;
+                Servidor.instancia.enviarPortal(
+                    zonaPortal.x, zonaPortal.y, zonaPortal.width, zonaPortal.height);
+            }
+        }
+
+        confirmarPortalSiCorresponde();
+    }
+
+    private void confirmarPortalSiCorresponde() {
+        boolean algunVoto = false;
+        boolean todosConfirman = true;
+
+        for (int i = 0; i < jugadores.length; i++) {
+            algunVoto |= VOTOS_PORTAL[i];
+            todosConfirman &= VOTOS_PORTAL[i] || jugadores[i].estaMuerto();
+        }
+
+        if (!algunVoto || !todosConfirman) {
+            return;
+        }
+
+        Arrays.fill(VOTOS_PORTAL, false);
+
+        if (portalEsAvance) {
+            avanceConfirmado = true;
+        } else {
+            volverAlHubConfirmado = true;
+        }
+    }
+
+    public boolean consumirVolverAlHub() {
+        boolean confirmado = volverAlHubConfirmado;
+        volverAlHubConfirmado = false;
+        return confirmado;
+    }
+
+    public boolean consumirAvance() {
+        boolean confirmado = avanceConfirmado;
+        avanceConfirmado = false;
+        return confirmado;
+    }
+
+    private void procesarEliminaciones() {
+        for (Entidad entidad : ENTIDADES_PENDIENTES_ELIMINAR) {
+            boolean estabaActiva = ENTIDADES.remove(entidad);
+            boolean estabaPendiente = ENTIDADES_PENDIENTES.remove(entidad);
+
+            if (!estabaActiva && !estabaPendiente) {
+                continue;
+            }
+
+            if (entidad instanceof Enemigo enemigo && enemigo.getId() != 0) {
+                idEnemigosEliminados.add(enemigo.getId());
+            }
+
+            entidad.dispose();
+        }
+
+        ENTIDADES_PENDIENTES_ELIMINAR.clear();
     }
 
     private void actualizarTumbas(float delta) {
@@ -439,27 +635,16 @@ public abstract class Nivel {
         }
 
         RELIQUIAS.clear();
+        reliquiaMinijefe = null;
     }
 
     public Camera getCamara() {
         return camara.getCamera();
     }
 
-    public void guardarPosicionCamara() {
-        camara.guardarPosicion();
-    }
-
-    public void restaurarPosicionCamara() {
-        camara.restaurarPosicion();
-    }
-
-    public boolean isGameOver() {
-        return this.gameOver;
-    }
-
     public ArrayList<Enemigo> getEnemigosNuevos() {
-        ArrayList<Enemigo> nuevos = new ArrayList<>(enemigosNuevos);
-        enemigosNuevos.clear();
+        ArrayList<Enemigo> nuevos = new ArrayList<>(ENEMIGOS_NUEVOS);
+        ENEMIGOS_NUEVOS.clear();
         return nuevos;
     }
 
@@ -498,17 +683,28 @@ public abstract class Nivel {
         return copia;
     }
 
-    public int getIdEnemigo()
-    {
-        return this.idEnemigo++;
+    public ArrayList<Reliquia> getReliquiasActivas() {
+        return new ArrayList<>(RELIQUIAS);
     }
 
-    public boolean tieneReliquia() {
-        return tieneReliquia;
+    public Rectangle getPortalHub() {
+        return portalEsAvance ? null : zonaPortal;
     }
 
     public boolean creditosDisparados() {
         return creditosDisparados;
     }
 
+    private void dibujarPortal() {
+        if (zonaPortal == null || portalEsAvance) {
+            return;
+        }
+
+        Render.batch.draw(
+            GestorRecursos.obtenerTextura(TEXTURA_PORTAL),
+            zonaPortal.x,
+            zonaPortal.y,
+            zonaPortal.width,
+            zonaPortal.height);
+    }
 }

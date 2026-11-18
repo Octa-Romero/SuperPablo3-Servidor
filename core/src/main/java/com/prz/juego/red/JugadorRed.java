@@ -153,6 +153,11 @@ public class JugadorRed {
         INTERACCION_PENDIENTE.set(false);
     }
 
+    public void descartarAccionesPendientes() {
+        ATAQUE_PENDIENTE.set(false);
+        INTERACCION_PENDIENTE.set(false);
+    }
+
     public void marcarReconexion(boolean requiereSnapshot) {
         resetearInputs();
         sincronizado = !requiereSnapshot;

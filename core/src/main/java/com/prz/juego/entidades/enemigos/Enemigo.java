@@ -21,6 +21,7 @@ public abstract class Enemigo extends Entidad {
 
     protected int id;
     protected TipoEnemigo tipo;
+    protected String sonidoAtaque;
     protected float velocidad;
     protected float distanciaDeteccion = 500f;
     protected float distanciaDeteccionVertical = 150f;
@@ -29,7 +30,6 @@ public abstract class Enemigo extends Entidad {
     protected boolean atacando = false;
     protected Jugador jugador;
     protected Jugador[] jugadores;
-    protected boolean sueltaReliquia = false;
     protected int tipoAnimacion = TIPO_REPOSO;
     protected float tiempoAnimacion = 0f;
 
@@ -89,6 +89,12 @@ public abstract class Enemigo extends Entidad {
     }
 
     protected abstract void actualizarComportamiento(float delta, Rectangle boundsJugador);
+
+    protected void reproducirSonidoAtaque() {
+        if (sonidoAtaque != null && Servidor.instancia != null) {
+            Servidor.instancia.enviarSonidoConPosicion(sonidoAtaque, x, y);
+        }
+    }
 
     protected float calcularDistanciaHorizontal(Rectangle boundsJugador) {
         if (boundsJugador.x > x + ancho) {
@@ -262,8 +268,8 @@ public abstract class Enemigo extends Entidad {
         return id;
     }
 
-    public void setSueltaReliquia(boolean valor) {
-        this.sueltaReliquia = valor;
+    public boolean debeSoltarReliquia() {
+        return tipo == TipoEnemigo.MINIJEFE_MELEE || tipo == TipoEnemigo.MINIJEFE_RANGO;
     }
 
     public int getTipoAnimacion() {

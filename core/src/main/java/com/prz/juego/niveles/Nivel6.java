@@ -7,7 +7,7 @@ public class Nivel6 extends Nivel {
     public static final String RUTA = "Niveles/Niveles/Nivel6.tmx";
 
     public Nivel6() {
-        musica = null;
+        musica = "NIVEL6";
     }
 
     @Override
@@ -17,6 +17,5 @@ public class Nivel6 extends Nivel {
 
     @Override
     protected void configurarContenidoEspecifico(Jugador[] jugadores) {
-        // Este mapa todavía no define entidades propias del nivel.
     }
 }

@@ -13,6 +13,15 @@ import com.prz.juego.utilidades.Render;
 public class Principal extends Game implements Navegable {
 
     private Servidor servidor;
+    private static final float DELTA_MAXIMO = 1f / 20f;
+
+    @Override
+    public void render() {
+        Screen pantalla = getScreen();
+        if (pantalla != null) {
+            pantalla.render(Math.min(Gdx.graphics.getDeltaTime(), DELTA_MAXIMO));
+        }
+    }
 
     @Override
     public void create() {

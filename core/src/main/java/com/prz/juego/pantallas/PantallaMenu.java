@@ -49,9 +49,16 @@ public class PantallaMenu implements Screen {
     private boolean esperandoJugadores = false;
     private boolean seleccionandoPersonajes = false;
 
+    private final boolean AUTO_INICIO;
+
     public PantallaMenu(Navegable NAV, Servidor servidor) {
+        this(NAV, servidor, false);
+    }
+
+    public PantallaMenu(Navegable NAV, Servidor servidor, boolean autoInicio) {
         this.NAV = NAV;
         this.servidor = servidor;
+        this.AUTO_INICIO = autoInicio;
     }
 
     @Override
@@ -63,6 +70,10 @@ public class PantallaMenu implements Screen {
         crearInterfaz();
 
         Gdx.input.setInputProcessor(stage);
+        if (AUTO_INICIO) {
+            iniciarServidor();
+        }
+
     }
 
     private void inicializarFondo() {
@@ -172,9 +183,10 @@ public class PantallaMenu implements Screen {
 
         if (cant == 0) {
             if (seleccionandoPersonajes) {
-                finalizarEspera();
+                seleccionandoPersonajes = false;
+                mostrarCartelEspera();
             } else {
-                setTextoEspera("Esperando jugadores (0/2)");
+                setTextoEspera("Buscando jugadores (0/2)");
             }
             return;
         }
@@ -186,7 +198,7 @@ public class PantallaMenu implements Screen {
                 ocultarBotonCancelar();
             }
         } else {
-            setTextoEspera("Esperando jugadores (" + cant + "/2)");
+            setTextoEspera("Buscando jugadores (" + cant + "/2)");
         }
     }
 
@@ -219,7 +231,7 @@ public class PantallaMenu implements Screen {
         panelEspera.setBackground(base.tint(new Color(0, 0, 0, ALPHA_PANEL_ESPERA)));
         panelEspera.pad(40, 100, 40, 100);
 
-        lblEspera = new Label("Esperando jugadores (0/2)", new Label.LabelStyle(fontSubtitulo, Color.WHITE));
+        lblEspera = new Label("Buscando jugadores (0/2)", new Label.LabelStyle(fontSubtitulo, Color.WHITE));
         lblEspera.setAlignment(Align.center);
 
         TextButton btnCancelar = crearBoton("Cancelar", this::cancelarEspera);

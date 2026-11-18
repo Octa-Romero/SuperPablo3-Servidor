@@ -96,6 +96,14 @@ public class Reliquia {
         return recogida;
     }
 
+    public float getX() {
+        return BOUNDS.x;
+    }
+
+    public float getY() {
+        return BOUNDS.y;
+    }
+
     public void dispose() {
     }
 }

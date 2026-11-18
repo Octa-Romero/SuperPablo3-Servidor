@@ -214,6 +214,14 @@ public class Proyectil implements Lanzable {
         return DIRECCION.angleDeg();
     }
 
+    public float getAncho() {
+        return ANCHO;
+    }
+
+    public float getAlto() {
+        return ALTO;
+    }
+
     public void desactivar() {
         activa = false;
     }

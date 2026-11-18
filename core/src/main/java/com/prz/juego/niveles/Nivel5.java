@@ -1,5 +1,6 @@
 package com.prz.juego.niveles;
 
+import com.prz.juego.entidades.enemigos.melee.BichoMelee;
 import com.prz.juego.entidades.jugadores.Jugador;
 
 public class Nivel5 extends Nivel {
@@ -7,7 +8,7 @@ public class Nivel5 extends Nivel {
     public static final String RUTA = "Niveles/Niveles/Nivel5.tmx";
 
     public Nivel5() {
-        musica = null;
+        musica = "NIVEL5";
     }
 
     @Override
@@ -17,6 +18,6 @@ public class Nivel5 extends Nivel {
 
     @Override
     protected void configurarContenidoEspecifico(Jugador[] jugadores) {
-        // Este mapa todavía no define entidades propias del nivel.
+        agregarEntidad(new BichoMelee(500, 500, jugadores[0], jugadores, true));
     }
 }
