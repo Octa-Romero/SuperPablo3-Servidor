@@ -57,7 +57,7 @@ public abstract class EnemigoMelee extends Enemigo {
                 yaDanio = false;
 
                 if (Servidor.instancia != null) {
-                    Servidor.instancia.enviarSonido(SONIDO_ESPADA);
+                    Servidor.instancia.enviarSonidoConPosicion(SONIDO_ESPADA);
                 }
             }
             return;
